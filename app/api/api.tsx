@@ -11,7 +11,7 @@ export const addNewAddress = async (addressData: any) => {
       {
         headers: {
           'Content-Type': 'application/json',
-          'authorization': localStorage.getItem('token') as string,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, 
         },
       }
     );

@@ -183,8 +183,10 @@ export default function ProfilePage() {
     address: yup.string().required("Please select or add an address"),
   })
   interface SavedAddress {
-    id: string;
+    _id: string;
     address: string;
+    landmark:string;
+    customAddressType:string;
     addressLine1: string;
     addressLine2: string;
     pincode: string;
@@ -200,8 +202,10 @@ export default function ProfilePage() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [newAddressForm, setNewAddressForm] = useState<SavedAddress>({
-    id: "",
+    _id:"",
     address: "",
+    customAddressType:"",
+    landmark:"",
     addressLine1: "",
     addressLine2: "",
     pincode: "",
@@ -275,16 +279,21 @@ export default function ProfilePage() {
       pincode: newAddress?.pincode,
       city: newAddress?.city,
       state: newAddress?.state,
+      customAddressType:newAddress?.customAddressType,
+      landmark:newAddress?.landmark,
       addressLine1: newAddress?.addressLine1,
       addressLine2: newAddress?.addressLine2,
       address: newAddress?.address
     }
     const response = await addNewAddress(data);
     if (response.success) {
+      fetchUserDetails()
       setShowNewAddressForm(false);
       setNewAddressForm({
-        id: "",
+       _id: "",
         address: "",
+        landmark:"",
+        customAddressType:"",
         addressLine1: "",
         addressLine2: "",
         pincode: "",
@@ -295,6 +304,7 @@ export default function ProfilePage() {
       const newErrors = { ...formErrors };
       delete newErrors.addressLine1;
       delete newErrors.pincode;
+      delete newErrors.landmark;
       setFormErrors(newErrors);
     }
   }
@@ -335,6 +345,7 @@ export default function ProfilePage() {
         localStorage.setItem('user-info', JSON.stringify(userDetails.user));
         setUserData(userDetails.user);
         setUserImage(userDetails.user?.image);
+        setSavedAddresses(userDetails?.user?.addresses)
       }
     } catch (error) {
       console.error("Error fetching user details:", error);
@@ -365,7 +376,7 @@ export default function ProfilePage() {
     setIsImageDialogOpen(false)
     setPreviewImage(null)
   }
-  const handleProfileUpdate=async(data:any)=>{
+  const handleProfileUpdate = async (data: any) => {
     const formData = new FormData();
     formData.append('phone', data?.phone);
     formData.append('dob', data?.dob);
@@ -516,7 +527,6 @@ export default function ProfilePage() {
                 transition={{ delay: 0.4 }}
                 className="space-y-4 bg-slate-50 p-4 rounded-lg"
               >
-
                 <motion.div
                   className="flex items-center"
                   whileHover={{ x: 5 }}
@@ -525,16 +535,16 @@ export default function ProfilePage() {
                   <Mail className="h-4 w-4 mr-3 text-primary" />
                   <span>{userData?.email}</span>
                 </motion.div>
-
-                <motion.div
-                  className="flex items-center"
-                  whileHover={{ x: 5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <Phone className="h-4 w-4 mr-3 text-primary" />
-                  <span>{userData?.phone}</span>
-                </motion.div>
-
+                {userData?.phone &&
+                  <motion.div
+                    className="flex items-center"
+                    whileHover={{ x: 5 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Phone className="h-4 w-4 mr-3 text-primary" />
+                    <span>{userData?.phone}</span>
+                  </motion.div>
+                }
                 <motion.div
                   className="flex items-center"
                   whileHover={{ x: 5 }}
@@ -1089,19 +1099,21 @@ export default function ProfilePage() {
                             }}
                           >
                             {savedAddresses?.map((address) => (
-                              <div key={address.id}
+                              <div key={address?._id}
                                 className="flex items-start space-x-3 border-2 border-primary p-6 rounded-lg 
                                 hover:border-primary hover:shadow-lg transition-all duration-300 
                                 hover:scale-[1.02] cursor-pointer bg-white
                                 shadow-sm hover:bg-primary/5"
                               >
-                                <RadioGroupItem value={address.id} id={`address-${address.id}`} className="mt-1" />
+                                <RadioGroupItem value={address?._id} id={`address-${address?._id}`} className="mt-1" />
                                 <div className="flex-1">
-                                  <Label htmlFor={`address-${address.id}`} className="grid gap-2">
+                                  <Label htmlFor={`address-${address?._id}`} className="grid gap-2">
                                     <div className="flex items-center justify-between">
                                       <span className="font-medium text-base">{address.address}</span>
                                       <Badge variant="outline" className="animate-in fade-in duration-500">{address.pincode}</Badge>
                                     </div>
+                                    <span className="text-muted-foreground">{address.landmark}</span>
+
                                     <span className="text-muted-foreground">{address.addressLine1}</span>
                                     {address.addressLine2 && <span className="text-muted-foreground">{address.addressLine2}</span>}
                                     <span className="text-muted-foreground">{`${address.city}, ${address.state}`}</span>
@@ -1127,18 +1139,55 @@ export default function ProfilePage() {
 
                           {/* Existing address form fields */}
                           <div className="space-y-4">
+                          <div className="space-y-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="address">Address *</Label>
+                                <Select
+                                  value={newAddressForm.address || ''}
+                                  onValueChange={(value) => {
+                                    setNewAddressForm({
+                                      ...newAddressForm,
+                                      address: value,
+                                    });
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select address type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Home">Home</SelectItem>
+                                    <SelectItem value="Work">Work</SelectItem>
+                                    <SelectItem value="Other">Other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              {newAddressForm.address === 'Other' && (
+                                <div className="space-y-2">
+                                  <Label htmlFor="customAddressType">Custom Address Type *</Label>
+                                  <Input
+                                    id="customAddressType"
+                                    value={newAddressForm.customAddressType || ''}
+                                    placeholder="Enter custom address type"
+                                    onChange={(e) => setNewAddressForm({
+                                      ...newAddressForm,
+                                      customAddressType: e.target.value
+                                    })}
+                                  />
+                                </div>
+                              )}
+                            </div>
                             <div className="space-y-2">
-                              <Label htmlFor="address">Landmark/Address *</Label>
+                              <Label htmlFor="landmark">Landmark *</Label>
                               <Input
-                                id="address"
-                                value={newAddressForm.address}
+                                id="landmark"
+                                value={newAddressForm.landmark}
                                 onChange={(e) => setNewAddressForm({
                                   ...newAddressForm,
-                                  address: e.target.value
+                                  landmark: e.target.value
                                 })}
                               />
                             </div>
-
                             <div className="space-y-2">
                               <Label htmlFor="addressLine1">Address Line 1*</Label>
                               <Input
@@ -1150,7 +1199,7 @@ export default function ProfilePage() {
                                 })}
 
                               />
-                              {formErrors["address.addressLine1"] && (
+                              {formErrors["addressLine1"] && (
                                 <p className="text-sm text-destructive">{formErrors["address.addressLine1"]}</p>
                               )}
                             </div>
@@ -1218,13 +1267,9 @@ export default function ProfilePage() {
                               </div>
                             </div>
                           </div>
-
-                          {/* ... rest of your existing address form fields ... */}
-
                           <Button
                             type="button"
                             onClick={() => {
-                              // Validate required fields
                               const errors: { [key: string]: string } = {};
                               if (!newAddressForm.addressLine1) {
                                 errors["addressLine1"] = "Address Line 1 is required";
@@ -1232,26 +1277,25 @@ export default function ProfilePage() {
                               if (!newAddressForm.pincode) {
                                 errors["pincode"] = "Pincode is required";
                               }
-
-                              // If there are validation errors, show them and return
                               if (Object.keys(errors).length > 0) {
+                                console.log("newAddress")
+
                                 setFormErrors({ ...formErrors, ...errors });
                                 return;
                               }
-
+else{
                               const newAddress: SavedAddress = {
                                 ...newAddressForm,
-                                // id: Date.now().toString(), // Add unique ID if not present
                               };
                               setSavedAddresses([...savedAddresses, newAddress]);
-                              setSelectedAddressId(newAddress.id);
+                              setSelectedAddressId(newAddress?._id);
                               setProductForm({
                                 ...productForm,
-                                // address: newAddress.id
                               });
-                              handleAddAddressApi(newAddress)
-
+                              // handleAddAddressApi(newAddress)
+                          
                             }}
+                          }
                           >
                             Save Address
                           </Button>

@@ -69,7 +69,7 @@ export default function Navbar() {
             <SheetContent side="left" className="w-[300px] sm:w-[400px]">
               <nav className="flex flex-col gap-4">
                 <Link href="/" className="flex items-center gap-2 font-serif text-xl">
-                  StyleSwap
+                Fashcycle
                 </Link>
                 {categories.map((category) => (
                   <Link key={category.name} href={category.href} className="text-lg font-medium">
@@ -92,7 +92,7 @@ export default function Navbar() {
         </div>
 
         <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-serif text-xl font-medium">
-          StyleSwap
+        Fashcycle
         </Link>
 
         <div className="flex items-center gap-2">
