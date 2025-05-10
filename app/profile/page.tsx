@@ -1,26 +1,31 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { User, Mail, Phone, MapPin, Calendar, Shield, Edit, Camera, CheckCircle, AlertCircle, Plus, Upload } from "lucide-react"
-import { useSession } from "next-auth/react"
-
+import { useState, useRef, useEffect } from "react"
+import { User, Mail, Phone, MapPin, Calendar, Shield, Edit, Camera, CheckCircle, Plus, LogOut, Upload, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-
+import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import * as yup from "yup"
-import LehengaSizeChart from "@/components/lehnga-sizechart"
-
+import LehengaSizeChart from "@/components/clothCategory-sizecharts/lehnga-sizechart"
+import ShararaSizeChart from "@/components/clothCategory-sizecharts/sharara-sizechart"
+import AnarkaliSizeChart from "@/components/clothCategory-sizecharts/anarkali-sizechart"
+import SareeSizeChart from "@/components/clothCategory-sizecharts/saree-sizechart"
+import SuitSizeChart from "@/components/clothCategory-sizecharts/suit-sizechart"
+import { addNewAddress, getUserDetails, updateUserProfile } from '@/app/api/api';
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge"
+import GownSizeChart from "@/components/clothCategory-sizecharts/gown-sizechart"
+import { ProfilePictureDialog } from "@/components/profile/profile-picture-dialog"
+import { formatDate } from "../utils/dateUtils"
+import { PersonalInfoForm } from "@/components/profile/personalInfoForm"
 interface UserAddress {
   address1?: string;
   address2?: string;
@@ -38,25 +43,22 @@ interface ProductImage {
 }
 
 interface ProductForm {
-  name: string;
+  productName: string;
   category: string;
   mobileNumber: string;
-  address: {
-    landmark: string;
-    addressLine1: string;
-    addressLine2: string;
-    pincode: string;
-    city: string;
-    state: string;
-    country: string;
-  };
-  originalPrice: number;
-  size: string;
+  address: string;
+  originalPurchasePrice: number;
+  productSize: string;
   sizeFlexibility: string;
   color: string;
-  images: ProductImage[];
-  video: File | null;
-  accessories: ProductImage[];
+  frontLook: File | null;
+  sideLook: File | null;
+  backLook: File | null;
+  closeUpLook: File | null;
+  optional1: File | string;
+  optional2: File | string;
+  productVideo: File | null;
+  accessoriesImage: File | string;
   proofOfPurchase: File | null;
   listingType: string[];
 
@@ -64,7 +66,12 @@ interface ProductForm {
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
-  const { data: session } = useSession()
+  const router: any = useRouter()
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [isHoveringAvatar, setIsHoveringAvatar] = useState(false)
+  const fileInputRef: any = useRef<HTMLInputElement>(null)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [userLocation, setUserLocation] = useState(() => {
     if (typeof window !== 'undefined') {
       const storedLocation = localStorage.getItem('userLocation')
@@ -72,7 +79,13 @@ export default function ProfilePage() {
     }
     return null
   })
-
+  const [userData, setUserData] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const user = localStorage.getItem('user-info');
+      return user ? JSON.parse(user) : null;
+    }
+    return null;
+  });
   // Get user's address from local storage or default values
   const [userAddress, setUserAddress] = useState<UserAddress | null>(() => {
     if (typeof window !== 'undefined') {
@@ -97,42 +110,39 @@ export default function ProfilePage() {
     }
     return "Location not set"
   }
-  console.log(userAddress, userLocation, "userLocation")
-  // Get user's full name from session
-  const userFullName = session?.user?.name || "Guest User"
-  const userEmail = session?.user?.email || "No email provided"
-  const userImage = session?.user?.image || ""
-  console.log(session?.user, "session?.user")
+  const [userImage, setUserImage] = useState<any>()
+  useEffect(() => {
+    if (userData) {
+      setUserImage(userData?.image)
+    }
+  }, [userData])
   // In the ProfilePage component, add this state
   const [productForm, setProductForm] = useState<ProductForm>({
-    name: "",
+    productName: "",
     category: "",
-    originalPrice: 5000,
-    size: "",
+    originalPurchasePrice: 5000,
+    productSize: "",
     sizeFlexibility: "",
     color: "",
-    images: [],
-    video: null,
-    accessories: [],
+    frontLook: null,
+    sideLook: null,
+    backLook: null,
+    closeUpLook: null,
+    optional1: "",
+    optional2: "",
+    productVideo: null,
+    accessoriesImage: "",
     proofOfPurchase: null,
     listingType: [],
     mobileNumber: "",
-    address: {
-      landmark: "",
-      addressLine1: "",
-      addressLine2: "",
-      pincode: "",
-      city: "",
-      state: "",
-      country: "",
-    }
+    address: ""
   })
-  console.log(productForm, "productForm")
   const handleProjectCreat = async () => {
+    console.log("productForm", productForm)
     try {
       await productSchema.validate(productForm, { abortEarly: false })
+      setFormErrors({});
       // If validation passes, proceed with form submission
-      console.log("Form is valid", productForm)
       // Add your submission logic here
     } catch (err) {
       if (err instanceof yup.ValidationError) {
@@ -147,39 +157,58 @@ export default function ProfilePage() {
     }
   }
   const productSchema = yup.object().shape({
-    name: yup.string().required("Product name is required"),
+    productName: yup.string().required("Product name is required"),
     category: yup.string().required("Category is required"),
-    originalPrice: yup
+    originalPurchasePrice: yup
       .number()
       .min(5000, "Minimum price should be ₹5,000")
       .required("Original price is required"),
-    size: yup.string().required("Size is required"),
+    productSize: yup.string().required("Product size is required"),
     sizeFlexibility: yup.string().required("Size flexibility is required"),
     color: yup.string().required("Color is required"),
-    images: yup.array().min(4, "Minimum 4 images are required"),
-    video: yup.mixed(),
-    accessories: yup.array(),
+    frontLook: yup.mixed().required("Front look image is required"),
+    sideLook: yup.mixed().required("Side look image is required"),
+    backLook: yup.mixed().required("Back look image is required"),
+    closeUpLook: yup.mixed().required("Close up look image is required"),
+    optional1: yup.mixed(),
+    optional2: yup.mixed(),
+    productVideo: yup.mixed(),
+    accessoriesImage: yup.mixed(),
     proofOfPurchase: yup.mixed().required("Proof of purchase is required"),
     listingType: yup.array().min(1, "Select at least one listing type"),
     mobileNumber: yup
       .string()
       .matches(/^[6-9]\d{9}$/, "Enter valid Indian mobile number")
       .required("Mobile number is required"),
-    address: yup.object().shape({
-      landmark: yup.string(),
-      addressLine1: yup.string().required("Address line 1 is required"),
-      addressLine2: yup.string(),
-      pincode: yup
-        .string()
-        .matches(/^[1-9][0-9]{5}$/, "Enter valid 6-digit pincode")
-        .required("Pincode is required"),
-      city: yup.string().required(),
-      state: yup.string().required(),
-      country: yup.string().required(),
-    }),
+    address: yup.string().required("Please select or add an address"),
   })
+  interface SavedAddress {
+    id: string;
+    address: string;
+    addressLine1: string;
+    addressLine2: string;
+    pincode: string;
+    city: string;
+    state: string;
+    country: string;
+  }
 
-  // In your ProfilePage component, add this state for errors
+  // Inside ProfilePage component, add this state
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([
+
+  ]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [newAddressForm, setNewAddressForm] = useState<SavedAddress>({
+    id: "",
+    address: "",
+    addressLine1: "",
+    addressLine2: "",
+    pincode: "",
+    city: "",
+    state: "",
+    country: "India"
+  });  // In your ProfilePage component, add this state for errors
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
   const [activeTab, setActiveTab] = useState("productListing")
   const handlePincodeChange = async (pincode: string) => {
@@ -189,14 +218,11 @@ export default function ProfilePage() {
         const [data] = await response.json();
         if (data.Status === "Success") {
           const [firstPost] = data.PostOffice;
-          setProductForm(prev => ({
+          setNewAddressForm(prev => ({
             ...prev,
-            address: {
-              ...prev.address,
-              city: firstPost.District,
-              state: firstPost.State,
-              country: "India"
-            }
+            city: firstPost.District,
+            state: firstPost.State,
+            country: "India"
           }));
         }
       } catch (error) {
@@ -208,156 +234,373 @@ export default function ProfilePage() {
     const sizeInMB = file.size / (1024 * 1024);
     return sizeInMB <= maxSize;
   };
-  const UploadImageInput = ({ index, type, productForm, setProductForm, handleFileValidation }: any) => {
-    const fileInputRef = useRef<HTMLInputElement>(null);
-  
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const labelToFieldMap: Record<string, keyof ProductForm> = {
+    "Front look": "frontLook",
+    "Side Look": "sideLook",
+    "Back look": "backLook",
+    "CloseUp look": "closeUpLook",
+    "Optional 1": "optional1",
+    "Optional 2": "optional2"
+  };
+  const UploadImageInput = ({
+    index,
+    type,
+    productForm,
+    setProductForm,
+    handleFileValidation
+  }: any) => {
+    const fieldKey = labelToFieldMap[type]; // ✅ use the correct key
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) {
-        if (!handleFileValidation(file, 10)) {
-          alert("Image size should be less than 10MB");
-          return;
-        }
-        const newImage = {
-          type: type,
-          file: file,
-          preview: URL.createObjectURL(file),
-        };
-        const newImages = [...productForm.images];
-        newImages[index] = newImage;
-        setProductForm({ ...productForm, images: newImages });
+      if (file && handleFileValidation(file)) {
+        setProductForm({
+          ...productForm,
+          [fieldKey]: file
+        });
       }
     };
-  
+
     return (
-      <div>
-        <input
-          type="file"
-          accept=".jpg,.jpeg,.png,.gif,.webp"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleFileChange}
-        />
-        <Button
-          variant="outline"
-          type="button"
-          className="w-full"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Upload className="h-4 w-4 mr-2" />
-          Upload
-        </Button>
-      </div>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleChange}
+        className="w-full text-sm"
+      />
     );
   };
+  const handleAddAddressApi = async (newAddress: any) => {
+    let data = {
+      pincode: newAddress?.pincode,
+      city: newAddress?.city,
+      state: newAddress?.state,
+      addressLine1: newAddress?.addressLine1,
+      addressLine2: newAddress?.addressLine2,
+      address: newAddress?.address
+    }
+    const response = await addNewAddress(data);
+    if (response.success) {
+      setShowNewAddressForm(false);
+      setNewAddressForm({
+        id: "",
+        address: "",
+        addressLine1: "",
+        addressLine2: "",
+        pincode: "",
+        city: "",
+        state: "",
+        country: "India"
+      });
+      const newErrors = { ...formErrors };
+      delete newErrors.addressLine1;
+      delete newErrors.pincode;
+      setFormErrors(newErrors);
+    }
+  }
+  const handleLogout = () => {
+    localStorage.removeItem('user-info');
+    localStorage.removeItem('token');
+    router.push('/login');
+  };
+  const handleImageUpload = async () => {
+    if (selectedImage) {
+      const formData = new FormData();
+      formData.append('name', userData?.name);
+      formData.append('email', userData?.email);
+      formData.append('image', selectedImage);
+      try {
+        const result = await updateUserProfile(formData);
+        if (result?.success) {
+          const userDetails = await getUserDetails();
+          if (userDetails?.success) {
+            localStorage.setItem('user-info', JSON.stringify(userDetails?.user));
+            setUserData(userDetails.user);
+          }
+          setUserImage(userDetails?.user?.image)
+          setIsImageDialogOpen(false);
+          setSelectedImage(null);
+          setPreviewImage(null
+          )
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+      }
+    }
+  };
+  const fetchUserDetails = async () => {
+    try {
+      const userDetails = await getUserDetails();
+      if (userDetails?.success) {
+        localStorage.setItem('user-info', JSON.stringify(userDetails.user));
+        setUserData(userDetails.user);
+        setUserImage(userDetails.user?.image);
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserDetails();
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedImage(file);  // Add this line to set the selected image
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setPreviewImage(e.target.result as string)
+        }
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+  const triggerFileInput = () => {
+    fileInputRef.current?.click()
+  }
+  const removeProfilePicture = () => {
+    setIsImageDialogOpen(false)
+    setPreviewImage(null)
+  }
+  const handleProfileUpdate=async(data:any)=>{
+    const formData = new FormData();
+    formData.append('phone', data?.phone);
+    formData.append('dob', data?.dob);
+    formData.append('name', data?.name);
+    try {
+      const result = await updateUserProfile(formData);
+      if (result?.success) {
+        const userDetails = await getUserDetails();
+        if (userDetails?.success) {
+          localStorage.setItem('user-info', JSON.stringify(userDetails?.user));
+          setUserData(userDetails.user);
+        }
+        setUserImage(userDetails?.user?.image)
+        setIsImageDialogOpen(false);
+        setSelectedImage(null);
+        setPreviewImage(null
+        )
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  }
+
   return (
     <div className="container py-10">
       <div className="flex flex-col md:flex-row gap-6">
         <div className="md:w-1/3">
-          <Card>
-            <CardHeader className="relative">
-              <div className="absolute right-4 top-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    setIsEditing(true)
-                    setActiveTab("personal")
-                  }}
-                >
-                  <Edit className="h-4 w-4" />
-                  <span className="sr-only">Edit Profile</span>
-                </Button>
+          <Card className="w-full max-w-md mx-auto overflow-hidden border-2 transition-all duration-300 hover:shadow-lg">
+            <CardHeader className="relative pb-0">
+              <div className="absolute right-4 top-4 flex gap-2 z-10">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all"
+                    onClick={() => {
+                      setIsEditing(true)
+                      setActiveTab("personal")
+                    }}
+                  >
+                    <Edit className="h-4 w-4 text-primary" />
+                    <span className="sr-only">Edit Profile</span>
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all"
+                    onClick={handleLogout}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-red-500"
+                    >
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span className="sr-only">Logout</span>
+                  </Button>
+                </motion.div>
               </div>
+
               <div className="flex flex-col items-center">
-                <div className="relative mb-4">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={userImage} />
-                    <AvatarFallback>
-                      <User className="h-12 w-12" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="absolute -right-2 bottom-0">
-                    <Button variant="outline" size="icon" className="rounded-full h-8 w-8">
-                      <Camera className="h-4 w-4" />
-                      <span className="sr-only">Change profile picture</span>
-                    </Button>
-                  </div>
+                <div
+                  className="relative mb-6 mt-2"
+                  onMouseEnter={() => setIsHoveringAvatar(true)}
+                  onMouseLeave={() => setIsHoveringAvatar(false)}
+                >
+                  <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+                    <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
+                      <AvatarImage src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${userImage}` || "/placeholder.svg"} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary">
+                        <User className="h-14 w-14 text-white" />
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <AnimatePresence>
+                      {isHoveringAvatar && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-white hover:text-white hover:bg-primary/50"
+                            onClick={() => { setIsImageDialogOpen(true); setPreviewImage(`${process.env.NEXT_PUBLIC_IMAGE_URL}${userImage}`) }}
+                          >
+                            <Camera className="h-6 w-6" />
+                          </Button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 </div>
-                <CardTitle>{userFullName}</CardTitle>
-                <CardDescription className="flex items-center mt-1">
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3 text-primary" />
-                    Verified User
+
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                  <CardTitle className="text-2xl font-bold">{userData?.name}</CardTitle>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                  <CardDescription className="flex items-center mt-1">
+                    <Badge
+                      variant="outline"
+                      className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200"
+                    >
+                      <CheckCircle className="h-3 w-3 text-green-600" />
+                      Verified User
+                    </Badge>
+                  </CardDescription>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex items-center gap-2 mt-4"
+                >
+                  <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                    Seller
                   </Badge>
-                </CardDescription>
-                <div className="flex items-center gap-2 mt-4">
-                  <Badge variant="secondary">Seller</Badge>
-                  <Badge variant="secondary">Renter</Badge>
-                </div>
+                  <Badge
+                    variant="secondary"
+                    className="bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors"
+                  >
+                    Renter
+                  </Badge>
+                </motion.div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span>{userEmail}</span>
-                </div>
-                <div className="flex items-center">
-                  <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span>+91 9876543210</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+
+            <CardContent className="pt-6">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="space-y-4 bg-slate-50 p-4 rounded-lg"
+              >
+
+                <motion.div
+                  className="flex items-center"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <Mail className="h-4 w-4 mr-3 text-primary" />
+                  <span>{userData?.email}</span>
+                </motion.div>
+
+                <motion.div
+                  className="flex items-center"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <Phone className="h-4 w-4 mr-3 text-primary" />
+                  <span>{userData?.phone}</span>
+                </motion.div>
+
+                <motion.div
+                  className="flex items-center"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <MapPin className="h-4 w-4 mr-3 text-primary" />
                   <span>{getLocationString()}</span>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span>Joined April 2023</span>
-                </div>
-                <div className="flex items-center">
-                  <Shield className="h-4 w-4 mr-2 text-muted-foreground" />
+                </motion.div>
+                {userData?.createdAt &&
+                  <motion.div
+                    className="flex items-center"
+                    whileHover={{ x: 5 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Calendar className="h-4 w-4 mr-3 text-primary" />
+                    {formatDate(userData?.createdAt)}
+                  </motion.div>
+                }
+                <motion.div
+                  className="flex items-center"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <Shield className="h-4 w-4 mr-3 text-primary" />
                   <span>ID Verified</span>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                View Public Profile
-              </Button>
-            </CardFooter>
           </Card>
 
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Account Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Two-Factor Authentication</p>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="shadow-xl rounded-2xl border border-gray-200 bg-white mt-6">
+              <CardHeader>
+                <CardTitle>Account Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Two-Factor Authentication</p>
+                    <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
+                  </div>
+                  <Switch />
                 </div>
-                <Switch />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Email Notifications</p>
-                  <p className="text-sm text-muted-foreground">Get updates about your orders</p>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Email Notifications</p>
+                    <p className="text-sm text-muted-foreground">Get updates about your orders</p>
+                  </div>
+                  <Switch defaultChecked />
                 </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">SMS Notifications</p>
-                  <p className="text-sm text-muted-foreground">Receive text messages for important updates</p>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">SMS Notifications</p>
+                    <p className="text-sm text-muted-foreground">Receive text messages for important updates</p>
+                  </div>
+                  <Switch defaultChecked />
                 </div>
-                <Switch defaultChecked />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
         <div className="md:w-2/3">
@@ -381,28 +624,30 @@ export default function ProfilePage() {
                 }}>
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Product Name</Label>
+                      <Label htmlFor="productName" className="font-large font-bold">Product Name *</Label>
                       <Input
-                        id="name"
-                        value={productForm.name}
+                        id="productName"
+                        value={productForm.productName}
                         onChange={(e) => {
-                          setProductForm({ ...productForm, name: e.target.value })
-                          setFormErrors({ ...formErrors, name: "" })
+                          setProductForm({ ...productForm, productName: e.target.value })
+                          setFormErrors({ ...formErrors, productName: "" })
                         }}
                       />
-                      {formErrors.name && (
-                        <p className="text-sm text-destructive">{formErrors.name}</p>
+                      {formErrors.productName && (
+                        <p className="text-sm text-destructive">{formErrors.productName}</p>
                       )}
 
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="mobileNumber">Mobile Number</Label>
+                      <Label htmlFor="mobileNumber" className="font-large font-bold">Mobile Number *</Label>
                       <Input
                         id="mobileNumber"
                         value={productForm.mobileNumber}
                         onChange={(e) => {
                           setProductForm({ ...productForm, mobileNumber: e.target.value });
-                          setFormErrors({ ...formErrors, mobileNumber: "" });
+                          const newErrors = { ...formErrors };
+                          delete newErrors.mobileNumber;
+                          setFormErrors(newErrors);
                         }}
                       />
                       {formErrors.mobileNumber && (
@@ -410,8 +655,13 @@ export default function ProfilePage() {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="category">Category</Label>
-                      <Select onValueChange={(value) => setProductForm({ ...productForm, category: value })}>
+                      <Label htmlFor="category" className="font-large font-bold">Category *</Label>
+                      <Select onValueChange={(value) => {
+                        setProductForm({ ...productForm, category: value });
+                        const newErrors = { ...formErrors };
+                        delete newErrors.category;
+                        setFormErrors(newErrors);
+                      }}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" id="category" />
                         </SelectTrigger>
@@ -431,25 +681,69 @@ export default function ProfilePage() {
                     {productForm.category === "lehenga" && (
                       <LehengaSizeChart
                         onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, size: size.toLowerCase() });
-                          setFormErrors({ ...formErrors, size: "" });
+                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          const newErrors = { ...formErrors };
+                          delete newErrors.productSize;
+                          setFormErrors(newErrors);
+                        }}
+                      />
+
+                    )}
+                    {productForm.category === "gown" && (
+                      <GownSizeChart
+                        onSizeSelect={(size: any) => {
+                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setFormErrors({ ...formErrors, productSize: "" });
                         }}
                       />
                     )}
+                    {productForm.category === "sharara-set" && (
+                      <ShararaSizeChart
+                        onSizeSelect={(size) => {
+                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {productForm.category === "anarkali" && (
+                      <AnarkaliSizeChart
+                        onSizeSelect={(size) => {
+                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {productForm.category === "saree" && (
+                      <SareeSizeChart
+                        onSizeSelect={(size) => {
+                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {productForm.category === "suit" && (
+                      <SuitSizeChart
+                        onSizeSelect={(size) => {
+                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+
                     <div className="space-y-2">
-                      <Label htmlFor="originalPrice">Original Purchase Price (₹)</Label>
+                      <Label htmlFor="originalPurchasePrice" className="font-large font-bold">Original Purchase Price (₹) *</Label>
                       <Input
-                        id="originalPrice"
+                        id="originalPurchasePrice"
                         type="number"
                         min={5000}
-                        value={productForm.originalPrice}
+                        value={productForm.originalPurchasePrice}
                         onChange={(e) => {
                           const value = Number(e.target.value);
-                          setProductForm({ ...productForm, originalPrice: value });
+                          setProductForm({ ...productForm, originalPurchasePrice: value });
                           if (value < 5000) {
-                            setFormErrors({ ...formErrors, originalPrice: "Minimum price should be ₹5,000" });
+                            setFormErrors({ ...formErrors, originalPurchasePrice: "Minimum price should be ₹5,000" });
                           } else {
-                            setFormErrors({ ...formErrors, originalPrice: "" });
+                            setFormErrors({ ...formErrors, originalPurchasePrice: "" });
                           }
                         }} className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         onKeyDown={(e) => {
@@ -458,8 +752,8 @@ export default function ProfilePage() {
                           }
                         }} />
 
-                      {formErrors.originalPrice && (
-                        <p className="text-sm text-destructive">{formErrors.originalPrice}</p>
+                      {formErrors.originalPurchasePrice && (
+                        <p className="text-sm text-destructive">{formErrors.originalPurchasePrice}</p>
                       )}
                     </div>
 
@@ -467,8 +761,13 @@ export default function ProfilePage() {
 
 
                       <div className="space-y-2">
-                        <Label>Size Flexibility</Label>
-                        <Select onValueChange={(value) => setProductForm({ ...productForm, sizeFlexibility: value })}>
+                        <Label className="font-large font-bold">Size Flexibility *</Label>
+                        <Select onValueChange={(value) => {
+                          setProductForm({ ...productForm, sizeFlexibility: value });
+                          const newErrors = { ...formErrors };
+                          delete newErrors.sizeFlexibility;
+                          setFormErrors(newErrors);
+                        }}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select flexibility" />
                           </SelectTrigger>
@@ -478,185 +777,255 @@ export default function ProfilePage() {
                             ))}
                           </SelectContent>
                         </Select>
+                        {formErrors.sizeFlexibility && (
+                          <p className="text-sm text-destructive">{formErrors.sizeFlexibility}</p>
+                        )}
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="color">Color</Label>
+                      <Label htmlFor="color" className="font-large font-bold">Color *</Label>
                       <Input
                         id="color"
                         value={productForm.color}
-                        onChange={(e) => setProductForm({ ...productForm, color: e.target.value })}
+                        onChange={(e) => {
+                          setProductForm({ ...productForm, color: e.target.value });
+                          const newErrors = { ...formErrors };
+                          delete newErrors.color;
+                          setFormErrors(newErrors)
+                        }}
                       />
+                      {formErrors.color && (
+                        <p className="text-sm text-destructive">{formErrors.color}</p>
+                      )}
                     </div>
 
-                    {/* <div className="space-y-2">
-                      <Label>Product Images (Min 4 required)</Label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {["Front look", "Side Look", "Back look", "CloseUp look", "Optional 1", "Optional 2"].map((type, index) => (
-                          <div key={type} className="border rounded-lg p-4 text-center">
-                            <p className="font-medium mb-2">{type}</p>
-                            <Input
-                              type="file"
-                              accept=".jpg,.jpeg,.png,.gif,.webp"
-                              className="hidden"
-                              id={`image-${index}`}
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  if (!handleFileValidation(file, 10)) {
-                                    alert("Image size should be less than 10MB");
-                                    return;
-                                  }
-                                  // Handle file upload
-                                  const newImage = {
-                                    type: type,
-                                    file: file,
-                                    preview: URL.createObjectURL(file)
-                                  };
-                                  const newImages = [...productForm.images];
-                                  newImages[index] = newImage;
-                                  setProductForm({ ...productForm, images: newImages });
-                                }
-                              }}
-                            />
-                            <Label htmlFor={`image-${index}`}>
-                              <Button variant="outline" type="button" className="w-full">
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload
-                              </Button>
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div> */}
                     <div className="space-y-2">
-                      <Label>Product Images (Min 4 required)</Label>
+                      <Label className="font-large font-bold">Product Images (Min 4 required) *</Label>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {["Front look", "Side Look", "Back look", "CloseUp look", "Optional 1", "Optional 2"].map((type, index) => (
-                          <div key={type} className="border rounded-lg p-4 text-center">
-                            <p className="font-medium mb-2">{type}</p>
-                            {productForm.images[index]?.preview ? (
-                              <div className="space-y-2">
-                                <img 
-                                  src={productForm.images[index].preview} 
-                                  alt={type}
-                                  className="w-full h-32 object-cover rounded-md"
-                                />
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  className="w-full"
-                                  onClick={() => {
-                                    const newImages :any= [...productForm.images];
-                                    newImages[index] = null;
-                                    setProductForm({ ...productForm, images: newImages });
-                                  }}
-                                >
-                                  Remove
-                                </Button>
-                              </div>
-                            ) : (
-                              <UploadImageInput
-                                index={index}
-                                type={type}
-                                productForm={productForm}
-                                setProductForm={setProductForm}
-                                handleFileValidation={handleFileValidation}
+
+                        {/* Front Look Image */}
+                        <div className="space-y-2">
+                          <Label className="font-large font-bold">Front Look</Label>
+                          <div className="rounded-lg p-4">
+                            <div className="space-y-2">
+                              <Input
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.gif,.webp"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file && file.size <= 10 * 1024 * 1024) {
+                                    setProductForm({ ...productForm, frontLook: file }); // Store as File
+                                    const newErrors = { ...formErrors };
+                                    delete newErrors.frontLook;
+                                    setFormErrors(newErrors);
+                                  }
+                                }}
                               />
-                            )}
+                              {formErrors.frontLook && (
+                                <p className="text-sm text-destructive">{formErrors.frontLook}</p>
+                              )}
+                            </div>
                           </div>
-                        ))}
+                        </div>
+
+                        {/* Back Look Image */}
+                        <div className="space-y-2">
+                          <Label className="font-large font-bold">Back Look Image</Label>
+                          <div className="rounded-lg p-4">
+                            <div className="space-y-2">
+                              <Input
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.gif,.webp"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file && file.size <= 10 * 1024 * 1024) {
+                                    setProductForm({ ...productForm, backLook: file }); // Store as File
+                                    const newErrors = { ...formErrors };
+                                    delete newErrors.backLook;
+                                    setFormErrors(newErrors);
+                                  }
+                                }}
+                              />
+                              {formErrors.backLook && (
+                                <p className="text-sm text-destructive">{formErrors.backLook}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Side Look Image */}
+                        <div className="space-y-2">
+                          <Label className="font-large font-bold">Side Look Image</Label>
+                          <div className="rounded-lg p-4">
+                            <div className="space-y-2">
+                              <Input
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.gif,.webp"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file && file.size <= 10 * 1024 * 1024) {
+                                    setProductForm({ ...productForm, sideLook: file }); // Store as File
+                                    const newErrors = { ...formErrors };
+                                    delete newErrors.sideLook;
+                                    setFormErrors(newErrors);
+                                  }
+                                }}
+                              />
+                              {formErrors.sideLook && (
+                                <p className="text-sm text-destructive">{formErrors.sideLook}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* CloseUp Look Image */}
+                        <div className="space-y-2">
+                          <Label className="font-large font-bold">CloseUp Look Image</Label>
+                          <div className="rounded-lg p-4">
+                            <div className="space-y-2">
+                              <Input
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.gif,.webp"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file && file.size <= 10 * 1024 * 1024) {
+                                    setProductForm({ ...productForm, closeUpLook: file }); // Store as File
+                                    const newErrors = { ...formErrors };
+                                    delete newErrors.closeUpLook;
+                                    setFormErrors(newErrors);
+                                  }
+                                }}
+                              />
+                              {formErrors.closeUpLook && (
+                                <p className="text-sm text-destructive">{formErrors.closeUpLook}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Optional 1 Image */}
+                        <div className="space-y-2">
+                          <Label className="font-large font-bold">Optional 1 Image</Label>
+                          <div className="rounded-lg p-4">
+                            <div className="space-y-2">
+                              <Input
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.gif,.webp"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file && file.size <= 10 * 1024 * 1024) {
+                                    setProductForm({ ...productForm, optional1: file }); // Store as File
+                                    const newErrors = { ...formErrors };
+                                    delete newErrors.optional1;
+                                    setFormErrors(newErrors);
+                                  }
+                                }}
+                              />
+
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Optional 2 Image */}
+                        <div className="space-y-2">
+                          <Label className="font-large font-bold">Optional 2 Image</Label>
+                          <div className="rounded-lg p-4">
+                            <div className="space-y-2">
+                              <Input
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.gif,.webp"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file && file.size <= 10 * 1024 * 1024) {
+                                    setProductForm({ ...productForm, optional2: file }); // Store as File
+                                    const newErrors = { ...formErrors };
+                                    delete newErrors.optional2;
+                                    setFormErrors(newErrors);
+                                  }
+                                }}
+                              />
+
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
+
                     <div className="space-y-2">
-                      <Label>Product Video (Max 20MB)</Label>
+                      <Label className="font-large font-bold">Product Video (Max 20MB)</Label>
                       <Input
                         type="file"
                         accept="video/*"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            if (!handleFileValidation(file, 20)) {
+                            const maxSizeInMB = 20;
+                            const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+                            if (file.size > maxSizeInBytes) {
                               alert("Video size should be less than 20MB");
                               return;
                             }
-                            setProductForm({ ...productForm, video: file });
+
+                            setProductForm({ ...productForm, productVideo: file });
                           }
                         }}
                       />
+                      {productForm.productVideo && (
+                        <div className="mt-2 text-sm text-muted">
+                          Selected Video: {productForm.productVideo.name} (
+                          {(productForm.productVideo.size / (1024 * 1024)).toFixed(2)} MB)
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Accessories Image</Label>
-                      <div className="border rounded-lg p-4">
-                        {productForm.accessories[0]?.preview ? (
-                          <div className="space-y-2">
-                            <img 
-                              src={productForm.accessories[0].preview} 
-                              alt="Accessory"
-                              className="w-full h-32 object-cover rounded-md"
-                            />
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="w-full"
-                              onClick={() => setProductForm({ ...productForm, accessories: [] })}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        ) : (
-                          <div>
-                            <Input
-                              type="file"
-                              accept=".jpg,.jpeg,.png,.gif,.webp"
-                              className="hidden"
-                              id="accessory-upload"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  if (!handleFileValidation(file, 10)) {
-                                    alert("Accessory image size should be less than 10MB");
-                                    return;
-                                  }
-                                  const newAccessory = {
-                                    type: "accessory",
-                                    file: file,
-                                    preview: URL.createObjectURL(file)
-                                  };
-                                  setProductForm({
-                                    ...productForm,
-                                    accessories: [newAccessory]
-                                  });
-                                }
-                              }}
-                            />
-                            <Label htmlFor="accessory-upload">
-                              <Button variant="outline" type="button" className="w-full">
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Accessory Image
-                              </Button>
-                            </Label>
-                          </div>
-                        )}
+                      <Label className="font-large font-bold">Accessories Image</Label>
+                      <div className="rounded-lg p-4">
+                        <div className="space-y-2">
+                          <Input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.gif,.webp"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file && file.size <= 10 * 1024 * 1024) {
+                                setProductForm({ ...productForm, accessoriesImage: file }); // ✅ Store as File
+                                const newErrors = { ...formErrors };
+                                delete newErrors.accessoriesImage;
+                                setFormErrors(newErrors);
+                              }
+                            }}
+                          />
+                          {formErrors.accessoriesImage && (
+                            <p className="text-sm text-destructive">{formErrors.accessoriesImage}</p>
+                          )}
+                        </div>
                       </div>
                     </div>
+
                     <div className="space-y-2">
-                      <Label>Proof of Purchase</Label>
+                      <Label className="font-large font-bold">Proof of Purchase *</Label>
                       <Input
                         type="file"
                         accept=".jpg,.jpeg,.png,.gif,.webp"
                         onChange={(e) => {
-                          const file = e.target.files?.[0]
+                          const file = e.target.files?.[0];
                           if (file && file.size <= 10 * 1024 * 1024) {
-                            setProductForm({ ...productForm, proofOfPurchase: file })
+                            setProductForm({ ...productForm, proofOfPurchase: file }); // ✅ Store as File
+                            const newErrors = { ...formErrors };
+                            delete newErrors.proofOfPurchase;
+                            setFormErrors(newErrors);
                           }
                         }}
                       />
+                      {formErrors.proofOfPurchase && (
+                        <p className="text-sm text-destructive">{formErrors.proofOfPurchase}</p>
+                      )}
                     </div>
+
                     <div className="space-y-2">
-                      <Label>Listing Type</Label>
+                      <Label className="font-large font-bold">Listing Type *</Label>
                       <div className="flex gap-4">
                         <label className="flex items-center space-x-2">
                           <input
@@ -667,8 +1036,12 @@ export default function ProfilePage() {
                                 ? [...productForm.listingType, 'rent']
                                 : productForm.listingType.filter(t => t !== 'rent')
                               setProductForm({ ...productForm, listingType: newTypes })
+                              const newErrors = { ...formErrors };
+                              delete newErrors.listingType;
+                              setFormErrors(newErrors);
                             }}
                           />
+
                           <span>Rent</span>
                         </label>
                         <label className="flex items-center space-x-2">
@@ -684,99 +1057,210 @@ export default function ProfilePage() {
                           />
                           <span>Sell</span>
                         </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="font-medium">Address Details</h3>
-                      <div className="space-y-2">
-                        <Label htmlFor="landmark">Landmark/Address</Label>
-                        <Input
-                          id="landmark"
-                          value={productForm.address?.landmark}
-                          onChange={(e) => setProductForm({
-                            ...productForm,
-                            address: { ...productForm.address, landmark: e.target.value }
-                          })}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="addressLine1">Address Line 1*</Label>
-                        <Input
-                          id="addressLine1"
-                          value={productForm.address?.addressLine1}
-                          onChange={(e) => setProductForm({
-                            ...productForm,
-                            address: { ...productForm.address, addressLine1: e.target.value }
-                          })}
-                        />
-                        {formErrors["address.addressLine1"] && (
-                          <p className="text-sm text-destructive">{formErrors["address.addressLine1"]}</p>
+                        {formErrors.listingType && (
+                          <p className="text-sm text-destructive">{formErrors.listingType}</p>
                         )}
                       </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="addressLine2">Address Line 2</Label>
-                        <Input
-                          id="addressLine2"
-                          value={productForm.address?.addressLine2}
-                          onChange={(e) => setProductForm({
-                            ...productForm,
-                            address: { ...productForm.address, addressLine2: e.target.value }
-                          })}
-                        />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h2 className="font-large font-bold">Address Details</h2>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowNewAddressForm(true)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add New Address
+                        </Button>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="pincode">Pincode*</Label>
-                          <Input
-                            id="pincode"
-                            value={productForm.address?.pincode}
-                            onChange={(e) => {
-                              const pincode = e.target.value;
+                      {!showNewAddressForm && savedAddresses?.length > 0 && (
+                        <div className="space-y-4">
+                          <Label>Select From Saved Address</Label>
+                          <RadioGroup
+                            value={selectedAddressId || ''}
+                            onValueChange={(value) => {
+                              setSelectedAddressId(value);
                               setProductForm({
                                 ...productForm,
-                                address: { ...productForm.address, pincode }
+                                address: value // Store only the address ID
                               });
-                              handlePincodeChange(pincode);
                             }}
-                          />
-                          {formErrors["address.pincode"] && (
-                            <p className="text-sm text-destructive">{formErrors["address.pincode"]}</p>
-                          )}
+                          >
+                            {savedAddresses?.map((address) => (
+                              <div key={address.id}
+                                className="flex items-start space-x-3 border-2 border-primary p-6 rounded-lg 
+                                hover:border-primary hover:shadow-lg transition-all duration-300 
+                                hover:scale-[1.02] cursor-pointer bg-white
+                                shadow-sm hover:bg-primary/5"
+                              >
+                                <RadioGroupItem value={address.id} id={`address-${address.id}`} className="mt-1" />
+                                <div className="flex-1">
+                                  <Label htmlFor={`address-${address.id}`} className="grid gap-2">
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-medium text-base">{address.address}</span>
+                                      <Badge variant="outline" className="animate-in fade-in duration-500">{address.pincode}</Badge>
+                                    </div>
+                                    <span className="text-muted-foreground">{address.addressLine1}</span>
+                                    {address.addressLine2 && <span className="text-muted-foreground">{address.addressLine2}</span>}
+                                    <span className="text-muted-foreground">{`${address.city}, ${address.state}`}</span>
+                                  </Label>
+                                </div>
+                              </div>
+                            ))}
+                          </RadioGroup>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="city">City</Label>
-                          <Input
-                            id="city"
-                            value={productForm.address?.city}
-                            disabled
-                          />
-                        </div>
-                      </div>
+                      )}
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="state">State</Label>
-                          <Input
-                            id="state"
-                            value={productForm.address?.state}
-                            disabled
-                          />
+                      {showNewAddressForm && (
+                        <div className="space-y-4 border p-5">
+                          <div className="flex justify-between items-center">
+                            <h4 className="font-large font-bold">New Address</h4>
+                            <Button
+                              type="button"
+                              onClick={() => setShowNewAddressForm(false)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+
+                          {/* Existing address form fields */}
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="address">Landmark/Address *</Label>
+                              <Input
+                                id="address"
+                                value={newAddressForm.address}
+                                onChange={(e) => setNewAddressForm({
+                                  ...newAddressForm,
+                                  address: e.target.value
+                                })}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="addressLine1">Address Line 1*</Label>
+                              <Input
+                                id="addressLine1"
+                                value={newAddressForm.addressLine1}
+                                onChange={(e) => setNewAddressForm({
+                                  ...newAddressForm,
+                                  addressLine1: e.target.value
+                                })}
+
+                              />
+                              {formErrors["address.addressLine1"] && (
+                                <p className="text-sm text-destructive">{formErrors["address.addressLine1"]}</p>
+                              )}
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="addressLine2">Address Line 2</Label>
+                              <Input
+                                id="addressLine2"
+                                value={newAddressForm.addressLine2}
+                                onChange={(e) => setNewAddressForm({
+                                  ...newAddressForm,
+                                  addressLine2: e.target.value
+                                })}
+
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="pincode">Pincode*</Label>
+                                <Input
+                                  id="pincode"
+                                  value={newAddressForm.pincode}
+                                  onChange={(e) => {
+                                    setNewAddressForm({
+                                      ...newAddressForm,
+                                      pincode: e.target.value
+                                    });
+                                    handlePincodeChange(e.target.value)
+                                  }}
+
+                                />
+                                {formErrors["address.pincode"] && (
+                                  <p className="text-sm text-destructive">{formErrors["address.pincode"]}</p>
+                                )}
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="city">City</Label>
+                                <Input
+                                  id="city"
+                                  value={newAddressForm.city}
+
+                                  disabled
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="state">State</Label>
+                                <Input
+                                  id="state"
+                                  value={newAddressForm.state}
+                                  disabled
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="country">Country</Label>
+                                <Input
+                                  id="country"
+                                  value={newAddressForm.country}
+
+                                  disabled
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* ... rest of your existing address form fields ... */}
+
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              // Validate required fields
+                              const errors: { [key: string]: string } = {};
+                              if (!newAddressForm.addressLine1) {
+                                errors["addressLine1"] = "Address Line 1 is required";
+                              }
+                              if (!newAddressForm.pincode) {
+                                errors["pincode"] = "Pincode is required";
+                              }
+
+                              // If there are validation errors, show them and return
+                              if (Object.keys(errors).length > 0) {
+                                setFormErrors({ ...formErrors, ...errors });
+                                return;
+                              }
+
+                              const newAddress: SavedAddress = {
+                                ...newAddressForm,
+                                // id: Date.now().toString(), // Add unique ID if not present
+                              };
+                              setSavedAddresses([...savedAddresses, newAddress]);
+                              setSelectedAddressId(newAddress.id);
+                              setProductForm({
+                                ...productForm,
+                                // address: newAddress.id
+                              });
+                              handleAddAddressApi(newAddress)
+
+                            }}
+                          >
+                            Save Address
+                          </Button>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="country">Country</Label>
-                          <Input
-                            id="country"
-                            value={productForm.address?.country}
-                            disabled
-                          />
-                        </div>
-                      </div>
+                      )}
+                      {formErrors.address && (
+                        <p className="text-sm text-destructive">{formErrors.address}</p>
+                      )}
                     </div>
-
                     <Button type="submit" className="w-full">
                       Create Listing
                     </Button>
@@ -786,51 +1270,23 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="personal" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Personal Information</CardTitle>
-                  <CardDescription>Update your personal details</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue="Priya" disabled={!isEditing} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue="Sharma" disabled={!isEditing} />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" defaultValue="priya.sharma@example.com" disabled={!isEditing} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" defaultValue="+91 9876543210" disabled={!isEditing} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dob">Date of Birth</Label>
-                    <Input id="dob" type="date" defaultValue="1990-05-15" disabled={!isEditing} />
-                  </div>
-
-                  {/* Bio section removed */}
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2">
-                  {isEditing && (
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>
-                      Cancel
-                    </Button>
-                  )}
-                  <Button onClick={() => (isEditing ? setIsEditing(false) : setIsEditing(true))}>
-                    {isEditing ? "Save Changes" : "Edit Profile"}
-                  </Button>
-                </CardFooter>
-              </Card>
+              <PersonalInfoForm
+                userData={{
+                  name: userData?.name,
+                  phone: userData?.phone,
+                  dob: userData?.dob
+                }}
+                onSubmit={async (data: any) => {
+                  try {
+                    handleProfileUpdate(data)
+                    // Add your API call here to update user data
+                    console.log('Updated user data:', data);
+                    // Update local state if needed
+                  } catch (error) {
+                    console.error('Error updating user data:', error);
+                  }
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="address" className="mt-6">
@@ -841,8 +1297,18 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="address1">Address Line 1</Label>
-                    <Input id="address1" defaultValue="123 Fashion Street" disabled={!isEditing} />
+                    <Label htmlFor="addressLine1">Address Line 1 *</Label>
+                    <Input
+                      id="addressLine1"
+                      value={newAddressForm.addressLine1}
+                      onChange={(e) => setNewAddressForm({
+                        ...newAddressForm,
+                        addressLine1: e.target.value
+                      })}
+                    />
+                    {newAddressForm.addressLine1 && (
+                      <p className="text-sm text-destructive">{newAddressForm.addressLine1}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -887,8 +1353,21 @@ export default function ProfilePage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="pincode">Pincode</Label>
-                      <Input id="pincode" defaultValue="400001" disabled={!isEditing} />
+                      <Label htmlFor="pincode">Pincode *</Label>
+                      <Input
+                        id="pincode"
+                        value={newAddressForm.pincode}
+                        onChange={(e) => {
+                          setNewAddressForm({
+                            ...newAddressForm,
+                            pincode: e.target.value
+                          });
+                          handlePincodeChange(e.target.value)
+                        }}
+                      />
+                      {formErrors.pincode && (
+                        <p className="text-sm text-destructive">{formErrors.pincode}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="country">Country</Label>
@@ -912,6 +1391,17 @@ export default function ProfilePage() {
           </Tabs>
         </div>
       </div>
+      <ProfilePictureDialog
+        isOpen={isImageDialogOpen}
+        onOpenChange={setIsImageDialogOpen}
+        previewImage={previewImage}
+        userImage={userImage}
+        onFileChange={handleFileChange}
+        removeProfilePicture={removeProfilePicture}
+        handleImageUpload={handleImageUpload}
+        fileInputRef={fileInputRef}
+        triggerFileInput={triggerFileInput}
+      />
     </div>
   )
 }
