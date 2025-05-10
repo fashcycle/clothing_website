@@ -10,7 +10,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "StyleSwap - Rent, Sell & Buy Clothes",
+  title: "Fashcycle - Rent, Sell & Buy Clothes",
   description:
     "Your one-stop platform for renting, selling, and buying quality clothing. Save money, reduce waste, and stay stylish.",
     generator: 'v0.dev'

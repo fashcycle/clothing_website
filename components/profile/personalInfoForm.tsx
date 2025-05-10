@@ -8,16 +8,20 @@ import * as yup from "yup";
 
 const validationSchema = yup.object().shape({
     name: yup.string()
-      .trim()
-      .required("Name is required")
-      .min(2, "Name must be at least 2 characters")
-      .matches(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces"),
-    phone: yup
-      .string()
-      .matches(/^[6-9]\d{9}$/, "Enter valid Indian mobile number")
-      .required("Phone number is required"),
-    dob: yup.string().required("Date of birth is required"),
-  });
+        .trim()
+        .required("Name is required")
+        .min(2, "Name must be at least 2 characters")
+        .matches(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces"),
+        phone: yup
+        .string()
+        .nullable()
+        .transform((value) => (value === "" ? null : value))
+        .test("phone", "Enter valid Indian mobile number", (value) => {
+            if (!value) return true;
+            return /^[6-9]\d{9}$/.test(value);
+        }),
+    dob: yup.string(),
+});
 
 interface PersonalInfoFormProps {
     userData: {

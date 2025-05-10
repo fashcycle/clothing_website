@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           <div className="col-span-2">
             <Link href="/" className="font-serif text-2xl font-medium">
-              StyleSwap
+            Fashcycle
             </Link>
             <p className="mt-2 text-primary-foreground/80">
               The world's largest fashion rental platform. Rent, lend, and buy designer fashion from people like you.
@@ -125,7 +125,7 @@ export default function Footer() {
         </div>
         <div className="border-t border-primary-foreground/10 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-primary-foreground/80">
-            © {new Date().getFullYear()} StyleSwap. All rights reserved.
+            © {new Date().getFullYear()} Fashcycle. All rights reserved.
           </p>
           <div className="flex items-center gap-4 mt-4 md:mt-0">
             <Link

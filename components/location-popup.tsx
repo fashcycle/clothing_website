@@ -151,7 +151,7 @@ export default function LocationPopup() {
           </svg>
           <div>
             <p className="text-lg font-medium">Know your location</p>
-            <p className="text-sm text-white/70 mt-1">StyleSwap wants to access your location</p>
+            <p className="text-sm text-white/70 mt-1">Fashcycle wants to access your location</p>
           </div>
         </div>
 
