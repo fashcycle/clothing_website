@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Search, ShoppingBag, User, Heart, Menu, Upload,Plus } from "lucide-react"
+import { Search, ShoppingBag, User, Heart, Menu, Upload, Plus } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,13 +31,28 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   // Using dummy auth state for demo
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-const { data: session, status } = useSession()
-const isLogin = status === "authenticated"
-console.log(isLogin,"ddffd")
+  const [isLogin, setIsLogin] = useState<any>("")
+
+  useEffect(() => {
+  
+      const userInfo: any = localStorage.getItem('user-info');
+      let parsedData = JSON.parse(userInfo)
+      setIsLogin(!!parsedData); 
+    
+  }, []);
+
   const toggleLogin = () => {
     // For demo purposes only - in production this would use signIn/signOut from next-auth
     setIsLoggedIn(!isLoggedIn)
   }
+  const[userImage,setUserImage]=useState<any>()
+  useEffect(()=>{
+    const userData:any = localStorage.getItem('user-info');
+    let parsedUserData:any = JSON.parse(userData);  
+    if(parsedUserData){
+      setUserImage(parsedUserData?.image)
+    }
+  },[])
 
   return (
     // <header className="w-full bg-primary text-primary-foreground">
@@ -61,24 +76,7 @@ console.log(isLogin,"ddffd")
                     {category.name}
                   </Link>
                 ))}
-                <div className="flex flex-col gap-2 mt-4">
-                  {isLogin ? (
-                    <Button variant="outline" className="w-full" onClick={toggleLogin}>
-                      Log Out
-                    </Button>
-                  ) : (
-                    <>
-                      <Link href="/login">
-                        <Button variant="outline" className="w-full">
-                          Log In
-                        </Button>
-                      </Link>
-                      <Link href="/signup">
-                        <Button className="w-full">Sign Up</Button>
-                      </Link>
-                    </>
-                  )}
-                </div>
+
               </nav>
             </SheetContent>
           </Sheet>
@@ -103,19 +101,19 @@ console.log(isLogin,"ddffd")
             <span className="sr-only">Search</span>
           </Button>
           <TooltipProvider delayDuration={0}>
-          <Tooltip>
-    <Link href="/profile">
-      <TooltipTrigger asChild>
-        <Button variant="contained" size="sm" className=" md:flex items-center gap-2 rounded-full border-4 ">
-          <Plus className="h-4 w-4" />
-          <span>SELL</span>
-        </Button>
-      </TooltipTrigger>
-    </Link>
-    <TooltipContent side="top">
-      <p>Add New Listing</p>
-    </TooltipContent>
-  </Tooltip>
+            <Tooltip>
+              <Link href="/profile">
+                <TooltipTrigger asChild>
+                  <Button variant="contained" size="sm" className=" md:flex items-center gap-2 rounded-full border-4 ">
+                    <Plus className="h-4 w-4" />
+                    <span>SELL</span>
+                  </Button>
+                </TooltipTrigger>
+              </Link>
+              <TooltipContent side="top">
+                <p>Add New Listing</p>
+              </TooltipContent>
+            </Tooltip>
             {/* Wishlist Button */}
             <Tooltip>
               <Link href="/wishlist">
@@ -152,13 +150,13 @@ console.log(isLogin,"ddffd")
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="ghost" size="icon" className="rounded-full text-primary-foreground">
-                        <Avatar className="h-8 w-8">
-                        <Link href="/dashboard">
-  <Avatar className="cursor-pointer">
-    <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000" alt="User Avatar" />
-    <AvatarFallback>U</AvatarFallback>
-  </Avatar>
-</Link>
+                        <Avatar className="h-10 w-10">
+                          <Link href="/dashboard">
+                            <Avatar className="cursor-pointer">
+                            <AvatarImage src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${userImage}` || "/placeholder.svg"} />
+                            <AvatarFallback>U</AvatarFallback>
+                            </Avatar>
+                          </Link>
                           <AvatarFallback>
                             <User className="h-4 w-4" />
                           </AvatarFallback>
