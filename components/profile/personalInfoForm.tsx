@@ -27,7 +27,7 @@ interface PersonalInfoFormProps {
     };
     onSubmit: (formData: any) => void;
 }
-
+console.log("dsadasfdf")
 export function PersonalInfoForm({ userData, onSubmit }: PersonalInfoFormProps) {
 
     const {
@@ -47,8 +47,7 @@ export function PersonalInfoForm({ userData, onSubmit }: PersonalInfoFormProps) 
     const onSubmitForm = async (data: any) => {
         onSubmit(data);
     };
-
-
+    
     return (
         <Card>
             <CardHeader>
