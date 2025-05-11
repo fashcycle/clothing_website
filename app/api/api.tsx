@@ -48,11 +48,12 @@ export const getUserAddresses = async () => {
 export const updateAddress = async (addressId: string, addressData: any) => {
   try {
     const response = await axios.put(
-      `${process.env.NEXT_PUBLIC_API_URL}/users/address/${addressId}`,
+      `${process.env.NEXT_PUBLIC_UPDATE_ADDRESS}/${addressId}`,
       addressData,
       {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, 
         },
       }
     );
@@ -69,10 +70,11 @@ export const updateAddress = async (addressId: string, addressData: any) => {
 export const deleteAddress = async (addressId: string) => {
   try {
     const response = await axios.delete(
-      `${process.env.NEXT_PUBLIC_API_URL}/users/address/${addressId}`,
+      `${process.env.NEXT_PUBLIC_DELETE_ADDRESS}/${addressId}`,
       {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, 
         },
       }
     );
@@ -160,4 +162,61 @@ export const registerUser = async (userData: any) => {
       throw error;
     }
   };
-  
+  export const createProduct = async (productData: any) => {
+    try {
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_CREATE_PRODUCT as string,
+        productData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data.message || 'Failed to create product');
+      }
+      throw error;
+    }
+  };
+  export const getUserProducts = async () => {
+    try {
+      const response = await axios.get(
+        process.env.NEXT_PUBLIC_USER_PRODUCT_LIST as string,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data.message || 'Failed to fetch user products');
+      }
+      throw error;
+    }
+  };
+  export const getSingleProduct = async (productId: string) => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_USER_SINGLE_PRODUCT}/${productId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data.message || 'Failed to fetch product details');
+      }
+      throw error;
+    }
+  };

@@ -53,7 +53,7 @@ export default function Navbar() {
       setUserImage(parsedUserData?.image)
     }
   },[])
-
+  
   return (
     // <header className="w-full bg-primary text-primary-foreground">
     <header className="w-full bg-primary text-primary-foreground fixed top-0 z-50 left-0 right-0">      {/* Top bar with search and logo */}
@@ -149,17 +149,22 @@ export default function Navbar() {
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-full text-primary-foreground">
+                      <Button variant="outline"size="icon" className="rounded-full">
                         <Avatar className="h-10 w-10">
-                          <Link href="/dashboard">
+                        <Link href="/profile">
                             <Avatar className="cursor-pointer">
-                            <AvatarImage src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${userImage}` || "/placeholder.svg"} />
-                            <AvatarFallback>U</AvatarFallback>
+                              {userImage?.includes('/images/') ? (
+                                <AvatarImage src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${userImage}`} />
+                              ) : (
+                                <div className="bg-gray-100 rounded-full flex items-center justify-center w-10 h-10 border border-gray-200">
+                                <User className="h-5 w-5 text-gray-600" />
+                              </div>
+                              )}
                             </Avatar>
                           </Link>
-                          <AvatarFallback>
-                            <User className="h-4 w-4" />
-                          </AvatarFallback>
+                          <div className="bg-gray-100 rounded-full flex items-center justify-center w-10 h-10 border border-gray-200">
+                                  <User className="h-5 w-5 text-gray-600" />
+                                </div>
                         </Avatar>
                         <span className="sr-only">Profile</span>
                       </Button>
@@ -193,7 +198,9 @@ export default function Navbar() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-primary-foreground">
-                      <User className="h-5 w-5" />
+                    <div className="bg-gray-100 rounded-full flex items-center justify-center w-10 h-10 border border-gray-200">
+                                  <User className="h-5 w-5 text-gray-600" />
+                                </div>
                       <span className="sr-only">Login</span>
                     </Button>
                   </TooltipTrigger>
