@@ -19,16 +19,22 @@ import ShararaSizeChart from "@/components/clothCategory-sizecharts/sharara-size
 import AnarkaliSizeChart from "@/components/clothCategory-sizecharts/anarkali-sizechart"
 import SareeSizeChart from "@/components/clothCategory-sizecharts/saree-sizechart"
 import SuitSizeChart from "@/components/clothCategory-sizecharts/suit-sizechart"
-import { addNewAddress, getUserDetails, updateUserProfile } from '@/app/api/api';
+import { addNewAddress, getUserDetails, updateUserProfile, createProduct,updateAddress, deleteAddress } from '@/app/api/api';
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge"
 import GownSizeChart from "@/components/clothCategory-sizecharts/gown-sizechart"
 import { ProfilePictureDialog } from "@/components/profile/profile-picture-dialog"
 import { formatDate } from "../utils/dateUtils"
 import { PersonalInfoForm } from "@/components/profile/personalInfoForm"
+import { AddressFormDialog } from "@/components/profile/address-form-dialog"
+import { Loader } from "@/components/ui/loader"
+import { AddressList } from "@/components/profile/address-list"
 interface UserAddress {
-  address1?: string;
-  address2?: string;
+  address: string;
+  landmark: string;
+  customAddressType: string;
+  addressLine1?: string;
+  addressLine2?: string;
   city?: string;
   state?: string;
   pincode?: string;
@@ -46,7 +52,7 @@ interface ProductForm {
   productName: string;
   category: string;
   mobileNumber: string;
-  address: string;
+  addressId: string;
   originalPurchasePrice: number;
   productSize: string;
   sizeFlexibility: string;
@@ -72,6 +78,7 @@ export default function ProfilePage() {
   const [isHoveringAvatar, setIsHoveringAvatar] = useState(false)
   const fileInputRef: any = useRef<HTMLInputElement>(null)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [userLocation, setUserLocation] = useState(() => {
     if (typeof window !== 'undefined') {
       const storedLocation = localStorage.getItem('userLocation')
@@ -94,12 +101,6 @@ export default function ProfilePage() {
     }
     return null
   })
-
-  // Function to update address and location
-  const updateAddress = (newAddress: UserAddress) => {
-    setUserAddress(newAddress)
-    localStorage.setItem('userAddress', JSON.stringify(newAddress))
-  }
 
   // Get location string
   const getLocationString = () => {
@@ -135,15 +136,75 @@ export default function ProfilePage() {
     proofOfPurchase: null,
     listingType: [],
     mobileNumber: "",
-    address: ""
+    addressId: ""
   })
   const handleProjectCreat = async () => {
-    console.log("productForm", productForm)
     try {
+      setIsSubmitting(true)
       await productSchema.validate(productForm, { abortEarly: false })
-      setFormErrors({});
-      // If validation passes, proceed with form submission
-      // Add your submission logic here
+
+      const formData = new FormData()
+      // Append all text fields
+      formData.append('productName', productForm.productName)
+      formData.append('category', productForm.category)
+      formData.append('mobileNumber', productForm.mobileNumber)
+      formData.append('addressId', productForm.addressId)
+      formData.append('originalPurchasePrice', productForm.originalPurchasePrice.toString())
+      formData.append('productSize', productForm.productSize)
+      formData.append('sizeFlexibility', productForm.sizeFlexibility)
+      formData.append('color', productForm.color)
+
+      // Append required images
+      if (productForm.frontLook) formData.append('frontLook', productForm.frontLook)
+      if (productForm.sideLook) formData.append('sideLook', productForm.sideLook)
+      if (productForm.backLook) formData.append('backLook', productForm.backLook)
+      if (productForm.closeUpLook) formData.append('closeUpLook', productForm.closeUpLook)
+
+      // Append optional images
+      if (productForm.optional1) formData.append('optional1', productForm.optional1)
+      if (productForm.optional2) formData.append('optional2', productForm.optional2)
+
+      // Append video if exists
+      if (productForm.productVideo) formData.append('productVideo', productForm.productVideo)
+
+      // Append accessories image if exists
+      if (productForm.accessoriesImage) formData.append('accessoriesImage', productForm.accessoriesImage)
+
+      // Append proof of purchase if exists
+      if (productForm.proofOfPurchase) formData.append('proofOfPurchase', productForm.proofOfPurchase)
+
+      // Append listing types as JSON string
+      const listingTypeValue = productForm.listingType.length === 2
+        ? "both"
+        : productForm.listingType[0];
+      formData.append('listingType', listingTypeValue);
+      // Make API call here with formData
+      const response = await createProduct(formData)
+      if (response.success == true) {
+        setProductForm({
+          productName: "",
+          category: "",
+          originalPurchasePrice: 5000,
+          productSize: "",
+          sizeFlexibility: "",
+          color: "",
+          frontLook: null,
+          sideLook: null,
+          backLook: null,
+          closeUpLook: null,
+          optional1: "",
+          optional2: "",
+          productVideo: null,
+          accessoriesImage: "",
+          proofOfPurchase: null,
+          listingType: [],
+          mobileNumber: "",
+          addressId: ""
+        })
+        setFormErrors({})
+        setSelectedAddressId("")
+        router.push('/dashboard')
+      }
     } catch (err) {
       if (err instanceof yup.ValidationError) {
         const errors: { [key: string]: string } = {}
@@ -154,6 +215,9 @@ export default function ProfilePage() {
         })
         setFormErrors(errors)
       }
+    }
+    finally {
+      setIsSubmitting(false)
     }
   }
   const productSchema = yup.object().shape({
@@ -180,13 +244,13 @@ export default function ProfilePage() {
       .string()
       .matches(/^[6-9]\d{9}$/, "Enter valid Indian mobile number")
       .required("Mobile number is required"),
-    address: yup.string().required("Please select or add an address"),
+    addressId: yup.string().required("Please select or add an address"),
   })
   interface SavedAddress {
     _id: string;
     address: string;
-    landmark:string;
-    customAddressType:string;
+    landmark: string;
+    customAddressType: string;
     addressLine1: string;
     addressLine2: string;
     pincode: string;
@@ -202,10 +266,10 @@ export default function ProfilePage() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [newAddressForm, setNewAddressForm] = useState<SavedAddress>({
-    _id:"",
+    _id: "",
     address: "",
-    customAddressType:"",
-    landmark:"",
+    customAddressType: "",
+    landmark: "",
     addressLine1: "",
     addressLine2: "",
     pincode: "",
@@ -275,25 +339,30 @@ export default function ProfilePage() {
     );
   };
   const handleAddAddressApi = async (newAddress: any) => {
+    setIsSubmitting(true)
+
     let data = {
       pincode: newAddress?.pincode,
       city: newAddress?.city,
       state: newAddress?.state,
-      customAddressType:newAddress?.customAddressType,
-      landmark:newAddress?.landmark,
+      customAddressType: newAddress?.customAddressType,
+      landmark: newAddress?.landmark,
       addressLine1: newAddress?.addressLine1,
       addressLine2: newAddress?.addressLine2,
       address: newAddress?.address
     }
     const response = await addNewAddress(data);
     if (response.success) {
+      setIsSubmitting(false)
+
+      setSavedAddresses([...savedAddresses, newAddress]);
       fetchUserDetails()
       setShowNewAddressForm(false);
       setNewAddressForm({
-       _id: "",
+        _id: "",
         address: "",
-        landmark:"",
-        customAddressType:"",
+        landmark: "",
+        customAddressType: "",
         addressLine1: "",
         addressLine2: "",
         pincode: "",
@@ -535,7 +604,7 @@ export default function ProfilePage() {
                   <Mail className="h-4 w-4 mr-3 text-primary" />
                   <span>{userData?.email}</span>
                 </motion.div>
-                {userData?.phone &&
+                {userData?.phone !== null &&
                   <motion.div
                     className="flex items-center"
                     whileHover={{ x: 5 }}
@@ -628,9 +697,9 @@ export default function ProfilePage() {
                   <CardTitle>Product Listings</CardTitle>
                   <CardDescription>List your product for rent or sale</CardDescription>
                 </CardHeader>
-                <form onSubmit={async (e) => {
-                  e.preventDefault()
-                  await handleProjectCreat()
+                <form onSubmit={(e: any) => {
+                  e.preventDefault();
+                  handleProjectCreat();
                 }}>
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
@@ -1084,7 +1153,6 @@ export default function ProfilePage() {
                           Add New Address
                         </Button>
                       </div>
-
                       {!showNewAddressForm && savedAddresses?.length > 0 && (
                         <div className="space-y-4">
                           <Label>Select From Saved Address</Label>
@@ -1094,7 +1162,7 @@ export default function ProfilePage() {
                               setSelectedAddressId(value);
                               setProductForm({
                                 ...productForm,
-                                address: value // Store only the address ID
+                                addressId: value // Store only the address ID
                               });
                             }}
                           >
@@ -1125,188 +1193,17 @@ export default function ProfilePage() {
                         </div>
                       )}
 
-                      {showNewAddressForm && (
-                        <div className="space-y-4 border p-5">
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-large font-bold">New Address</h4>
-                            <Button
-                              type="button"
-                              onClick={() => setShowNewAddressForm(false)}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-
-                          {/* Existing address form fields */}
-                          <div className="space-y-4">
-                          <div className="space-y-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="address">Address *</Label>
-                                <Select
-                                  value={newAddressForm.address || ''}
-                                  onValueChange={(value) => {
-                                    setNewAddressForm({
-                                      ...newAddressForm,
-                                      address: value,
-                                    });
-                                  }}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select address type" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Home">Home</SelectItem>
-                                    <SelectItem value="Work">Work</SelectItem>
-                                    <SelectItem value="Other">Other</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              {newAddressForm.address === 'Other' && (
-                                <div className="space-y-2">
-                                  <Label htmlFor="customAddressType">Custom Address Type *</Label>
-                                  <Input
-                                    id="customAddressType"
-                                    value={newAddressForm.customAddressType || ''}
-                                    placeholder="Enter custom address type"
-                                    onChange={(e) => setNewAddressForm({
-                                      ...newAddressForm,
-                                      customAddressType: e.target.value
-                                    })}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="landmark">Landmark *</Label>
-                              <Input
-                                id="landmark"
-                                value={newAddressForm.landmark}
-                                onChange={(e) => setNewAddressForm({
-                                  ...newAddressForm,
-                                  landmark: e.target.value
-                                })}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="addressLine1">Address Line 1*</Label>
-                              <Input
-                                id="addressLine1"
-                                value={newAddressForm.addressLine1}
-                                onChange={(e) => setNewAddressForm({
-                                  ...newAddressForm,
-                                  addressLine1: e.target.value
-                                })}
-
-                              />
-                              {formErrors["addressLine1"] && (
-                                <p className="text-sm text-destructive">{formErrors["address.addressLine1"]}</p>
-                              )}
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="addressLine2">Address Line 2</Label>
-                              <Input
-                                id="addressLine2"
-                                value={newAddressForm.addressLine2}
-                                onChange={(e) => setNewAddressForm({
-                                  ...newAddressForm,
-                                  addressLine2: e.target.value
-                                })}
-
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="pincode">Pincode*</Label>
-                                <Input
-                                  id="pincode"
-                                  value={newAddressForm.pincode}
-                                  onChange={(e) => {
-                                    setNewAddressForm({
-                                      ...newAddressForm,
-                                      pincode: e.target.value
-                                    });
-                                    handlePincodeChange(e.target.value)
-                                  }}
-
-                                />
-                                {formErrors["address.pincode"] && (
-                                  <p className="text-sm text-destructive">{formErrors["address.pincode"]}</p>
-                                )}
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="city">City</Label>
-                                <Input
-                                  id="city"
-                                  value={newAddressForm.city}
-
-                                  disabled
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="state">State</Label>
-                                <Input
-                                  id="state"
-                                  value={newAddressForm.state}
-                                  disabled
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="country">Country</Label>
-                                <Input
-                                  id="country"
-                                  value={newAddressForm.country}
-
-                                  disabled
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              const errors: { [key: string]: string } = {};
-                              if (!newAddressForm.addressLine1) {
-                                errors["addressLine1"] = "Address Line 1 is required";
-                              }
-                              if (!newAddressForm.pincode) {
-                                errors["pincode"] = "Pincode is required";
-                              }
-                              if (Object.keys(errors).length > 0) {
-                                console.log("newAddress")
-
-                                setFormErrors({ ...formErrors, ...errors });
-                                return;
-                              }
-else{
-                              const newAddress: SavedAddress = {
-                                ...newAddressForm,
-                              };
-                              setSavedAddresses([...savedAddresses, newAddress]);
-                              setSelectedAddressId(newAddress?._id);
-                              setProductForm({
-                                ...productForm,
-                              });
-                              // handleAddAddressApi(newAddress)
-                          
-                            }}
-                          }
-                          >
-                            Save Address
-                          </Button>
-                        </div>
+                      {formErrors.addressId && (
+                        <p className="text-sm text-destructive">{formErrors.addressId}</p>
                       )}
-                      {formErrors.address && (
-                        <p className="text-sm text-destructive">{formErrors.address}</p>
-                      )}
+
                     </div>
-                    <Button type="submit" className="w-full">
-                      Create Listing
+                    <Button type="submit" disabled={isSubmitting} className="w-full">
+                      {isSubmitting ? (
+                        <Loader text="Creating..." />
+                      ) : (
+                        "Create Product"
+                      )}
                     </Button>
                   </CardContent>
                 </form>
@@ -1323,9 +1220,6 @@ else{
                 onSubmit={async (data: any) => {
                   try {
                     handleProfileUpdate(data)
-                    // Add your API call here to update user data
-                    console.log('Updated user data:', data);
-                    // Update local state if needed
                   } catch (error) {
                     console.error('Error updating user data:', error);
                   }
@@ -1334,102 +1228,40 @@ else{
             </TabsContent>
 
             <TabsContent value="address" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Address Information</CardTitle>
-                  <CardDescription>Manage your shipping and billing addresses</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="addressLine1">Address Line 1 *</Label>
-                    <Input
-                      id="addressLine1"
-                      value={newAddressForm.addressLine1}
-                      onChange={(e) => setNewAddressForm({
-                        ...newAddressForm,
-                        addressLine1: e.target.value
-                      })}
-                    />
-                    {newAddressForm.addressLine1 && (
-                      <p className="text-sm text-destructive">{newAddressForm.addressLine1}</p>
-                    )}
-                  </div>
+              <AddressList
+                addresses={savedAddresses}
+                onAddressUpdate={async (addressId:any, updatedAddressData:any) => {
+                  try {
+                    const response = await updateAddress(addressId,updatedAddressData)
+                    setSavedAddresses(savedAddresses.map(addr =>
+                      addr._id === addressId ? { ...addr, ...updatedAddressData } : addr
+                    ))
 
-                  <div className="space-y-2">
-                    <Label htmlFor="address2">Address Line 2</Label>
-                    <Input id="address2" defaultValue="Apartment 4B" disabled={!isEditing} />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        defaultValue={userAddress?.city || userLocation?.city || ""}
-                        disabled={!isEditing}
-                        onChange={(e) => {
-                          if (isEditing) {
-                            updateAddress({
-                              ...userAddress,
-                              city: e.target.value
-                            })
-                          }
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State</Label>
-                      <Input
-                        id="state"
-                        defaultValue={userAddress?.state || userLocation?.state || ""}
-                        disabled={!isEditing}
-                        onChange={(e) => {
-                          if (isEditing) {
-                            updateAddress({
-                              ...userAddress,
-                              state: e.target.value
-                            })
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="pincode">Pincode *</Label>
-                      <Input
-                        id="pincode"
-                        value={newAddressForm.pincode}
-                        onChange={(e) => {
-                          setNewAddressForm({
-                            ...newAddressForm,
-                            pincode: e.target.value
-                          });
-                          handlePincodeChange(e.target.value)
-                        }}
-                      />
-                      {formErrors.pincode && (
-                        <p className="text-sm text-destructive">{formErrors.pincode}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="country">Country</Label>
-                      <Input id="country" defaultValue="India" disabled={!isEditing} />
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2">
-                  {isEditing && (
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>
-                      Cancel
-                    </Button>
-                  )}
-                  <Button onClick={() => (isEditing ? setIsEditing(false) : setIsEditing(true))}>
-                    {isEditing ? "Save Changes" : "Edit Address"}
-                  </Button>
-                </CardFooter>
-              </Card>
+                  } catch (error) {
+                    console.error('Error updating address:', error)
+                  }
+                }}
+                onAddressDelete={async (addressId:any) => {
+                  try {
+                    // Call your delete API here
+                    await deleteAddress(addressId)
+                    // Update the local state
+                    setSavedAddresses(savedAddresses.filter(addr => addr._id !== addressId))
+                  } catch (error) {
+                    console.error('Error deleting address:', error)
+                  }
+                }}
+                onAddNewAddress={async (newAddress) => {
+                  try {
+                    const response:any = await handleAddAddressApi(newAddress)
+                    if (response?.success) {
+                      setSavedAddresses([...savedAddresses, response.data])
+                    }
+                  } catch (error) {
+                    console.error('Error adding address:', error)
+                  }
+                }}
+              />
             </TabsContent>
 
           </Tabs>
@@ -1445,6 +1277,16 @@ else{
         handleImageUpload={handleImageUpload}
         fileInputRef={fileInputRef}
         triggerFileInput={triggerFileInput}
+      />
+      <AddressFormDialog
+        openFor={"add"}
+        open={showNewAddressForm}
+        setIsSubmitting={setIsSubmitting}
+        isSubmitting={isSubmitting}
+        onOpenChange={setShowNewAddressForm}
+        onSave={(newAddress) => {
+          handleAddAddressApi(newAddress)
+        }}
       />
     </div>
   )

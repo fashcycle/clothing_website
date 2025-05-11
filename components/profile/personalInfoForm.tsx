@@ -31,7 +31,6 @@ interface PersonalInfoFormProps {
     };
     onSubmit: (formData: any) => void;
 }
-console.log("dsadasfdf")
 export function PersonalInfoForm({ userData, onSubmit }: PersonalInfoFormProps) {
 
     const {
@@ -47,7 +46,6 @@ export function PersonalInfoForm({ userData, onSubmit }: PersonalInfoFormProps) 
             dob: userData?.dob || '',
         }
     });
-
     const onSubmitForm = async (data: any) => {
         onSubmit(data);
     };
