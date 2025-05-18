@@ -68,29 +68,29 @@ export default function Testimonials() {
     : testimonials.slice(0, 3)
 
   return (
-    <section className="container px-4 md:px-6 py-12 md:py-20">
+    <section className="container px-4 md:px-6 py-12 md:py-20 bg-primary text-primary-foreground">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10">
         <div>
           <h2 className="text-2xl md:text-3xl font-serif font-medium">What Our Community Says</h2>
-          <p className="mt-4 text-muted-foreground md:text-lg max-w-2xl">
+          <p className="mt-4  md:text-lg max-w-2xl">
             Hear from our community of lenders and renters about their experiences
           </p>
         </div>
         <div className="flex items-center gap-2 mt-4 md:mt-0">
           <Button
-            variant="outline"
+            variant="default"
             size="icon"
             onClick={prevTestimonial}
-            className="rounded-full"
+            className="rounded-full border border-white"
             aria-label="Previous testimonial"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
-            variant="outline"
+            variant="default"
             size="icon"
             onClick={nextTestimonial}
-            className="rounded-full"
+            className="rounded-full border border-white"
             aria-label="Next testimonial"
           >
             <ChevronRight className="h-4 w-4" />

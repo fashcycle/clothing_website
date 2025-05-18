@@ -23,12 +23,14 @@ import { addNewAddress, getUserDetails, updateUserProfile, createProduct,updateA
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge"
 import GownSizeChart from "@/components/clothCategory-sizecharts/gown-sizechart"
+import RajasthaniPoshakSizeChart from "@/components/clothCategory-sizecharts/rajesthaniposhak-sizechart"
 import { ProfilePictureDialog } from "@/components/profile/profile-picture-dialog"
 import { formatDate } from "../utils/dateUtils"
 import { PersonalInfoForm } from "@/components/profile/personalInfoForm"
 import { AddressFormDialog } from "@/components/profile/address-form-dialog"
 import { Loader } from "@/components/ui/loader"
 import { AddressList } from "@/components/profile/address-list"
+import OtherSizeChart from "@/components/clothCategory-sizecharts/other-sizechart"
 interface UserAddress {
   address: string;
   landmark: string;
@@ -139,6 +141,8 @@ export default function ProfilePage() {
     addressId: ""
   })
   const handleProjectCreat = async () => {
+    const errors: any = {};
+
     try {
       setIsSubmitting(true)
       await productSchema.validate(productForm, { abortEarly: false })
@@ -150,7 +154,7 @@ export default function ProfilePage() {
       formData.append('mobileNumber', productForm.mobileNumber)
       formData.append('addressId', productForm.addressId)
       formData.append('originalPurchasePrice', productForm.originalPurchasePrice.toString())
-      formData.append('productSize', productForm.productSize)
+      formData.append('size', productForm.productSize)
       formData.append('sizeFlexibility', productForm.sizeFlexibility)
       formData.append('color', productForm.color)
 
@@ -178,6 +182,7 @@ export default function ProfilePage() {
         ? "both"
         : productForm.listingType[0];
       formData.append('listingType', listingTypeValue);
+      delete errors.productVideo;
       // Make API call here with formData
       const response = await createProduct(formData)
       if (response.success == true) {
@@ -236,7 +241,7 @@ export default function ProfilePage() {
     closeUpLook: yup.mixed().required("Close up look image is required"),
     optional1: yup.mixed(),
     optional2: yup.mixed(),
-    productVideo: yup.mixed(),
+    productVideo: yup.mixed().nullable(),
     accessoriesImage: yup.mixed(),
     proofOfPurchase: yup.mixed().required("Proof of purchase is required"),
     listingType: yup.array().min(1, "Select at least one listing type"),
@@ -750,7 +755,9 @@ export default function ProfilePage() {
                           <SelectItem value="sharara-set">Sharara Set</SelectItem>
                           <SelectItem value="anarkali">Anarkali</SelectItem>
                           <SelectItem value="saree">Saree</SelectItem>
+                          <SelectItem value="rajasthani-poshak">Rajasthani Poshak</SelectItem>
                           <SelectItem value="suit">Suit</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                       {formErrors.category && (
@@ -760,7 +767,7 @@ export default function ProfilePage() {
                     {productForm.category === "lehenga" && (
                       <LehengaSizeChart
                         onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setProductForm({ ...productForm, productSize: size});
                           const newErrors = { ...formErrors };
                           delete newErrors.productSize;
                           setFormErrors(newErrors);
@@ -771,7 +778,7 @@ export default function ProfilePage() {
                     {productForm.category === "gown" && (
                       <GownSizeChart
                         onSizeSelect={(size: any) => {
-                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setProductForm({ ...productForm, productSize: size });
                           setFormErrors({ ...formErrors, productSize: "" });
                         }}
                       />
@@ -779,7 +786,7 @@ export default function ProfilePage() {
                     {productForm.category === "sharara-set" && (
                       <ShararaSizeChart
                         onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setProductForm({ ...productForm, productSize: size });
                           setFormErrors({ ...formErrors, productSize: "" });
                         }}
                       />
@@ -787,7 +794,7 @@ export default function ProfilePage() {
                     {productForm.category === "anarkali" && (
                       <AnarkaliSizeChart
                         onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setProductForm({ ...productForm, productSize: size });
                           setFormErrors({ ...formErrors, productSize: "" });
                         }}
                       />
@@ -795,7 +802,7 @@ export default function ProfilePage() {
                     {productForm.category === "saree" && (
                       <SareeSizeChart
                         onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setProductForm({ ...productForm, productSize: size });
                           setFormErrors({ ...formErrors, productSize: "" });
                         }}
                       />
@@ -803,38 +810,57 @@ export default function ProfilePage() {
                     {productForm.category === "suit" && (
                       <SuitSizeChart
                         onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size.toLowerCase() });
+                          setProductForm({ ...productForm, productSize: size });
                           setFormErrors({ ...formErrors, productSize: "" });
                         }}
                       />
                     )}
-
-                    <div className="space-y-2">
-                      <Label htmlFor="originalPurchasePrice" className="font-large font-bold">Original Purchase Price (₹) *</Label>
-                      <Input
-                        id="originalPurchasePrice"
-                        type="number"
-                        min={5000}
-                        value={productForm.originalPurchasePrice}
-                        onChange={(e) => {
-                          const value = Number(e.target.value);
-                          setProductForm({ ...productForm, originalPurchasePrice: value });
-                          if (value < 5000) {
-                            setFormErrors({ ...formErrors, originalPurchasePrice: "Minimum price should be ₹5,000" });
-                          } else {
-                            setFormErrors({ ...formErrors, originalPurchasePrice: "" });
-                          }
-                        }} className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        onKeyDown={(e) => {
-                          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                            e.preventDefault();
-                          }
-                        }} />
-
-                      {formErrors.originalPurchasePrice && (
-                        <p className="text-sm text-destructive">{formErrors.originalPurchasePrice}</p>
-                      )}
-                    </div>
+                      {productForm.category === "rajasthani-poshak" && (
+                      <RajasthaniPoshakSizeChart
+                        onSizeSelect={(size: any) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {productForm.category === "other" && (
+  <OtherSizeChart
+    onSizeSelect={(size:any) => {
+      setProductForm({ ...productForm, productSize: size });
+      const newErrors = { ...formErrors };
+      delete newErrors.productSize;
+      setFormErrors(newErrors);
+    }}
+  />
+)}
+<div className="space-y-2">
+  <Label htmlFor="originalPurchasePrice" className="font-large font-bold">Original Purchase Price (₹) *</Label>
+  <Input
+    id="originalPurchasePrice"
+    type="number"
+    value={productForm.originalPurchasePrice || ''}
+    onChange={(e) => {
+      const value = e.target.value === '' ? 0 : Number(e.target.value);
+      setProductForm({ ...productForm, originalPurchasePrice: value });
+      if (value < 5000) {
+        setFormErrors({ ...formErrors, originalPurchasePrice: "Minimum price should be ₹5,000" });
+      } else {
+        const newErrors = { ...formErrors };
+        delete newErrors.originalPurchasePrice;
+        setFormErrors(newErrors);
+      }
+    }}
+    className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+    onKeyDown={(e) => {
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+      }
+    }}
+  />
+  {formErrors.originalPurchasePrice && (
+    <p className="text-sm text-destructive">{formErrors.originalPurchasePrice}</p>
+  )}
+</div>
 
                     <div className="grid grid-cols-2 gap-4">
 
@@ -863,21 +889,54 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="color" className="font-large font-bold">Color *</Label>
-                      <Input
-                        id="color"
-                        value={productForm.color}
-                        onChange={(e) => {
-                          setProductForm({ ...productForm, color: e.target.value });
-                          const newErrors = { ...formErrors };
-                          delete newErrors.color;
-                          setFormErrors(newErrors)
-                        }}
-                      />
-                      {formErrors.color && (
-                        <p className="text-sm text-destructive">{formErrors.color}</p>
-                      )}
-                    </div>
+  <Label htmlFor="color" className="font-large font-bold">Color *</Label>
+  <Select onValueChange={(value) => {
+    setProductForm({ ...productForm, color: value });
+    const newErrors = { ...formErrors };
+    delete newErrors.color;
+    setFormErrors(newErrors);
+  }}>
+    <SelectTrigger>
+      <SelectValue placeholder="Select color">
+        {productForm.color && (
+          <div className="flex items-center gap-2">
+            <div className={`w-3 h-3 rounded-full bg-${productForm.color.toLowerCase()}-500`} />
+            {productForm.color}
+          </div>
+        )}
+      </SelectValue>
+    </SelectTrigger>
+    <SelectContent>
+      {[
+        { name: "Red", color: "bg-red-500" },
+        { name: "Pink", color: "bg-pink-500" },
+        { name: "Maroon", color: "bg-red-900" },
+        { name: "Orange", color: "bg-orange-500" },
+        { name: "Yellow", color: "bg-yellow-500" },
+        { name: "Green", color: "bg-green-500" },
+        { name: "Blue", color: "bg-blue-500" },
+        { name: "Navy", color: "bg-blue-900" },
+        { name: "Purple", color: "bg-purple-500" },
+        { name: "Black", color: "bg-black" },
+        { name: "White", color: "bg-white border border-gray-200" },
+        { name: "Grey", color: "bg-gray-500" },
+        { name: "Brown", color: "bg-amber-800" },
+        { name: "Gold", color: "bg-yellow-600" },
+        { name: "Silver", color: "bg-gray-300" }
+      ].map((item) => (
+        <SelectItem key={item.name.toLowerCase()} value={item.name.toLowerCase()}>
+          <div className="flex items-center gap-2">
+            <div className={`w-3 h-3 rounded-full ${item.color}`} />
+            {item.name}
+          </div>
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+  {formErrors.color && (
+    <p className="text-sm text-destructive">{formErrors.color}</p>
+  )}
+</div>
 
                     <div className="space-y-2">
                       <Label className="font-large font-bold">Product Images (Min 4 required) *</Label>
@@ -1048,15 +1107,15 @@ export default function ProfilePage() {
                             }
 
                             setProductForm({ ...productForm, productVideo: file });
+                            const newErrors = { ...formErrors };
+                            delete newErrors.productVideo;
+                            setFormErrors(newErrors);
                           }
                         }}
                       />
-                      {productForm.productVideo && (
-                        <div className="mt-2 text-sm text-muted">
-                          Selected Video: {productForm.productVideo.name} (
-                          {(productForm.productVideo.size / (1024 * 1024)).toFixed(2)} MB)
-                        </div>
-                      )}
+                      {formErrors.productVideo && (
+                                <p className="text-sm text-destructive">{formErrors.productVideo}</p>
+                              )}
                     </div>
 
                     <div className="space-y-2">

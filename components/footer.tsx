@@ -31,20 +31,13 @@ export default function Footer() {
           <div>
             <h3 className="font-medium mb-3 uppercase text-sm tracking-wider">Quick Links</h3>
             <ul className="space-y-2">
+             
               <li>
                 <Link
-                  href="/browse"
+                  href="/about-us"
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
-                  Browse
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/designers"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  Designers
+                  About Us
                 </Link>
               </li>
               <li>
@@ -68,14 +61,14 @@ export default function Footer() {
           <div>
             <h3 className="font-medium mb-3 uppercase text-sm tracking-wider">Support</h3>
             <ul className="space-y-2">
-              <li>
+              {/* <li>
                 <Link
                   href="/help"
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   Help Center
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link
                   href="/contact"
@@ -84,14 +77,7 @@ export default function Footer() {
                   Contact Us
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/faq"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  FAQs
-                </Link>
-              </li>
+              
               <li>
                 <Link
                   href="/terms"
@@ -99,6 +85,13 @@ export default function Footer() {
                 >
                   Terms of Service
                 </Link>
+              </li>
+              <li>
+              <Link
+              href="/privacy"
+              className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"            >
+              Privacy Policy
+            </Link>
               </li>
             </ul>
           </div>
@@ -127,26 +120,7 @@ export default function Footer() {
           <p className="text-sm text-primary-foreground/80">
             © {new Date().getFullYear()} Fashcycle. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <Link
-              href="/privacy"
-              className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              href="/terms"
-              className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-            >
-              Terms of Service
-            </Link>
-            <Link
-              href="/cookies"
-              className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-            >
-              Cookie Policy
-            </Link>
-          </div>
+       
         </div>
       </div>
     </footer>

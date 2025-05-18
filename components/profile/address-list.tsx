@@ -29,11 +29,9 @@ export function AddressList({ addresses, onAddressUpdate, onAddressDelete, onAdd
   const [editingAddress, setEditingAddress] = useState<any>(null)
 
   const handleEditAddress = (address: any) => {
-    console.log(address,"erwefghwewdscassdx")
     setEditingAddress(address)
     setShowAddressForm(true)
   }
-  console.log(editingAddress,"erwefghwewdscassdx")
 
   const handleSaveAddress = async (addressData: any) => {
     try {

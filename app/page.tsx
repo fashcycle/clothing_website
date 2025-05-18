@@ -1,5 +1,8 @@
+'use client';
+
 import Link from "next/link"
 import Image from "next/image"
+import { useEffect } from 'react';
 import { ArrowRight, TrendingUp, Truck, Users, CheckCircle, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,8 +14,18 @@ import LocationPopup from "@/components/location-popup"
 import LocationHandler from "@/components/location-handler"
 
 export default function Home() {
+  useEffect(() => {
+    // Force a check for location permission on home page mount
+    const locationPermission = localStorage.getItem("locationPermission");
+    const userLocation = localStorage.getItem("userLocation");
+    // Clear location popup flag to ensure it shows if needed
+    if (!userLocation || locationPermission === "never") {
+      localStorage.removeItem("hasSeenLocationPopup");
+    }
+  }, []);
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col">
       {/* Location Popup - Only shown on home page */}
       <LocationPopup />
 
@@ -30,7 +43,7 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-primary/70"></div>
 
-        <div className="container relative z-10 px-4 md:px-6 flex flex-col md:flex-row items-center">
+        <div className="container relative z-10 px-4 md:px-6 flex flex-col md:flex-row items-center h-[80vh]">
           <div className="md:w-1/2 text-white space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-tight animate-fade-in">
               Fashion Simplified
@@ -46,11 +59,11 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <Link href="/upload">
+              {/* <Link href="/upload">
                 <Button size="lg" variant="outline" className="border-white text-primary bg-white/10">
                   Upload Your Clothes
                 </Button>
-              </Link>
+              </Link> */}
             </div>
             {/* Happy user count and images , commented for now */}
             {/* <div className="flex items-center gap-4 mt-6 animate-fade-in-delay-2">
@@ -75,7 +88,6 @@ export default function Home() {
           </div>
 
           <div className="hidden md:block md:w-1/2 relative">
-            <div className="absolute -z-10 w-[300px] h-[300px] bg-white/20 rounded-full blur-3xl animate-pulse-slow"></div>
             <div className="relative w-full h-[450px] overflow-hidden rounded-xl animate-float">
               <Image
                 src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000"
@@ -84,12 +96,12 @@ export default function Home() {
                 className="object-cover hover-scale"
               />
             </div>
-            <div className="absolute -bottom-6 -left-6 bg-white rounded-lg shadow-lg p-4 animate-slide-up-delay-2 glass-effect">
+            {/* <div className="absolute -bottom-6 -left-6 bg-white rounded-lg shadow-lg p-4 animate-slide-up-delay-2 glass-effect">
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
                 <span className="font-medium">4.9/5 from 2000+ reviews</span>
               </div>
-            </div>
+            </div> */}
             <div className="absolute top-4 -right-6 bg-white rounded-lg shadow-lg p-4 animate-slide-in-right glass-effect">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-primary" />
@@ -99,35 +111,13 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
-          <Link href="https://apps.apple.com" target="_blank" rel="noopener noreferrer">
-            <Image
-              src="/placeholder.svg?height=40&width=120&text=App+Store"
-              alt="Download on App Store"
-              width={120}
-              height={40}
-              className="h-10"
-            />
-          </Link>
-          <Link href="https://play.google.com" target="_blank" rel="noopener noreferrer">
-            <Image
-              src="/placeholder.svg?height=40&width=120&text=Google+Play"
-              alt="Get it on Google Play"
-              width={120}
-              height={40}
-              className="h-10"
-            />
-          </Link>
-        </div>
+      
       </section>
 
       {/* Category Navigation */}
       <CategorySlider />
 
-      {/* How It Works Section */}
-      <HowItWorks />
-
-      {/* Trending Listings */}
+  {/* Trending Listings */}
       <section className="container px-4 md:px-6 py-12 md:py-16">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div>
@@ -143,9 +133,14 @@ export default function Home() {
         </div>
         <FeaturedProducts />
       </section>
+      
+      {/* How It Works Section */}
+      <HowItWorks />
 
-      {/* Stats Section */}
-      <section className="bg-primary text-primary-foreground py-12 md:py-20">
+    
+
+      {/* Stats Section  comment for now*/}
+      {/* <section className="bg-primary text-primary-foreground py-12 md:py-20">
         <div className="container px-4 md:px-6">
           <div className="grid gap-8 md:grid-cols-3">
             <Card className="bg-primary-foreground/5 backdrop-blur-sm border-none animate-fade-in">
@@ -171,63 +166,69 @@ export default function Home() {
             </Card>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Testimonials */}
       <Testimonials />
 
       {/* Sustainability Section */}
       <section className="container px-4 md:px-6 py-12 md:py-20">
-        <div className="grid md:grid-cols-2 gap-10 items-center">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-serif font-medium mb-4">Fashion That Doesn't Cost the Earth</h2>
-            <p className="text-muted-foreground mb-6">
-              By renting instead of buying, you're helping to reduce fashion waste and extend the lifecycle of quality
-              garments.
-            </p>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <h3 className="font-medium">Reduce Fashion Waste</h3>
-                  <p className="text-sm text-muted-foreground">85% of textiles end up in landfills each year</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <h3 className="font-medium">Save Money</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Wear designer clothes for a fraction of the retail price
-                  </p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <h3 className="font-medium">Support Circular Economy</h3>
-                  <p className="text-sm text-muted-foreground">Give pre-loved fashion a second life</p>
-                </div>
-              </li>
-            </ul>
-            <Button className="mt-6">Learn More About Sustainability</Button>
-          </div>
-          <div className="relative">
-            <Image
-              src="https://images.unsplash.com/photo-1523381294911-8d3cead13475?q=80&w=2070"
-              alt="Sustainable Fashion"
-              width={600}
-              height={700}
-              className="rounded-lg object-cover w-full h-[500px]"
-            />
-            <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-lg shadow-lg max-w-xs">
-              <p className="text-lg font-medium mb-2">Our Impact</p>
-              <p className="text-sm text-muted-foreground">
-                Together, our community has saved over 1 million kg of CO₂ emissions by choosing to rent instead of buy.
-              </p>
-            </div>
-          </div>
+       <div className="grid md:grid-cols-2 gap-10 items-center">
+  <div>
+    <h2 className="text-2xl md:text-3xl font-serif font-medium mb-4">Fashion That Doesn't Cost the Earth</h2>
+    <p className="text-muted-foreground mb-6">
+      By renting instead of buying, you're helping to reduce fashion waste and extend the lifecycle of quality
+      garments.
+    </p>
+    <ul className="space-y-4">
+      <li className="flex items-start gap-3">
+        <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+        <div>
+          <h3 className="font-medium">Reduce Fashion Waste</h3>
+          <p className="text-sm text-muted-foreground">
+            Over 92 million tonnes of clothing end up in landfills globally every year
+          </p>
         </div>
+      </li>
+      <li className="flex items-start gap-3">
+        <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+        <div>
+          <h3 className="font-medium">Save Money</h3>
+          <p className="text-sm text-muted-foreground">
+            Renting saves up to 24% of water and 6% of energy compared to buying new clothes
+          </p>
+        </div>
+      </li>
+      <li className="flex items-start gap-3">
+        <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+        <div>
+          <h3 className="font-medium">Support Circular Economy</h3>
+          <p className="text-sm text-muted-foreground">
+            Each rented item results in 3% fewer carbon emissions—giving fashion a longer, greener life
+          </p>
+        </div>
+      </li>
+    </ul>
+    <Link href="/sustainability">
+      <Button className="mt-6">Learn More About Sustainability</Button>
+    </Link>  </div>
+  <div className="relative">
+    <Image
+      src="https://images.unsplash.com/photo-1523381294911-8d3cead13475?q=80&w=2070"
+      alt="Sustainable Fashion"
+      width={600}
+      height={700}
+      className="rounded-lg object-cover w-full h-[500px]"
+    />
+    {/* <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-lg shadow-lg max-w-xs">
+      <p className="text-lg font-medium mb-2">Our Impact</p>
+      <p className="text-sm text-muted-foreground">
+        Together, our community has saved over 1 million kg of CO₂ emissions by choosing to rent instead of buy.
+      </p>
+    </div> */}
+  </div>
+</div>
+
       </section>
 
       {/* CTA Section */}
@@ -249,7 +250,7 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <Link href="/browse">
+              {/* <Link href="/browse">
                 <Button
                   size="lg"
                   variant="outline"
@@ -257,7 +258,7 @@ export default function Home() {
                 >
                   Browse Collection
                 </Button>
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>

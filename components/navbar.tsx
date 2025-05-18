@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from 'next/image';
 import { Search, ShoppingBag, User, Heart, Menu, Upload, Plus } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
@@ -34,26 +35,26 @@ export default function Navbar() {
   const [isLogin, setIsLogin] = useState<any>("")
 
   useEffect(() => {
-  
-      const userInfo: any = localStorage.getItem('user-info');
-      let parsedData = JSON.parse(userInfo)
-      setIsLogin(!!parsedData); 
-    
+
+    const userInfo: any = localStorage.getItem('user-info');
+    let parsedData = JSON.parse(userInfo)
+    setIsLogin(!!parsedData);
+
   }, []);
 
   const toggleLogin = () => {
     // For demo purposes only - in production this would use signIn/signOut from next-auth
     setIsLoggedIn(!isLoggedIn)
   }
-  const[userImage,setUserImage]=useState<any>()
-  useEffect(()=>{
-    const userData:any = localStorage.getItem('user-info');
-    let parsedUserData:any = JSON.parse(userData);  
-    if(parsedUserData){
+  const [userImage, setUserImage] = useState<any>()
+  useEffect(() => {
+    const userData: any = localStorage.getItem('user-info');
+    let parsedUserData: any = JSON.parse(userData);
+    if (parsedUserData) {
       setUserImage(parsedUserData?.image)
     }
-  },[])
-  
+  }, [])
+
   return (
     // <header className="w-full bg-primary text-primary-foreground">
     <header className="w-full bg-primary text-primary-foreground fixed top-0 z-50 left-0 right-0">      {/* Top bar with search and logo */}
@@ -69,7 +70,7 @@ export default function Navbar() {
             <SheetContent side="left" className="w-[300px] sm:w-[400px]">
               <nav className="flex flex-col gap-4">
                 <Link href="/" className="flex items-center gap-2 font-serif text-xl">
-                Fashcycle
+                  Fashcycle
                 </Link>
                 {categories.map((category) => (
                   <Link key={category.name} href={category.href} className="text-lg font-medium">
@@ -82,17 +83,17 @@ export default function Navbar() {
           </Sheet>
 
           <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute mr-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/70" />
             <Input
               type="search"
               placeholder="Search for brand, product type, colour..."
-              className="search-input pl-10"
+              className="search-input pl-9 bg-black/10 border-black/20 text-black placeholder:text-black/70 focus:border-black/20 focus:ring-0"
             />
           </div>
         </div>
 
         <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-serif text-xl font-medium">
-        Fashcycle
+          Fashcycle
         </Link>
 
         <div className="flex items-center gap-2">
@@ -102,9 +103,9 @@ export default function Navbar() {
           </Button>
           <TooltipProvider delayDuration={0}>
             <Tooltip>
-              <Link href="/profile">
+              <Link href={isLogin ? "/profile" : "/login"}>
                 <TooltipTrigger asChild>
-                  <Button variant="contained" size="sm" className=" md:flex items-center gap-2 rounded-full border-4 ">
+                  <Button variant="default" size="sm" className="md:flex items-center gap-2 rounded-full border-4">
                     <Plus className="h-4 w-4" />
                     <span>SELL</span>
                   </Button>
@@ -149,25 +150,28 @@ export default function Navbar() {
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline"size="icon" className="rounded-full">
-                        <Avatar className="h-10 w-10">
-                        <Link href="/profile">
-                            <Avatar className="cursor-pointer">
-                              {userImage?.includes('/images/') ? (
-                                <AvatarImage src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${userImage}`} />
-                              ) : (
-                                <div className="bg-gray-100 rounded-full flex items-center justify-center w-10 h-10 border border-gray-200">
-                                <User className="h-5 w-5 text-gray-600" />
-                              </div>
-                              )}
-                            </Avatar>
-                          </Link>
-                          <div className="bg-gray-100 rounded-full flex items-center justify-center w-10 h-10 border border-gray-200">
-                                  <User className="h-5 w-5 text-gray-600" />
-                                </div>
-                        </Avatar>
-                        <span className="sr-only">Profile</span>
-                      </Button>
+                      <Link href="/profile">
+                        <Button variant="default" size="icon" className="rounded-full p-0 border">
+                          <Avatar className="h-10 w-10">
+                            {userImage?.includes('/images/') ? (
+
+                              <Image
+                                src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${userImage}`}
+                                alt="User Profile"
+                                width={40}
+                                height={40}
+                                className="rounded-full object-cover"
+                              />
+                            ) : (
+
+                              <AvatarFallback className="">
+                                <User className="h-5 w-5" />
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <span className="sr-only">Profile</span>
+                        </Button>
+                      </Link>
                     </TooltipTrigger>
                     <TooltipContent side="top">
                       <p>Profile</p>
@@ -175,6 +179,7 @@ export default function Navbar() {
                   </Tooltip>
                 </TooltipProvider>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard">My Profile</Link>
@@ -192,15 +197,16 @@ export default function Navbar() {
                 <DropdownMenuItem onClick={toggleLogin}>Log Out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
           ) : (
             <Link href="/login">
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-primary-foreground">
-                    <div className="bg-gray-100 rounded-full flex items-center justify-center w-10 h-10 border border-gray-200">
-                                  <User className="h-5 w-5 text-gray-600" />
-                                </div>
+                      <div className="bg-gray-100 rounded-full flex items-center justify-center w-10 h-10 border border-gray-200">
+                        <User className="h-5 w-5 text-gray-600" />
+                      </div>
                       <span className="sr-only">Login</span>
                     </Button>
                   </TooltipTrigger>
