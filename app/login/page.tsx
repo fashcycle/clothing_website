@@ -35,18 +35,7 @@ export default function LoginPage() {
     resolver: yupResolver(loginSchema)
   });
 
-  const handleSuccess = async (credentialResponse: any) => {
-    const id_token = credentialResponse.credential; // This is the id_token
-
-    // Now send the id_token to the backend
-    try {
-      const res = await axios.post("/users/login", {
-        id_token,
-      });
-    } catch (error: any) {
-      console.error("Login error:", error.response?.data || error.message);
-    }
-  };
+ 
   const responseGoogle = async (authResult: any) => {
 
     try {
