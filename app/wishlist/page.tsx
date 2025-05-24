@@ -132,19 +132,37 @@ export default function WishlistPage() {
   return (
     <>
       <div className="container py-8 text-center">
-    <h1 className="text-2xl md:text-3xl font-semibold mb-2">
+   
+      {wishlistedItems?.length > 0 &&
+      <> 
+      <h1 className="text-2xl md:text-3xl font-semibold mb-2">
       Your Wishlist ❤️
     </h1>
     <p className="text-muted-foreground text-sm md:text-base">
-      {wishlistedItems?.length > 0
-        ? `You have ${wishlistedItems?.length} item${wishlistedItems?.length > 1 ? 's' : ''} saved for later.`
-        : 'Looks like your wishlist is empty. Start exploring and add your favorites!'}
+         `You have ${wishlistedItems?.length} item${wishlistedItems?.length > 1 ? 's' : ''} saved for later.`
     </p>
+    </>
+}
   </div>
     {isLoading ? (
       <div className="flex justify-center align-center py-8">
         <Loader text="Loading products..." />
       </div>) :
+       wishlistedItems?.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16">
+          <Heart className="w-16 h-16 text-gray-300 mb-4 fill-pink-600 text-red-500" />
+          <h3 className="text-xl font-semibold mb-2">Your Wishlist is Empty</h3>
+          <p className="text-muted-foreground text-center mb-6">
+            Discover and save items you love for later
+          </p>
+          <Button 
+            onClick={() => router.push('/')}
+            className="bg-pink-600 hover:bg-pink-700"
+          >
+            Start Shopping
+          </Button>
+        </div>
+      ) : (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6  py-10 container">
         {wishlistedItems?.map((product: any, index: any) => (
           <Card
@@ -234,6 +252,7 @@ export default function WishlistPage() {
 
         ))}
       </div>
+      )
     }
   </>
   )
