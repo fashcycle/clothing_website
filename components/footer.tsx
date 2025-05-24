@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           <div className="col-span-2">
             <Link href="/" className="font-serif text-2xl font-medium">
-              StyleSwap
+            Fashcycle
             </Link>
             <p className="mt-2 text-primary-foreground/80">
               The world's largest fashion rental platform. Rent, lend, and buy designer fashion from people like you.
@@ -31,29 +31,34 @@ export default function Footer() {
           <div>
             <h3 className="font-medium mb-3 uppercase text-sm tracking-wider">Quick Links</h3>
             <ul className="space-y-2">
+             
               <li>
                 <Link
-                  href="/browse"
+                  href="/about-us"
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
-                  Browse
+                  About Us
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/designers"
+            
+                <button
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  onClick={() => {
+                    const element = document.getElementById('how-it-works');
+                    const headerOffset = 200; // Adjust this value based on your header height
+                    const elementPosition = element?.getBoundingClientRect().top ?? 0;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                    window.scrollTo({
+                      top: offsetPosition,
+                      behavior: 'smooth'
+                    });
+                  }}
+                
                 >
-                  Designers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/how-it-works"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  How It Works
-                </Link>
+                   How It Works
+                </button>
               </li>
               <li>
                 <Link
@@ -68,7 +73,7 @@ export default function Footer() {
           <div>
             <h3 className="font-medium mb-3 uppercase text-sm tracking-wider">Support</h3>
             <ul className="space-y-2">
-              <li>
+            <li>
                 <Link
                   href="/help"
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
@@ -84,15 +89,8 @@ export default function Footer() {
                   Contact Us
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/faq"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                >
-                  FAQs
-                </Link>
-              </li>
-              <li>
+              
+              {/* <li>
                 <Link
                   href="/terms"
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
@@ -100,6 +98,13 @@ export default function Footer() {
                   Terms of Service
                 </Link>
               </li>
+              <li>
+              <Link
+              href="/privacy"
+              className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"            >
+              Privacy Policy
+            </Link>
+              </li> */}
             </ul>
           </div>
           <div className="hidden lg:block">
@@ -125,9 +130,9 @@ export default function Footer() {
         </div>
         <div className="border-t border-primary-foreground/10 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-primary-foreground/80">
-            © {new Date().getFullYear()} StyleSwap. All rights reserved.
+            © {new Date().getFullYear()} Fashcycle. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 mt-4 md:mt-0">
+          <div className="flex gap-4 mt-4 md:mt-0">
             <Link
               href="/privacy"
               className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
@@ -144,7 +149,7 @@ export default function Footer() {
               href="/cookies"
               className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
             >
-              Cookie Policy
+              Cookies Policy
             </Link>
           </div>
         </div>

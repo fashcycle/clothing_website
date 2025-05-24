@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -20,6 +20,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { ProductList } from "@/components/dashboard/product-list"
+import { getUserProducts } from "../api/api"
+import { Loader } from "@/components/ui/loader"
 
 // Mock data
 const recentOrders = [
@@ -51,26 +54,6 @@ const recentOrders = [
     image: "https://images.unsplash.com/photo-1610189020382-668a5fc65ebf?q=80&w=1000",
   },
 ]
-
-const myListings = [
-  {
-    id: "LST-001",
-    title: "Party Wear Suit",
-    status: "Active",
-    rentalCount: 5,
-    earnings: "₹4,250",
-    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000",
-  },
-  {
-    id: "LST-002",
-    title: "Casual Shirt",
-    status: "Active",
-    rentalCount: 3,
-    earnings: "₹1,800",
-    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=1000",
-  },
-]
-
 const savedItems = [
   {
     id: "SAV-001",
@@ -90,6 +73,40 @@ const savedItems = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview")
+  const [isLoading, setIsLoading] = useState(false);
+const[myListings,setMyListings]=useState<any>([])
+useEffect(() => {
+  if (activeTab === "listings" && myListings?.length==0) {
+    listProductApi();
+  }
+}, [activeTab]);
+const listProductApi = async () => {
+  setIsLoading(true);
+  try {
+    const response = await getUserProducts();
+    if (response.success === true) {
+      const formattedProducts = response.products.map((product: any) => ({
+        id: product.id,
+        productName: product.productName,
+        status: product.status || "Active",
+        frontLook: product.productImage.frontLook,
+        rentalCount: product.rentalCount || 0,
+        earnings: product.earnings || "₹0",
+        category: product.category,
+        originalPurchasePrice: product.originalPurchasePrice,
+        color: product.color,
+        size: product.size,
+        listingType: product.listingType,
+        createdAt: new Date(product.createdAt).toLocaleDateString('en-IN')
+      }));
+      setMyListings(formattedProducts);
+    }
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -307,41 +324,19 @@ Add New Listing              </Button>
                 <CardDescription>Manage your items listed for rent or sale</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {myListings.map((listing) => (
-                    <div key={listing.id} className="flex items-center justify-between border-b pb-4">
-                      <div className="flex items-center">
-                        <div className="relative h-16 w-16 rounded-md overflow-hidden mr-4">
-                          <Image
-                            src={listing.image || "/placeholder.svg"}
-                            alt={listing.title}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-medium">{listing.title}</h4>
-                          <Badge variant={listing.status === "Active" ? "default" : "outline"} className="mt-2">
-                            {listing.status}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="text-center px-4">
-                        <div className="text-sm text-muted-foreground">Rental Count</div>
-                        <div className="font-medium">{listing.rentalCount}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-muted-foreground">Earnings</div>
-                        <div className="font-medium">{listing.earnings}</div>
-                        <Button variant="ghost" size="sm" className="mt-2">
-                          Edit Listing
-                          <ChevronRight className="ml-1 h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
+  {isLoading ? (
+    <div className="flex justify-center py-8">
+      <Loader text="Loading products..." />
+    </div>
+  ) : (
+    <ProductList
+      products={myListings}
+      onEditClick={(product:any) => {
+        console.log('Edit product:', product)
+      }}
+    />
+  )}
+</CardContent>
              
             </Card>
           </TabsContent>
@@ -407,7 +402,7 @@ Add New Listing              </Button>
                   <div>
                     <h4 className="font-medium mb-2">Popular Items</h4>
                     <div className="space-y-4">
-                      {myListings.map((listing) => (
+                      {myListings?.map((listing:any) => (
                         <div key={listing.id} className="flex items-center">
                           <div className="relative h-12 w-12 rounded-md overflow-hidden mr-4">
                             <Image
