@@ -185,6 +185,16 @@ setUser(JSON.parse(userData))
         <div className="flex justify-center py-8">
           <Loader text="Loading products..." />
         </div>) :
+        products.length > 0 ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <ShoppingCart className="w-16 h-16 text-gray-300 mb-4 border-2 border-gray-300 rounded-full p-3" />
+            <h3 className="text-xl font-semibold mb-2">No Featured Products</h3>
+            <p className="text-muted-foreground text-center mb-6">
+              Check back soon for our latest featured items
+            </p>
+          
+          </div>
+        ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
 
           {products?.slice(0, 4).map((product: any, index: any) => (<Card
@@ -275,6 +285,7 @@ setUser(JSON.parse(userData))
           </Card>
           ))}
         </div>
+        )
       }
     </>
   )
