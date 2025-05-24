@@ -11,12 +11,12 @@ export default function SignupPage() {
         <div className="bg-background rounded-xl shadow-lg overflow-hidden">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/login" className="text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="h-5 w-5" />
                 <span className="sr-only">Back to home</span>
               </Link>
               <Link href="/" className="font-bold text-xl">
-                <span className="text-primary">Style</span>Swap
+                <span className="text-primary font-serif ">Fashcycle</span>
               </Link>
             </div>
 

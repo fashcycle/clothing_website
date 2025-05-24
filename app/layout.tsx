@@ -1,3 +1,5 @@
+'use client';
+
 import type React from "react"
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import type { Metadata } from "next"
@@ -9,12 +11,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata: Metadata = {
-  title: "Fashcycle - Rent, Sell & Buy Clothes",
-  description:
-    "Your one-stop platform for renting, selling, and buying quality clothing. Save money, reduce waste, and stay stylish.",
-    generator: 'v0.dev'
-}
+// Remove metadata export since it's not compatible with client components
+// export const metadata: Metadata = { ... }
 
 export default function RootLayout({
   children,

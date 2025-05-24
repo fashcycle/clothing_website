@@ -74,7 +74,7 @@ const savedItems = [
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview")
   const [isLoading, setIsLoading] = useState(false);
-const[myListings,setMyListings]=useState([])
+const[myListings,setMyListings]=useState<any>([])
 useEffect(() => {
   if (activeTab === "listings" && myListings?.length==0) {
     listProductApi();
@@ -86,10 +86,10 @@ const listProductApi = async () => {
     const response = await getUserProducts();
     if (response.success === true) {
       const formattedProducts = response.products.map((product: any) => ({
-        _id: product._id,
+        id: product.id,
         productName: product.productName,
         status: product.status || "Active",
-        frontLook: `${process.env.NEXT_PUBLIC_IMAGE_URL}/${product.productImage.frontLook}`,
+        frontLook: product.productImage.frontLook,
         rentalCount: product.rentalCount || 0,
         earnings: product.earnings || "₹0",
         category: product.category,
@@ -402,7 +402,7 @@ Add New Listing              </Button>
                   <div>
                     <h4 className="font-medium mb-2">Popular Items</h4>
                     <div className="space-y-4">
-                      {myListings.map((listing) => (
+                      {myListings?.map((listing:any) => (
                         <div key={listing.id} className="flex items-center">
                           <div className="relative h-12 w-12 rounded-md overflow-hidden mr-4">
                             <Image

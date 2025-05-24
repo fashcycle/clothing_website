@@ -30,20 +30,24 @@ interface AddressFormDialogProps {
     openFor:string
 }
 
+// Fix the schema definition
 const addressSchema = yup.object().shape({
   address: yup.string().required("Address type is required"),
   customAddressType: yup.string().when('address', {
-    is: 'Other',
+    is: 'OTHER', // Changed from 'Other' to match the SelectItem value
     then: (schema) => schema.required("Custom address type is required"),
-    otherwise: (schema) => schema.optional(),
+    otherwise: (schema) => schema.nullable().optional(),
   }),
   landmark: yup.string().required("Landmark is required"),
   addressLine1: yup.string().required("Address Line 1 is required"),
   pincode: yup.string().required("Pincode is required").length(6, "Pincode must be 6 digits"),
 })
 
+// Update the handleSubmit function
+
+
 export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmitting,initialData }: AddressFormDialogProps) {
-    const initialFormData = {
+    const initialFormData :any= {
         address: "",
         customAddressType: "",
         landmark: "",
@@ -52,7 +56,7 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
         pincode: "",
         city: "",
         state: "",
-        country: "India"
+        country: ""
       }
       const [formData, setFormData] = useState(initialData || initialFormData)
       useEffect(() => {
@@ -130,15 +134,15 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
                 <SelectValue placeholder="Select address type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Home">Home</SelectItem>
-                <SelectItem value="Work">Work</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="HOME">Home</SelectItem>
+                <SelectItem value="WORK">Work</SelectItem>
+                <SelectItem value="OTHER">Other</SelectItem>
               </SelectContent>
             </Select>
             {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
           </div>
 
-          {formData.address === "Other" && (
+          {formData.address === "OTHER" && (
             <div className="space-y-2">
               <Label>Custom Address Type *</Label>
               <Input

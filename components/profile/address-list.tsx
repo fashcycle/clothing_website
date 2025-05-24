@@ -7,7 +7,7 @@ import { Pencil, Plus, Trash } from "lucide-react"
 
 interface AddressListProps {
   addresses: Array<{
-    _id: string
+    id: string
     address: string
     landmark: string
     addressLine1: string
@@ -16,7 +16,7 @@ interface AddressListProps {
     city: string
     state: string
     country: string
-    customAddressType: string
+    customAddressType: string|null
   }>
   onAddressUpdate: (addressId: string, updatedAddress: any) => Promise<void>
   onAddressDelete?: (addressId: string) => Promise<void>
@@ -29,6 +29,7 @@ export function AddressList({ addresses, onAddressUpdate, onAddressDelete, onAdd
   const [editingAddress, setEditingAddress] = useState<any>(null)
 
   const handleEditAddress = (address: any) => {
+    console.log(address,"addressaddress")
     setEditingAddress(address)
     setShowAddressForm(true)
   }
@@ -36,7 +37,8 @@ export function AddressList({ addresses, onAddressUpdate, onAddressDelete, onAdd
   const handleSaveAddress = async (addressData: any) => {
     try {
       if (editingAddress) {
-        await onAddressUpdate(editingAddress._id, addressData)
+        console.log(addressData,"addressData",editingAddress.id)
+        await onAddressUpdate(editingAddress.id, addressData)
       } else {
         await onAddNewAddress(addressData)
       }
@@ -69,7 +71,7 @@ export function AddressList({ addresses, onAddressUpdate, onAddressDelete, onAdd
         <CardContent className="space-y-4">
           {addresses.map((address) => (
             <div
-              key={address._id}
+              key={address.id}
               className="border rounded-lg p-4 space-y-2 hover:border-primary transition-colors"
             >
               <div className="flex items-center justify-between">
@@ -89,7 +91,7 @@ export function AddressList({ addresses, onAddressUpdate, onAddressDelete, onAdd
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onAddressDelete(address._id)}
+                      onClick={() => onAddressDelete(address.id)}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>

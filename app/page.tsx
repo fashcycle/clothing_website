@@ -53,12 +53,24 @@ export default function Home() {
               stay stylish.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in-delay-2">
-              <Link href="/browse">
-                <Button size="lg" className="bg-white text-primary hover:bg-white/90">
-                  Browse Clothes
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
+            <Button 
+  size="lg" 
+  className="bg-white text-primary hover:bg-white/90"
+  onClick={() => {
+    const element = document.getElementById('new-arrivals');
+    const headerOffset = 100; // Adjust this value based on your header height
+    const elementPosition = element?.getBoundingClientRect().top ?? 0;
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    });
+  }}
+>
+  Browse Clothes
+  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+</Button>
               {/* <Link href="/upload">
                 <Button size="lg" variant="outline" className="border-white text-primary bg-white/10">
                   Upload Your Clothes
@@ -118,7 +130,7 @@ export default function Home() {
       <CategorySlider />
 
   {/* Trending Listings */}
-      <section className="container px-4 md:px-6 py-12 md:py-16">
+      <section  id="new-arrivals" className="container px-4 md:px-6 py-12 md:py-16">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl font-serif font-medium">New Arrivals</h2>
@@ -135,8 +147,9 @@ export default function Home() {
       </section>
       
       {/* How It Works Section */}
-      <HowItWorks />
-
+      <section id="how-it-works">
+        <HowItWorks />
+      </section>
     
 
       {/* Stats Section  comment for now*/}
