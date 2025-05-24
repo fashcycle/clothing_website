@@ -4,9 +4,14 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Heart, Star } from "lucide-react"
-
+import { getAllProducts, getCartItems, addToCart, removeFromWishlist, getWishlistedProducts, addToWishlist } from "@/app/api/api";
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Loader } from "@/components/ui/loader"
 
 // Mock data for featured products
 const mockProducts = [
@@ -61,80 +66,217 @@ const mockProducts = [
 ]
 
 export default function FeaturedProducts() {
+  const router = useRouter();
   const [favorites, setFavorites] = useState<number[]>([])
   const [isClient, setIsClient] = useState(false)
+  const [products, setProducts] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
+  const [cartItems, setCartItems] = useState<string[]>([]);
+  const [wishlistedItems, setWishlistedItems] = useState<string[]>([]);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
+  const[user,setUser]=useState<any>("")
+  const fetchWishlist = async () => {
+    try {
+      const response = await getWishlistedProducts();
+      if (response.success) {
+        const wishlistIds = response.products;
+        setWishlistedItems(wishlistIds);
+      }
+    } catch (error) {
+      console.error('Error fetching wishlist:', error);
+    }
+  };
+  const toggleFavorite = async (productId: string) => {
+    try {
+      setIsAddingToWishlist(productId);
+
+      if (wishlistedItems.some((item: any) => item.id === productId)) {
+        // Remove from wishlist
+        let obj:any={
+          "userId": user?.id,
+          "productId": productId
+        }
+        const response = await removeFromWishlist(obj);
+        if (response.success) {
+          await fetchWishlist();
+          toast.success("Removed from wishlist!");
+        }
+      } else {
+        // Add to wishlist
+        const response = await addToWishlist({ productId });
+        if (response.success) {
+          await fetchWishlist();
+          toast.success("Added to wishlist!");
+        }
+      }
+    } catch (error) {
+      toast.error("Failed to update wishlist");
+      console.error('Error updating wishlist:', error);
+    } finally {
+      setIsAddingToWishlist(null);
+    }
+  };
+  const handleAddToCart = async (productId: string) => {
+    try {
+      let obj: any = {
+        "productId": productId,
+        "quantity": 1
+      }
+      setIsAddingToCart(productId);
+      const response = await addToCart(obj);
+      if (response.success) {
+        fetchCartItems()
+        toast.success("Added to cart successfully!");
+      }
+    } catch (error) {
+      toast.error("Failed to add to cart");
+      console.error('Error adding to cart:', error);
+    } finally {
+      setIsAddingToCart(null);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await getAllProducts();
+      if (response.success) {
+
+        const sortedProducts = response.products.sort((a: any, b: any) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setProducts(sortedProducts);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const fetchCartItems = async () => {
+    try {
+      const response = await getCartItems();
+      if (response.success) {
+        const cartProductIds = response.cart.map((item: any) => item.productId);
+        setCartItems(cartProductIds);
+      }
+    } catch (error) {
+      console.error('Error fetching cart items:', error);
+    }
+  };
+
+  useEffect(() => {
+    let userData:any=localStorage.getItem("user-info")
+setUser(JSON.parse(userData))
+    setIsClient(true);
+    fetchProducts();
+    fetchCartItems();
+    fetchWishlist();
+  }, []);
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  const toggleFavorite = (id: number) => {
-    setFavorites((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]))
-  }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-      {mockProducts.map((product, index) => (
-        <Card
-          key={product.id}
-          className={cn(
-            "product-card border-0 rounded-none luxury-shadow",
-            isClient && `animate-fade-in-delay-${index}`,
-          )}
-        >
-          <div className="relative">
-            <Link href={`/product/${product.id}`}>
-              <div className="overflow-hidden">
-                <Image
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.title}
-                  width={300}
-                  height={400}
-                  className="w-full h-[350px] object-cover product-image"
+    <>
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <Loader text="Loading products..." />
+        </div>) :
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+
+          {products?.slice(0, 4).map((product: any, index: any) => (<Card
+            key={product.id}
+            className={cn(
+              "product-card border-0 rounded-none luxury-shadow",
+              isClient && `animate-fade-in-delay-${index}`,
+            )}
+          >
+            <div className="relative">
+              <Link href={`/products/${product.id}`}>
+                <div className="overflow-hidden">
+                  <Image
+                    src={product.productImage.frontLook || "/placeholder.svg"}
+                    alt={product.title}
+                    width={300}
+                    height={400}
+                    className="w-full h-[350px] object-cover product-image"
+                  />
+                </div>
+              </Link>
+              <button
+                onClick={() => toggleFavorite(product.id)}
+                disabled={isAddingToWishlist === product.id}
+                className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-transform duration-300 hover:scale-110 z-10"
+                aria-label={wishlistedItems.some((item: any) => item.id === product.id) ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                <Heart
+                  className={cn(
+                    "h-5 w-5 transition-colors",
+                    isAddingToWishlist === product.id && "animate-pulse",
+                    wishlistedItems.some((item: any) => item.id === product.id) ? "fill-red-500 text-red-500" : "text-muted-foreground"
+                  )}
+                />
+              </button>
+            </div>
+            <CardContent className="p-4">
+              <div className="space-y-2">
+                {/* <p className="product-designer">{product.designer}</p> */}
+                <h3 className="font-medium line-clamp-1 capitalize">{product.productName}</h3>
+                <div className="flex items-center gap-2">
+                <span className="text-sm  capitalize">{product.color}</span>
+                <div 
+                  className="w-4 h-4 rounded-full" 
+                  style={{ backgroundColor: product.color }}
                 />
               </div>
-            </Link>
-            <button
-              onClick={() => toggleFavorite(product.id)}
-              className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-transform duration-300 hover:scale-110 z-10"
-              aria-label={favorites.includes(product.id) ? "Remove from favorites" : "Add to favorites"}
-            >
-              <Heart
-                className={cn(
-                  "h-5 w-5 transition-colors",
-                  favorites.includes(product.id) ? "fill-primary text-primary" : "text-muted-foreground",
-                )}
-              />
-            </button>
-          </div>
-          <CardContent className="p-4">
-            <div className="space-y-2">
-              <p className="product-designer">{product.designer}</p>
-              <h3 className="font-medium line-clamp-1">{product.title}</h3>
+                {/* <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                  <span className="text-sm font-medium">{product.rating}</span>
+                  <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                </div> */}
 
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                <span className="text-sm font-medium">{product.rating}</span>
-                <span className="text-xs text-muted-foreground">({product.reviews})</span>
-              </div>
-
-              <div className="flex flex-col gap-1 pt-1">
-                {product.isRental && (
-                  <p className="product-price">
-                    <span>Rent for ₹{product.rentalPrice}/day</span>
+                <div className="flex flex-col gap-1 pt-1">
+                <p className="product-price">
+                    <span>Size: {product.size}</span>
                   </p>
-                )}
-                {product.isSale && (
-                  <p className="product-price">
-                    <span>Buy for ₹{product.price}</span>
-                  </p>
-                )}
+                  {product.listingType.includes('rent') && (
+                    <p className="product-price">
+                      <span>Rent for ₹{product.originalPurchasePrice}/day</span>
+                    </p>
+                  )}
+                  {product.listingType.includes('sell') && (
+                    <p className="product-price">
+                      <span>Buy for ₹{product.originalPurchasePrice}</span>
+                    </p>
+                  )}
+                  <Button
+                    onClick={() => cartItems.includes(product.id)
+                      ? router.push('/cart')
+                      : handleAddToCart(product.id)
+                    }
+                    disabled={isAddingToCart === product.id}
+                    className="mt-2 w-full"
+                    variant={cartItems.includes(product.id) ? "default" : "outline"}
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    {isAddingToCart === product.id
+                      ? 'Adding...'
+                      : cartItems.includes(product.id)
+                        ? 'Go to Cart'
+                        : 'Add to Cart'
+                    }
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+            </CardContent>
+          </Card>
+          ))}
+        </div>
+      }
+    </>
   )
 }
 

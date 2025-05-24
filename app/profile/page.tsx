@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { User, Mail, Phone, MapPin, Calendar, Shield, Edit, Camera, CheckCircle, Plus, LogOut, Upload, Trash } from "lucide-react"
+import { User, Info, Mail, Phone, MapPin, Calendar, Shield, Edit, Camera, CheckCircle, Plus, LogOut, Upload, Trash, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,7 +19,7 @@ import ShararaSizeChart from "@/components/clothCategory-sizecharts/sharara-size
 import AnarkaliSizeChart from "@/components/clothCategory-sizecharts/anarkali-sizechart"
 import SareeSizeChart from "@/components/clothCategory-sizecharts/saree-sizechart"
 import SuitSizeChart from "@/components/clothCategory-sizecharts/suit-sizechart"
-import { addNewAddress, getUserDetails, updateUserProfile, createProduct,updateAddress, deleteAddress } from '@/app/api/api';
+import { addNewAddress, getUserDetails, updateUserProfile, createProduct, updateAddress, deleteAddress } from '@/app/api/api';
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge"
 import GownSizeChart from "@/components/clothCategory-sizecharts/gown-sizechart"
@@ -31,6 +31,17 @@ import { AddressFormDialog } from "@/components/profile/address-form-dialog"
 import { Loader } from "@/components/ui/loader"
 import { AddressList } from "@/components/profile/address-list"
 import OtherSizeChart from "@/components/clothCategory-sizecharts/other-sizechart"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  TooltipContent, TooltipProvider, TooltipTrigger, Tooltip,
+} from "@radix-ui/react-tooltip"
 interface UserAddress {
   address: string;
   landmark: string;
@@ -67,7 +78,7 @@ interface ProductForm {
   optional2: File | string;
   productVideo: File | null;
   accessoriesImage: File | string;
-  proofOfPurchase: File | null;
+  proofOfPurchase: File | string;
   listingType: string[];
 
 }
@@ -81,6 +92,7 @@ export default function ProfilePage() {
   const fileInputRef: any = useRef<HTMLInputElement>(null)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [userLocation, setUserLocation] = useState(() => {
     if (typeof window !== 'undefined') {
       const storedLocation = localStorage.getItem('userLocation')
@@ -135,7 +147,7 @@ export default function ProfilePage() {
     optional2: "",
     productVideo: null,
     accessoriesImage: "",
-    proofOfPurchase: null,
+    proofOfPurchase: "",
     listingType: [],
     mobileNumber: "",
     addressId: ""
@@ -201,7 +213,7 @@ export default function ProfilePage() {
           optional2: "",
           productVideo: null,
           accessoriesImage: "",
-          proofOfPurchase: null,
+          proofOfPurchase: "",
           listingType: [],
           mobileNumber: "",
           addressId: ""
@@ -243,7 +255,7 @@ export default function ProfilePage() {
     optional2: yup.mixed(),
     productVideo: yup.mixed().nullable(),
     accessoriesImage: yup.mixed(),
-    proofOfPurchase: yup.mixed().required("Proof of purchase is required"),
+    proofOfPurchase: yup.mixed(),
     listingType: yup.array().min(1, "Select at least one listing type"),
     mobileNumber: yup
       .string()
@@ -252,7 +264,7 @@ export default function ProfilePage() {
     addressId: yup.string().required("Please select or add an address"),
   })
   interface SavedAddress {
-    _id: string;
+    id: string;
     address: string;
     landmark: string;
     customAddressType: string;
@@ -271,7 +283,7 @@ export default function ProfilePage() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [newAddressForm, setNewAddressForm] = useState<SavedAddress>({
-    _id: "",
+    id: "",
     address: "",
     customAddressType: "",
     landmark: "",
@@ -364,7 +376,7 @@ export default function ProfilePage() {
       fetchUserDetails()
       setShowNewAddressForm(false);
       setNewAddressForm({
-        _id: "",
+        id: "",
         address: "",
         landmark: "",
         customAddressType: "",
@@ -383,9 +395,13 @@ export default function ProfilePage() {
     }
   }
   const handleLogout = () => {
+    setShowLogoutDialog(true);
+  };
+  const confirmLogout = () => {
     localStorage.removeItem('user-info');
     localStorage.removeItem('token');
     router.push('/login');
+    setShowLogoutDialog(false);
   };
   const handleImageUpload = async () => {
     if (selectedImage) {
@@ -478,60 +494,92 @@ export default function ProfilePage() {
     <div className="container py-10">
       <div className="flex flex-col md:flex-row gap-6">
         <div className="md:w-1/3">
+
           <Card className="w-full max-w-md mx-auto overflow-hidden border-2 transition-all duration-300 hover:shadow-lg">
             <CardHeader className="relative pb-0">
-              <div className="absolute right-4 top-4 flex gap-2 z-10">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all"
-                    onClick={() => {
-                      setIsEditing(true)
-                      setActiveTab("personal")
-                    }}
-                  >
-                    <Edit className="h-4 w-4 text-primary" />
-                    <span className="sr-only">Edit Profile</span>
-                  </Button>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all"
-                    onClick={handleLogout}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-red-500"
-                    >
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                      <polyline points="16 17 21 12 16 7"></polyline>
-                      <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    <span className="sr-only">Logout</span>
-                  </Button>
-                </motion.div>
-              </div>
+            <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10 h-fit">
+  <div>
+  <motion.button
+  whileHover={{ scale: 1.05, backgroundColor: "rgba(255 255 255 / 1)" }}
+  whileTap={{ scale: 0.95 }}
+  transition={{ type: "spring", stiffness: 300 }}
+  onClick={() => router.push("/dashboard")}
+  className="bg-white/80 backdrop-blur-sm hover:bg-white transition-all border border-green-600 rounded px-4 py-2 flex items-center gap-2 whitespace-nowrap"
+>
+  <ChevronLeft className="h-5 w-5 flex-shrink-0" />
+  <span>Dashboard</span>
+</motion.button>
+  </div>
+  <div className="flex items-center gap-2">
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all"
+              onClick={() => {
+                setIsEditing(true);
+                setActiveTab("personal");
+              }}
+            >
+              <Edit className="h-4 w-4 text-primary" />
+              <span className="sr-only">Edit Profile</span>
+            </Button>
+          </motion.div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="bg-black text-white px-2 py-1 rounded-md text-sm">
+          <p>Edit Profile</p>
+        </TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all"
+              onClick={handleLogout}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-red-500"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span className="sr-only">Logout</span>
+            </Button>
+          </motion.div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="bg-black text-white px-2 py-1 rounded-md text-sm">
+          <p>Logout</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  </div>
+</div>
 
               <div className="flex flex-col items-center">
                 <div
-                  className="relative mb-6 mt-2"
+                  className="relative mb-6 mt-14"
                   onMouseEnter={() => setIsHoveringAvatar(true)}
                   onMouseLeave={() => setIsHoveringAvatar(false)}
                 >
                   <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
                     <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
-                      <AvatarImage src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${userImage}` || "/placeholder.svg"} />
+                      <AvatarImage src={userImage || "/placeholder.svg"} />
                       <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary">
                         <User className="h-14 w-14 text-white" />
                       </AvatarFallback>
@@ -549,7 +597,7 @@ export default function ProfilePage() {
                             variant="ghost"
                             size="icon"
                             className="text-white hover:text-white hover:bg-primary/50"
-                            onClick={() => { setIsImageDialogOpen(true); setPreviewImage(`${process.env.NEXT_PUBLIC_IMAGE_URL}${userImage}`) }}
+                            onClick={() => { setIsImageDialogOpen(true); setPreviewImage(userImage) }}
                           >
                             <Camera className="h-6 w-6" />
                           </Button>
@@ -767,7 +815,7 @@ export default function ProfilePage() {
                     {productForm.category === "lehenga" && (
                       <LehengaSizeChart
                         onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size});
+                          setProductForm({ ...productForm, productSize: size });
                           const newErrors = { ...formErrors };
                           delete newErrors.productSize;
                           setFormErrors(newErrors);
@@ -815,7 +863,7 @@ export default function ProfilePage() {
                         }}
                       />
                     )}
-                      {productForm.category === "rajasthani-poshak" && (
+                    {productForm.category === "rajasthani-poshak" && (
                       <RajasthaniPoshakSizeChart
                         onSizeSelect={(size: any) => {
                           setProductForm({ ...productForm, productSize: size });
@@ -824,119 +872,134 @@ export default function ProfilePage() {
                       />
                     )}
                     {productForm.category === "other" && (
-  <OtherSizeChart
-    onSizeSelect={(size:any) => {
-      setProductForm({ ...productForm, productSize: size });
-      const newErrors = { ...formErrors };
-      delete newErrors.productSize;
-      setFormErrors(newErrors);
-    }}
-  />
-)}
-<div className="space-y-2">
-  <Label htmlFor="originalPurchasePrice" className="font-large font-bold">Original Purchase Price (₹) *</Label>
-  <Input
-    id="originalPurchasePrice"
-    type="number"
-    value={productForm.originalPurchasePrice || ''}
-    onChange={(e) => {
-      const value = e.target.value === '' ? 0 : Number(e.target.value);
-      setProductForm({ ...productForm, originalPurchasePrice: value });
-      if (value < 5000) {
-        setFormErrors({ ...formErrors, originalPurchasePrice: "Minimum price should be ₹5,000" });
-      } else {
-        const newErrors = { ...formErrors };
-        delete newErrors.originalPurchasePrice;
-        setFormErrors(newErrors);
-      }
-    }}
-    className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-    onKeyDown={(e) => {
-      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-        e.preventDefault();
-      }
-    }}
-  />
-  {formErrors.originalPurchasePrice && (
-    <p className="text-sm text-destructive">{formErrors.originalPurchasePrice}</p>
-  )}
-</div>
+                      <OtherSizeChart
+                        onSizeSelect={(size: any) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          const newErrors = { ...formErrors };
+                          delete newErrors.productSize;
+                          setFormErrors(newErrors);
+                        }}
+                      />
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="originalPurchasePrice" className="font-large font-bold">Original Purchase Price (₹) *</Label>
+                      <Input
+                        id="originalPurchasePrice"
+                        type="number"
+                        value={productForm.originalPurchasePrice || ''}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? 0 : Number(e.target.value);
+                          setProductForm({ ...productForm, originalPurchasePrice: value });
+                          if (value < 5000) {
+                            setFormErrors({ ...formErrors, originalPurchasePrice: "Minimum price should be ₹5,000" });
+                          } else {
+                            const newErrors = { ...formErrors };
+                            delete newErrors.originalPurchasePrice;
+                            setFormErrors(newErrors);
+                          }
+                        }}
+                        className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        onKeyDown={(e) => {
+                          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                      {formErrors.originalPurchasePrice && (
+                        <p className="text-sm text-destructive">{formErrors.originalPurchasePrice}</p>
+                      )}
+                    </div>
 
                     <div className="grid grid-cols-2 gap-4">
 
-
-                      <div className="space-y-2">
-                        <Label className="font-large font-bold">Size Flexibility *</Label>
-                        <Select onValueChange={(value) => {
-                          setProductForm({ ...productForm, sizeFlexibility: value });
-                          const newErrors = { ...formErrors };
-                          delete newErrors.sizeFlexibility;
-                          setFormErrors(newErrors);
-                        }}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select flexibility" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {["1cm", "2cm", "3cm", "3+cm"].map((flex) => (
-                              <SelectItem key={flex} value={flex}>{flex}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {formErrors.sizeFlexibility && (
-                          <p className="text-sm text-destructive">{formErrors.sizeFlexibility}</p>
-                        )}
-                      </div>
+                      <TooltipProvider>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-1">
+                            <Label className="font-large font-bold">Size Flexibility *</Label>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" className="bg-black text-white px-2 py-1 rounded-md text-sm max-w-xs">
+                                Size flexibility shows the possibility of alteration available in the product.
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>                        <Select onValueChange={(value) => {
+                            setProductForm({ ...productForm, sizeFlexibility: value });
+                            const newErrors = { ...formErrors };
+                            delete newErrors.sizeFlexibility;
+                            setFormErrors(newErrors);
+                          }}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select flexibility" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {["0cm", "1cm", "2cm", "3cm", "3+cm"].map((flex) => (
+                                <SelectItem key={flex} value={flex}>{flex}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {productForm.sizeFlexibility === "0cm" && (
+                            <p className="text-sm italic text-blue-600">
+                              Size flexibility of 0cm means no size alterations are possible for this product.
+                            </p>
+                          )}
+                          {formErrors.sizeFlexibility && (
+                            <p className="text-sm text-destructive">{formErrors.sizeFlexibility}</p>
+                          )}
+                        </div>
+                      </TooltipProvider>
                     </div>
 
                     <div className="space-y-2">
-  <Label htmlFor="color" className="font-large font-bold">Color *</Label>
-  <Select onValueChange={(value) => {
-    setProductForm({ ...productForm, color: value });
-    const newErrors = { ...formErrors };
-    delete newErrors.color;
-    setFormErrors(newErrors);
-  }}>
-    <SelectTrigger>
-      <SelectValue placeholder="Select color">
-        {productForm.color && (
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full bg-${productForm.color.toLowerCase()}-500`} />
-            {productForm.color}
-          </div>
-        )}
-      </SelectValue>
-    </SelectTrigger>
-    <SelectContent>
-      {[
-        { name: "Red", color: "bg-red-500" },
-        { name: "Pink", color: "bg-pink-500" },
-        { name: "Maroon", color: "bg-red-900" },
-        { name: "Orange", color: "bg-orange-500" },
-        { name: "Yellow", color: "bg-yellow-500" },
-        { name: "Green", color: "bg-green-500" },
-        { name: "Blue", color: "bg-blue-500" },
-        { name: "Navy", color: "bg-blue-900" },
-        { name: "Purple", color: "bg-purple-500" },
-        { name: "Black", color: "bg-black" },
-        { name: "White", color: "bg-white border border-gray-200" },
-        { name: "Grey", color: "bg-gray-500" },
-        { name: "Brown", color: "bg-amber-800" },
-        { name: "Gold", color: "bg-yellow-600" },
-        { name: "Silver", color: "bg-gray-300" }
-      ].map((item) => (
-        <SelectItem key={item.name.toLowerCase()} value={item.name.toLowerCase()}>
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${item.color}`} />
-            {item.name}
-          </div>
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-  {formErrors.color && (
-    <p className="text-sm text-destructive">{formErrors.color}</p>
-  )}
-</div>
+                      <Label htmlFor="color" className="font-large font-bold">Color *</Label>
+                      <Select onValueChange={(value) => {
+                        setProductForm({ ...productForm, color: value });
+                        const newErrors = { ...formErrors };
+                        delete newErrors.color;
+                        setFormErrors(newErrors);
+                      }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select color">
+                            {productForm.color && (
+                              <div className="flex items-center gap-2">
+                                <div className={`w-3 h-3 rounded-full bg-${productForm.color.toLowerCase()}-500`} />
+                                {productForm.color}
+                              </div>
+                            )}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            { name: "Red", color: "bg-red-500" },
+                            { name: "Pink", color: "bg-pink-500" },
+                            { name: "Maroon", color: "bg-red-900" },
+                            { name: "Orange", color: "bg-orange-500" },
+                            { name: "Yellow", color: "bg-yellow-500" },
+                            { name: "Green", color: "bg-green-500" },
+                            { name: "Blue", color: "bg-blue-500" },
+                            { name: "Navy", color: "bg-blue-900" },
+                            { name: "Purple", color: "bg-purple-500" },
+                            { name: "Black", color: "bg-black" },
+                            { name: "White", color: "bg-white border border-gray-200" },
+                            { name: "Grey", color: "bg-gray-500" },
+                            { name: "Brown", color: "bg-amber-800" },
+                            { name: "Gold", color: "bg-yellow-600" },
+                            { name: "Silver", color: "bg-gray-300" }
+                          ].map((item) => (
+                            <SelectItem key={item.name.toLowerCase()} value={item.name.toLowerCase()}>
+                              <div className="flex items-center gap-2">
+                                <div className={`w-3 h-3 rounded-full ${item.color}`} />
+                                {item.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {formErrors.color && (
+                        <p className="text-sm text-destructive">{formErrors.color}</p>
+                      )}
+                    </div>
 
                     <div className="space-y-2">
                       <Label className="font-large font-bold">Product Images (Min 4 required) *</Label>
@@ -1114,8 +1177,8 @@ export default function ProfilePage() {
                         }}
                       />
                       {formErrors.productVideo && (
-                                <p className="text-sm text-destructive">{formErrors.productVideo}</p>
-                              )}
+                        <p className="text-sm text-destructive">{formErrors.productVideo}</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -1143,7 +1206,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="font-large font-bold">Proof of Purchase *</Label>
+                      <Label className="font-large font-bold">Proof of Purchase</Label>
                       <Input
                         type="file"
                         accept=".jpg,.jpeg,.png,.gif,.webp"
@@ -1226,15 +1289,15 @@ export default function ProfilePage() {
                             }}
                           >
                             {savedAddresses?.map((address) => (
-                              <div key={address?._id}
+                              <div key={address?.id}
                                 className="flex items-start space-x-3 border-2 border-primary p-6 rounded-lg 
                                 hover:border-primary hover:shadow-lg transition-all duration-300 
                                 hover:scale-[1.02] cursor-pointer bg-white
                                 shadow-sm hover:bg-primary/5"
                               >
-                                <RadioGroupItem value={address?._id} id={`address-${address?._id}`} className="mt-1" />
+                                <RadioGroupItem value={address?.id} id={`address-${address?.id}`} className="mt-1" />
                                 <div className="flex-1">
-                                  <Label htmlFor={`address-${address?._id}`} className="grid gap-2">
+                                  <Label htmlFor={`address-${address?.id}`} className="grid gap-2">
                                     <div className="flex items-center justify-between">
                                       <span className="font-medium text-base">{address.address}</span>
                                       <Badge variant="outline" className="animate-in fade-in duration-500">{address.pincode}</Badge>
@@ -1289,30 +1352,31 @@ export default function ProfilePage() {
             <TabsContent value="address" className="mt-6">
               <AddressList
                 addresses={savedAddresses}
-                onAddressUpdate={async (addressId:any, updatedAddressData:any) => {
+                onAddressUpdate={async (addressId: any, updatedAddressData: any) => {
                   try {
-                    const response = await updateAddress(addressId,updatedAddressData)
+                    console.log(addressId,"dasfeqwdSX")
+                    const response = await updateAddress(addressId, updatedAddressData)
                     setSavedAddresses(savedAddresses.map(addr =>
-                      addr._id === addressId ? { ...addr, ...updatedAddressData } : addr
+                      addr.id === addressId ? { ...addr, ...updatedAddressData } : addr
                     ))
 
                   } catch (error) {
                     console.error('Error updating address:', error)
                   }
                 }}
-                onAddressDelete={async (addressId:any) => {
+                onAddressDelete={async (addressId: any) => {
                   try {
                     // Call your delete API here
                     await deleteAddress(addressId)
                     // Update the local state
-                    setSavedAddresses(savedAddresses.filter(addr => addr._id !== addressId))
+                    setSavedAddresses(savedAddresses.filter(addr => addr.id !== addressId))
                   } catch (error) {
                     console.error('Error deleting address:', error)
                   }
                 }}
                 onAddNewAddress={async (newAddress) => {
                   try {
-                    const response:any = await handleAddAddressApi(newAddress)
+                    const response: any = await handleAddAddressApi(newAddress)
                     if (response?.success) {
                       setSavedAddresses([...savedAddresses, response.data])
                     }
@@ -1347,6 +1411,25 @@ export default function ProfilePage() {
           handleAddAddressApi(newAddress)
         }}
       />
+        <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Logout</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to logout? You will need to login again to access your account.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowLogoutDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmLogout}>
+              Logout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    
     </div>
   )
 }

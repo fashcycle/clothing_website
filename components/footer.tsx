@@ -41,12 +41,24 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/how-it-works"
+            
+                <button
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  onClick={() => {
+                    const element = document.getElementById('how-it-works');
+                    const headerOffset = 200; // Adjust this value based on your header height
+                    const elementPosition = element?.getBoundingClientRect().top ?? 0;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                    window.scrollTo({
+                      top: offsetPosition,
+                      behavior: 'smooth'
+                    });
+                  }}
+                
                 >
-                  How It Works
-                </Link>
+                   How It Works
+                </button>
               </li>
               <li>
                 <Link
@@ -61,14 +73,14 @@ export default function Footer() {
           <div>
             <h3 className="font-medium mb-3 uppercase text-sm tracking-wider">Support</h3>
             <ul className="space-y-2">
-              {/* <li>
+            <li>
                 <Link
                   href="/help"
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   Help Center
                 </Link>
-              </li> */}
+              </li>
               <li>
                 <Link
                   href="/contact"
@@ -78,7 +90,7 @@ export default function Footer() {
                 </Link>
               </li>
               
-              <li>
+              {/* <li>
                 <Link
                   href="/terms"
                   className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
@@ -92,7 +104,7 @@ export default function Footer() {
               className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"            >
               Privacy Policy
             </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
           <div className="hidden lg:block">
@@ -120,7 +132,26 @@ export default function Footer() {
           <p className="text-sm text-primary-foreground/80">
             © {new Date().getFullYear()} Fashcycle. All rights reserved.
           </p>
-       
+          <div className="flex gap-4 mt-4 md:mt-0">
+            <Link
+              href="/privacy"
+              className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/terms"
+              className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+            >
+              Terms of Service
+            </Link>
+            <Link
+              href="/cookies"
+              className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+            >
+              Cookies Policy
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

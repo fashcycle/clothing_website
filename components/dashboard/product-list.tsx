@@ -13,12 +13,11 @@ export function ProductList({ products, onEditClick }: any) {
         e.stopPropagation(); // Prevent triggering the parent onClick
         router.push(`/products/${productId}`);
     };
-
     return (
         <div className="space-y-6 cursor-pointer">
             {products.map((product: any, index: number) => (
                <motion.div
-               key={product._id}
+               key={product.id}
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: index * 0.05 }}
@@ -69,7 +68,7 @@ export function ProductList({ products, onEditClick }: any) {
                             <div className="text-sm font-semibold text-emerald-600">+ {product.earnings} Earned</div>
                             <div 
                                 className="flex items-center text-sm text-primary mt-6 font-medium group/view cursor-pointer"
-                                onClick={(e) => handleViewProduct(e, product._id)}
+                                onClick={(e) => handleViewProduct(e, product.id)}
                             >
                                 <span className="group-hover/view:translate-x-1 transition-transform">View Product</span>
                                 <ChevronRight className="h-4 w-4 ml-1 group-hover/view:translate-x-1 transition-transform" />
