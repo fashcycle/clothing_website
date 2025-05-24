@@ -185,7 +185,7 @@ setUser(JSON.parse(userData))
         <div className="flex justify-center py-8">
           <Loader text="Loading products..." />
         </div>) :
-        products.length > 0 ? (
+        products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <ShoppingCart className="w-16 h-16 text-gray-300 mb-4 border-2 border-gray-300 rounded-full p-3" />
             <h3 className="text-xl font-semibold mb-2">No Featured Products</h3>
