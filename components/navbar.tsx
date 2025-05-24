@@ -20,6 +20,7 @@ import { useSession, signIn, signOut } from "next-auth/react"
 
 // Updated categories as requested
 const categories = [
+  { name: "HOME", href: "/" },
   { name: "LEHENGA", href: "/lehenga" },
   { name: "GOWN", href: "/gown" },
   { name: "SHARARA SET", href: "/sharara-set" },

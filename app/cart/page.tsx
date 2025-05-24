@@ -160,6 +160,25 @@ export default function CartPage() {
     </motion.div>
 
     {/* Cart Items */}
+    {cartItems.length === 0 ? (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center justify-center py-16"
+      >
+        <ShoppingCart className="w-16 h-16 text-gray-300 mb-4 border-2 border-gray-300 rounded-full p-3" />
+        <h3 className="text-xl font-semibold mb-2">Your Cart is Empty</h3>
+        <p className="text-muted-foreground text-center mb-6">
+          Looks like you haven't added anything to your cart yet
+        </p>
+        <Button 
+          onClick={() => router.push('/')}
+          className="bg-pink-600 hover:bg-pink-700 text-white"
+        >
+          Continue Shopping
+        </Button>
+      </motion.div>
+    ) : (
     <AnimatePresence>
       {cartItems?.map((item: any, idx: number) => (
         <motion.div
@@ -210,7 +229,7 @@ export default function CartPage() {
         </motion.div>
       ))}
     </AnimatePresence>
-
+    )}
     {/* Cart Summary */}
     <motion.div
       initial={{ y: 20 }}
