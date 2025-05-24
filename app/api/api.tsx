@@ -32,6 +32,7 @@ export const getUserAddresses = async () => {
       {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       }
     );
@@ -232,6 +233,7 @@ export const registerUser = async (userData: any) => {
         {
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
         }
       );
@@ -377,6 +379,7 @@ export const getAllProducts = async () => {
       {
         headers: {
           'Content-Type': 'application/json',
+          
         },
       }
     );
