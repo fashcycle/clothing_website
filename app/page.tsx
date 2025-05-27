@@ -33,7 +33,7 @@ export default function Home() {
       <LocationHandler />
 
       {/* Hero Section */}
-      <section className="relative w-full h-[80vh] flex items-center">
+      <section className="relative w-full min-h-[80vh] flex items-center">
         <Image
           src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000"
           alt="Hero Image"
@@ -43,10 +43,10 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-primary/70"></div>
 
-        <div className="container relative z-10 px-4 md:px-6 flex flex-col md:flex-row items-center h-[80vh]">
+        <div className="container relative z-10 px-4 md:px-6 flex flex-col md:flex-row items-center min-h-[80vh]">
           <div className="md:w-1/2 text-white space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-tight animate-fade-in">
-              Fashion Simplified
+              Future Fashion
             </h1>
             <p className="text-lg md:text-xl text-white/90 max-w-md animate-fade-in-delay">
               Your one-stop platform for renting, selling, and buying quality clothing. Save money, reduce waste, and
@@ -252,8 +252,7 @@ export default function Home() {
             <div>
               <h2 className="text-3xl font-serif font-medium tracking-tight md:text-4xl">Join Our Community Today</h2>
               <p className="mt-4 text-primary-foreground/90 md:text-lg">
-                Start renting, lending, and buying designer fashion from people like you. Join 500,000+ fashion
-                enthusiasts on our platform.
+                Start renting, lending, and buying designer fashion from people like you.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 md:justify-end">

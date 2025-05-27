@@ -16,9 +16,18 @@ const signupSchema = yup.object().shape({
   name: yup.string()
     .required("Name is required")
     .min(2, "Name must be at least 2 characters"),
-  email: yup.string()
+    email: yup.string()
     .required("Email is required")
-    .email("Please enter a valid email"),
+    .email("Please enter a valid email")
+    .test(
+      "not-disposable",
+      "Disposable emails are not allowed",
+      (value) => {
+        const disposableDomains = ['mailinator.com', 'tempmail.com'];
+        const domain = value?.split('@')[1];
+        return !disposableDomains.includes(domain || '');
+      }
+    ),
   password: yup.string()
     .required("Password is required")
     .min(8, "Password must be at least 8 characters")
@@ -39,26 +48,30 @@ export function SignupForm() {
   });
 
   const onSubmit = async (data: SignupFormData) => {
-    console.log("islogin")
-    setIsLoading(true)
+    setIsLoading(true);
+
     try {
       const response = await registerUser({
         name: data.name,
         email: data.email,
-        password: data.password
+        password: data.password,
       });
-
+  
       if (response.success) {
         toast.success("Registration successful!");
-        router.push('/login');
+        router.push("/login");
+      } else {
+        // This block is optional now; registerUser throws on error
+        toast.error(response.message || "Something went wrong");
       }
-    } catch (error) {
-      console.error("Signup error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to register");
+    } catch (error: any) {
+
+      toast.error(error.message || "Failed to register");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+  
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

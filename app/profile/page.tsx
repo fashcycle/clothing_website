@@ -707,14 +707,7 @@ export default function ProfilePage() {
                 <CardTitle>Account Settings</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Two-Factor Authentication</p>
-                    <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-                  </div>
-                  <Switch />
-                </div>
-                <Separator />
+               
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Email Notifications</p>
