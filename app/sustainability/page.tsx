@@ -51,7 +51,8 @@ export default function Sustainability() {
           <section>
           <p className="text-2xl mb-6">
               <span className="font-bold">Our Approach: </span>
-              <span className="text-xl">We combine technology and fashion. To make Future Fashion.</span>
+              <span className="text-xl">Where Technology meets Fashion. To make Future Fashion.
+              </span>
             </p>
             <p className="text-lg text-muted-foreground ">
               At Fashcycle, we believe sustainability should be simple, rewarding, and tailored to you.
@@ -104,7 +105,6 @@ export default function Sustainability() {
           </section>
 
           <motion.div 
-            whileHover={{ scale: 1.02 }}
             className="bg-primary text-primary-foreground p-8 rounded-lg text-center"
           >
             <h2 className="text-2xl font-bold mb-4">Fashcycle: Future Fashion.</h2>

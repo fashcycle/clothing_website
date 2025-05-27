@@ -139,7 +139,7 @@ export default function WishlistPage() {
       Your Wishlist ❤️
     </h1>
     <p className="text-muted-foreground text-sm md:text-base">
-         `You have ${wishlistedItems?.length} item${wishlistedItems?.length > 1 ? 's' : ''} saved for later.`
+         `You have {wishlistedItems?.length} item saved for later.`
     </p>
     </>
 }
