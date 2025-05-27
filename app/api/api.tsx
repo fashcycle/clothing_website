@@ -88,24 +88,26 @@ export const deleteAddress = async (addressId: string) => {
   }
 };
 export const registerUser = async (userData: any) => {
-    try {
-      const response = await axios.post(
-        process.env.NEXT_PUBLIC_REGISTER_USER as string,
-        userData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data.message || 'Failed to register user');
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_REGISTER_USER as string,
+      userData,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
       }
-      throw error;
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return error.response?.data || { success: false, message: "Failed to register user" };
     }
-  };
+    return { success: false, message: "Unexpected error" };
+  }
+};
+
+
   export const loginUser = async (userData: any) => {
     try {
       const response = await axios.post(
