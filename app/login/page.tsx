@@ -18,6 +18,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { GoogleLogin, GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
+import { toast } from "sonner";
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -58,25 +59,32 @@ export default function LoginPage() {
     flow: 'auth-code'
   })
 
+
   const handleEmailLogin = async (data: LoginFormData) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await loginUser({
         email: data.email,
         password: data.password
       });
-    
+  
       if (response.success) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('user-info', JSON.stringify(response.user));
+        
+        toast.success("Login successful!");
         router.push('/profile');
+      } else {
+        toast.error(response.message || "Login failed. Please try again.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
+      toast.error(error.message || "An error occurred during login.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+  
 
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault()

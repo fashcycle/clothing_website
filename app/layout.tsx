@@ -8,6 +8,8 @@ import "./globals.css"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from 'sonner';
+import { usePathname } from 'next/navigation'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -19,6 +21,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const pathname = usePathname();
+  const hideFooter = pathname === '/cart';
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -27,8 +32,10 @@ export default function RootLayout({
           <div className="flex flex-col min-h-screen">
   <Navbar />
   <main className="flex-grow overflow-container">{children}</main>
-  <Footer />
+  
+  {!hideFooter && <Footer />}
 </div>
+<Toaster position="top-right" richColors />
           </ThemeProvider>
         </GoogleOAuthProvider>
       </body>
