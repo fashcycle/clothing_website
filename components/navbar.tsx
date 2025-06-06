@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from 'next/image';
-import { Search, ShoppingBag, User, Heart, Menu, Upload, Plus } from "lucide-react"
+import { Search, ShoppingBag, User, Heart, Menu, Upload, Plus,LayoutDashboard,LogOut } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { useSession, signIn, signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 // Updated categories as requested
 const categories = [
@@ -32,6 +33,8 @@ const categories = [
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   // Using dummy auth state for demo
+  const router: any = useRouter()
+
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isLogin, setIsLogin] = useState<any>("")
 
@@ -43,9 +46,10 @@ export default function Navbar() {
 
   }, []);
 
-  const toggleLogin = () => {
-    // For demo purposes only - in production this would use signIn/signOut from next-auth
-    setIsLoggedIn(!isLoggedIn)
+  const toggleLogout = () => {
+    localStorage.removeItem('user-info');
+    localStorage.removeItem('token');
+    router.push('/login');
   }
   const [userImage, setUserImage] = useState<any>()
   useEffect(() => {
@@ -59,9 +63,9 @@ export default function Navbar() {
   return (
 
 <header className="w-full bg-primary text-primary-foreground fixed top-0 z-50 left-0 right-0">
-<div className="container flex flex-wrap items-center justify-between h-16 max-w-full px-4">
+<div className="container flex flex-wrap items-center justify-between h-16 w-full px-4">
     <div className="flex items-center gap-2 flex-1 min-w-0 md:flex-[0_0_40%]">
-      <Sheet>
+      <Sheet modal={false}>
         <SheetTrigger asChild>
           <Button
             variant="ghost"
@@ -72,11 +76,10 @@ export default function Navbar() {
             <span className="sr-only">Toggle menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+        <SheetContent side="left" >
           <nav className="flex flex-col gap-4">
             <Link
               href="/"
-              className="flex items-center gap-2 font-serif text-xl"
             >
               Fashcycle
             </Link>
@@ -110,7 +113,7 @@ export default function Navbar() {
       Fashcycle
     </Link>
 
-    <div className="flex  items-center gap-2 flex-wrap min-w-0 md:flex-nowrap md:flex-[0_0_40%] justify-end">
+    <div className="flex  items-center gap-2 flex-wrap md:flex-nowrap md:flex-[0_0_40%] justify-end">
       <Button variant="ghost" size="icon" className="hidden text-primary-foreground flex-shrink-0 focus:border-black/20 focus:ring-0">
         <Search className="h-5 w-5" />
         <span className="sr-only">Search</span>
@@ -169,54 +172,52 @@ export default function Navbar() {
       </TooltipProvider>
 
       {isLogin ? (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <TooltipProvider delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link href="/profile">
-                    <Button variant="default" size="icon" className="rounded-full p-0 border flex-shrink-0">
-                      <Avatar className="h-10 w-10">
-                        {userImage? (
-                          <Image
-                            src={userImage}
-                            alt="User Profile"
-                            width={40}
-                            height={40}
-                            className="rounded-full object-cover"
-                          />
-                        ) : (
-                          <AvatarFallback>
-                            <User className="h-5 w-5" />
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <span className="sr-only">Profile</span>
-                    </Button>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>Profile</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button variant="default" size="icon" className="rounded-full p-0 border">
+              <Avatar className="h-10 w-10">
+                {userImage? (
+                  <Image
+                    src={userImage}
+                    alt="User Profile"
+                    width={40}
+                    height={40}
+                    className="rounded-full object-cover"
+                  />
+                ) : (
+                  <AvatarFallback>
+                    <User className="h-5 w-5" />
+                  </AvatarFallback>
+                )}
+              </Avatar>
+            </Button>
           </DropdownMenuTrigger>
-
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard">My Profile</Link>
+          <DropdownMenuContent 
+            align="end" 
+            className="w-50 z-50"
+            sideOffset={5}
+            style={{ overflowY: 'hidden' }}
+          >
+          <DropdownMenuItem asChild className="hover:bg-gray-100">
+              <Link href="/profile" className="w-full px-4 py-2 flex items-center gap-2">
+                <User className="h-4 w-4" />
+                My Profile
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard">Dashboard</Link>
+            <DropdownMenuItem asChild className="hover:bg-gray-100">
+              <Link href="/dashboard" className="w-full px-4 py-2 flex items-center gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/listings">My Listings</Link>
+            <DropdownMenuSeparator className="my-1" />
+            <DropdownMenuItem 
+              onClick={toggleLogout} 
+              className="w-full px-4 py-2 hover:bg-gray-100 text-red-600 flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Log Out
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/orders">Orders</Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={toggleLogin}>Log Out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
@@ -258,5 +259,7 @@ export default function Navbar() {
     </div>
   </nav>
 </header>
+
+
   )
 }

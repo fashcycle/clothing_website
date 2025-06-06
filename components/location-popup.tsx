@@ -78,7 +78,6 @@ export default function LocationPopup() {
 
           // Store the actual location data
           localStorage.setItem("userLocation", JSON.stringify(locationData))
-          console.log("Location stored:", locationData)
         } catch (error) {
           console.error("Error getting location details:", error)
 

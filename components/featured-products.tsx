@@ -75,7 +75,7 @@ export default function FeaturedProducts() {
   const [cartItems, setCartItems] = useState<string[]>([]);
   const [wishlistedItems, setWishlistedItems] = useState<string[]>([]);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
-  const[user,setUser]=useState<any>("")
+  const [user, setUser] = useState<any>("")
   const fetchWishlist = async () => {
     try {
       const response = await getWishlistedProducts();
@@ -88,12 +88,17 @@ export default function FeaturedProducts() {
     }
   };
   const toggleFavorite = async (productId: string) => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    else{
     try {
       setIsAddingToWishlist(productId);
 
       if (wishlistedItems.some((item: any) => item.id === productId)) {
         // Remove from wishlist
-        let obj:any={
+        let obj: any = {
           "userId": user?.id,
           "productId": productId
         }
@@ -116,8 +121,14 @@ export default function FeaturedProducts() {
     } finally {
       setIsAddingToWishlist(null);
     }
+  }
   };
   const handleAddToCart = async (productId: string) => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    else{
     try {
       let obj: any = {
         "productId": productId,
@@ -135,6 +146,7 @@ export default function FeaturedProducts() {
     } finally {
       setIsAddingToCart(null);
     }
+  }
   };
 
   const fetchProducts = async () => {
@@ -166,8 +178,8 @@ export default function FeaturedProducts() {
   };
 
   useEffect(() => {
-    let userData:any=localStorage.getItem("user-info")
-setUser(JSON.parse(userData))
+    let userData: any = localStorage.getItem("user-info")
+    setUser(JSON.parse(userData))
     setIsClient(true);
     fetchProducts();
     fetchCartItems();
@@ -192,99 +204,99 @@ setUser(JSON.parse(userData))
             <p className="text-muted-foreground text-center mb-6">
               Check back soon for our latest featured items
             </p>
-          
+
           </div>
         ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
 
-          {products?.slice(0, 4).map((product: any, index: any) => (<Card
-            key={product.id}
-            className={cn(
-              "product-card border-0 rounded-none luxury-shadow",
-              isClient && `animate-fade-in-delay-${index}`,
-            )}
-          >
-            <div className="relative">
-              <Link href={`/products/${product.id}`}>
-                <div className="overflow-hidden">
-                  <Image
-                    src={product.productImage.frontLook || "/placeholder.svg"}
-                    alt={product.title}
-                    width={300}
-                    height={400}
-                    className="w-full h-[350px] object-cover product-image"
+            {products?.slice(0, 4).map((product: any, index: any) => (<Card
+              key={product.id}
+              className={cn(
+                "product-card border-0 rounded-none luxury-shadow",
+                isClient && `animate-fade-in-delay-${index}`,
+              )}
+            >
+              <div className="relative">
+                <Link href={`/products/${product.id}`}>
+                  <div className="overflow-hidden">
+                    <Image
+                      src={product.productImage.frontLook || "/placeholder.svg"}
+                      alt={product.title}
+                      width={300}
+                      height={400}
+                      className="w-full h-[350px] object-cover product-image"
+                    />
+                  </div>
+                </Link>
+                <button
+                  onClick={() => toggleFavorite(product.id)}
+                  disabled={isAddingToWishlist === product.id}
+                  className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-transform duration-300 hover:scale-110 z-10"
+                  aria-label={wishlistedItems.some((item: any) => item.id === product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                >
+                  <Heart
+                    className={cn(
+                      "h-5 w-5 transition-colors",
+                      isAddingToWishlist === product.id && "animate-pulse",
+                      wishlistedItems.some((item: any) => item.id === product.id) ? "fill-red-500 text-red-500" : "text-muted-foreground"
+                    )}
                   />
-                </div>
-              </Link>
-              <button
-                onClick={() => toggleFavorite(product.id)}
-                disabled={isAddingToWishlist === product.id}
-                className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-transform duration-300 hover:scale-110 z-10"
-                aria-label={wishlistedItems.some((item: any) => item.id === product.id) ? "Remove from wishlist" : "Add to wishlist"}
-              >
-                <Heart
-                  className={cn(
-                    "h-5 w-5 transition-colors",
-                    isAddingToWishlist === product.id && "animate-pulse",
-                    wishlistedItems.some((item: any) => item.id === product.id) ? "fill-red-500 text-red-500" : "text-muted-foreground"
-                  )}
-                />
-              </button>
-            </div>
-            <CardContent className="p-4">
-              <div className="space-y-2">
-                {/* <p className="product-designer">{product.designer}</p> */}
-                <h3 className="font-medium line-clamp-1 capitalize">{product.productName}</h3>
-                <div className="flex items-center gap-2">
-                <span className="text-sm  capitalize">{product.color}</span>
-                <div 
-                  className="w-4 h-4 rounded-full" 
-                  style={{ backgroundColor: product.color }}
-                />
+                </button>
               </div>
-                {/* <div className="flex items-center gap-1">
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  {/* <p className="product-designer">{product.designer}</p> */}
+                  <h3 className="font-medium line-clamp-1 capitalize">{product.productName}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm  capitalize">{product.color}</span>
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: product.color }}
+                    />
+                  </div>
+                  {/* <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                   <span className="text-sm font-medium">{product.rating}</span>
                   <span className="text-xs text-muted-foreground">({product.reviews})</span>
                 </div> */}
 
-                <div className="flex flex-col gap-1 pt-1">
-                <p className="product-price">
-                    <span>Size: {product.size}</span>
-                  </p>
-                  {product.listingType.includes('rent') && (
+                  <div className="flex flex-col gap-1 pt-1">
                     <p className="product-price">
-                      <span>Rent for ₹{product.originalPurchasePrice}/day</span>
+                      <span>Size: {product.size}</span>
                     </p>
-                  )}
-                  {product.listingType.includes('sell') && (
-                    <p className="product-price">
-                      <span>Buy for ₹{product.originalPurchasePrice}</span>
-                    </p>
-                  )}
-                  <Button
-                    onClick={() => cartItems.includes(product.id)
-                      ? router.push('/cart')
-                      : handleAddToCart(product.id)
-                    }
-                    disabled={isAddingToCart === product.id}
-                    className="mt-2 w-full"
-                    variant={cartItems.includes(product.id) ? "default" : "outline"}
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    {isAddingToCart === product.id
-                      ? 'Adding...'
-                      : cartItems.includes(product.id)
-                        ? 'Go to Cart'
-                        : 'Add to Cart'
-                    }
-                  </Button>
+                    {product.listingType.includes('rent') && (
+                      <p className="product-price">
+<span>Rent for ₹{Math.round((product?.originalPurchasePrice)*21/100)} for 3 days</span>
+</p>
+                    )}
+                    {product.listingType.includes('sell') && (
+                      <p className="product-price">
+                        <span>Buy for ₹{Math.round(product?.originalPurchasePrice * 50 / 100)}</span>
+                      </p>
+                    )}
+                    <Button
+                      onClick={() => cartItems.includes(product.id)
+                        ? router.push('/cart')
+                        : handleAddToCart(product.id)
+                      }
+                      disabled={isAddingToCart === product.id}
+                      className="mt-2 w-full"
+                      variant={cartItems.includes(product.id) ? "default" : "outline"}
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      {isAddingToCart === product.id
+                        ? 'Adding...'
+                        : cartItems.includes(product.id)
+                          ? 'Go to Cart'
+                          : 'Add to Cart'
+                      }
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          ))}
-        </div>
+              </CardContent>
+            </Card>
+            ))}
+          </div>
         )
       }
     </>

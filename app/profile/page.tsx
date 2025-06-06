@@ -42,6 +42,7 @@ import {
 import {
   TooltipContent, TooltipProvider, TooltipTrigger, Tooltip,
 } from "@radix-ui/react-tooltip"
+import { toast } from "sonner"
 interface UserAddress {
   address: string;
   landmark: string;
@@ -356,9 +357,9 @@ export default function ProfilePage() {
     );
   };
   const handleAddAddressApi = async (newAddress: any) => {
-    setIsSubmitting(true)
-
-    let data = {
+    setIsSubmitting(true);
+  
+    const data = {
       pincode: newAddress?.pincode,
       city: newAddress?.city,
       state: newAddress?.state,
@@ -366,34 +367,44 @@ export default function ProfilePage() {
       landmark: newAddress?.landmark,
       addressLine1: newAddress?.addressLine1,
       addressLine2: newAddress?.addressLine2,
-      address: newAddress?.address
+      address: newAddress?.address,
+    };
+  
+    try {
+      const response = await addNewAddress(data);  
+      if (response.success) {
+        setIsSubmitting(false);
+        setSavedAddresses([...savedAddresses, newAddress]);
+        fetchUserDetails();
+        setShowNewAddressForm(false);
+        setNewAddressForm({
+          id: "",
+          address: "",
+          landmark: "",
+          customAddressType: "",
+          addressLine1: "",
+          addressLine2: "",
+          pincode: "",
+          city: "",
+          state: "",
+          country: "India",
+        });
+  
+        const newErrors = { ...formErrors };
+        delete newErrors.addressLine1;
+        delete newErrors.pincode;
+        delete newErrors.landmark;
+        setFormErrors(newErrors);
+      } else {
+        toast.error("Failed to add address. Please check the form.");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Something went wrong");
+    } finally {
+      setIsSubmitting(false);
     }
-    const response = await addNewAddress(data);
-    if (response.success) {
-      setIsSubmitting(false)
-
-      setSavedAddresses([...savedAddresses, newAddress]);
-      fetchUserDetails()
-      setShowNewAddressForm(false);
-      setNewAddressForm({
-        id: "",
-        address: "",
-        landmark: "",
-        customAddressType: "",
-        addressLine1: "",
-        addressLine2: "",
-        pincode: "",
-        city: "",
-        state: "",
-        country: "India"
-      });
-      const newErrors = { ...formErrors };
-      delete newErrors.addressLine1;
-      delete newErrors.pincode;
-      delete newErrors.landmark;
-      setFormErrors(newErrors);
-    }
-  }
+  };
+  
   const handleLogout = () => {
     setShowLogoutDialog(true);
   };
@@ -1347,7 +1358,6 @@ export default function ProfilePage() {
                 addresses={savedAddresses}
                 onAddressUpdate={async (addressId: any, updatedAddressData: any) => {
                   try {
-                    console.log(addressId,"dasfeqwdSX")
                     const response = await updateAddress(addressId, updatedAddressData)
                     setSavedAddresses(savedAddresses.map(addr =>
                       addr.id === addressId ? { ...addr, ...updatedAddressData } : addr

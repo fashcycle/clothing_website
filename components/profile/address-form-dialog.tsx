@@ -56,7 +56,7 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
         pincode: "",
         city: "",
         state: "",
-        country: ""
+        country: "India"
       }
       const [formData, setFormData] = useState(initialData || initialFormData)
       useEffect(() => {
@@ -124,7 +124,7 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
           <div className="space-y-2">
             <Label>Address Type *</Label>
             <Select
-              value={formData.address}
+              value={formData?.address}
               onValueChange={(value) => {
                 setFormData({ ...formData, address: value })
                 setErrors({ ...errors, address: "" })
@@ -142,11 +142,11 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
             {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
           </div>
 
-          {formData.address === "OTHER" && (
+          {formData?.address === "OTHER" && (
             <div className="space-y-2">
               <Label>Custom Address Type *</Label>
               <Input
-                value={formData.customAddressType}
+                value={formData?.customAddressType}
                 onChange={(e) => {
                   setFormData({ ...formData, customAddressType: e.target.value })
                   setErrors({ ...errors, customAddressType: "" })
@@ -160,7 +160,7 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
           <div className="space-y-2">
             <Label>Landmark *</Label>
             <Input
-              value={formData.landmark}
+              value={formData?.landmark}
               onChange={(e) => {
                 setFormData({ ...formData, landmark: e.target.value })
                 setErrors({ ...errors, landmark: "" })
@@ -172,7 +172,7 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
           <div className="space-y-2">
             <Label>Address Line 1 *</Label>
             <Input
-              value={formData.addressLine1}
+              value={formData?.addressLine1}
               onChange={(e) => {
                 setFormData({ ...formData, addressLine1: e.target.value })
                 setErrors({ ...errors, addressLine1: "" })
@@ -184,7 +184,7 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
           <div className="space-y-2">
             <Label>Address Line 2</Label>
             <Input
-              value={formData.addressLine2}
+              value={formData?.addressLine2}
               onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })}
             />
           </div>
@@ -193,7 +193,7 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
             <div className="space-y-2">
               <Label>Pincode *</Label>
               <Input
-                value={formData.pincode}
+                value={formData?.pincode}
                 onChange={(e) => {
                   setFormData({ ...formData, pincode: e.target.value })
                   setErrors({ ...errors, pincode: "" })
@@ -204,18 +204,18 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
             </div>
             <div className="space-y-2">
               <Label>City</Label>
-              <Input value={formData.city} disabled />
+              <Input value={formData?.city} disabled />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>State</Label>
-              <Input value={formData.state} disabled />
+              <Input value={formData?.state} disabled />
             </div>
             <div className="space-y-2">
               <Label>Country</Label>
-              <Input value={formData.country} disabled />
+              <Input value={formData?.country} disabled />
             </div>
           </div>
           <Button type="submit" disabled={isSubmitting} className="w-full"onClick={handleSubmit}>
