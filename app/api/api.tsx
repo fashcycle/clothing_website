@@ -355,15 +355,16 @@ export const getCartItems = async () => {
 };
 
 // Remove from cart
-export const removeFromCart = async (productId: string) => {
+export const removeFromCart = async (data: any) => {
   try {
     const response = await axios.delete(
-      `${process.env.NEXT_PUBLIC_REMOVE_CART_DATA}/${productId}`,
+      `${process.env.NEXT_PUBLIC_REMOVE_CART_DATA}`,
       {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
+        data: data // Adding the data object to the delete request body
       }
     );
     return response.data;

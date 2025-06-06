@@ -39,19 +39,19 @@ const categories = [
     count: 150,
   },
   {
-    id: 5,
+    id: 6,
     name: "Rajasthani Poshak",
     image: "/rajesthani-poshak.png",
     count: 150,
   },
   {
-    id: 6,
+    id: 7,
     name: "Suit",
     image: "/suit.png",
     count: 110,
   },
   {
-    id: 6,
+    id: 8,
     name: "Other",
     image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000",
     count: 110,
@@ -100,7 +100,7 @@ export default function CategorySlider() {
           className="flex overflow-x-auto scrollbar-hide gap-4 pb-4 -mx-4 px-4 snap-x"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {categories.map((category, index) => (
+          {categories?.map((category, index) => (
             <Link
               key={category.id}
               href={`/category/${category.name.toLowerCase().replace(" ", "-")}`}

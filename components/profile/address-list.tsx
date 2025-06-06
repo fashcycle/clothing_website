@@ -29,7 +29,6 @@ export function AddressList({ addresses, onAddressUpdate, onAddressDelete, onAdd
   const [editingAddress, setEditingAddress] = useState<any>(null)
 
   const handleEditAddress = (address: any) => {
-    console.log(address,"addressaddress")
     setEditingAddress(address)
     setShowAddressForm(true)
   }
@@ -37,7 +36,6 @@ export function AddressList({ addresses, onAddressUpdate, onAddressDelete, onAdd
   const handleSaveAddress = async (addressData: any) => {
     try {
       if (editingAddress) {
-        console.log(addressData,"addressData",editingAddress.id)
         await onAddressUpdate(editingAddress.id, addressData)
       } else {
         await onAddNewAddress(addressData)
