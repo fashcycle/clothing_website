@@ -2,18 +2,28 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronLeft, ChevronRight, Home, MapPin, Package, Tag, User } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Home, MapPin, Package, ShoppingCart, Tag, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getSingleProduct } from "@/app/api/api";
+import { addToCart, getAllProducts, getCartItems, getSingleProduct, getWishlistedProducts } from "@/app/api/api";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function ProductPage({ params }: { params: { id: string } }) {
     const [product, setProduct] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [cartItems, setCartItems] = useState<string[]>([]);
+    const router = useRouter();
+    const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
+    const [user, setUser] = useState<any>("")
+    const [products, setProducts] = useState([])
+    const [wishlistedItems, setWishlistedItems] = useState<string[]>([]);
+    const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
+    const [isClient, setIsClient] = useState(false)
 
     const fetchProduct = async () => {
         try {
@@ -28,17 +38,26 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         } catch (error) {
             console.error('Failed to fetch product:', error);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (params.id) {
-            fetchProduct();
+  
+      const fetchCartItems = async () => {
+        try {
+          const response = await getCartItems();
+          if (response.success) {
+            const cartProductIds = response.cart.map((item: any) => item.productId);
+            setCartItems(cartProductIds);
+          }
+        } catch (error) {
+          console.error('Error fetching cart items:', error);
         }
-    }, [params.id]);
+      
+      };
+      
+  
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[70vh]">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -49,7 +68,69 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     if (!product) {
         return <div className="text-center py-8">Product not found</div>;
     }
-
+    const handleAddToCart = async (productId: string) => {
+        try {
+          let obj: any = {
+            "productId": productId,
+            "quantity": 1
+          }
+          setIsAddingToCart(productId);
+          const response = await addToCart(obj);
+          if (response.success) {
+            fetchCartItems()
+            toast.success("Added to cart successfully!");
+          }
+        } catch (error) {
+          toast.error("Failed to add to cart");
+          console.error('Error adding to cart:', error);
+        } finally {
+          setIsAddingToCart(null);
+        }
+      };
+      const fetchProducts = async () => {
+        try {
+          const response = await getAllProducts();
+          if (response.success) {
+    
+            const sortedProducts = response.products.sort((a: any, b: any) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            setProducts(sortedProducts);
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      const fetchWishlist = async () => {
+        try {
+          const response = await getWishlistedProducts();
+          if (response.success) {
+            const wishlistIds = response.products;
+            setWishlistedItems(wishlistIds);
+          }
+        } catch (error) {
+          console.error('Error fetching wishlist:', error);
+        }
+      };
+      useEffect(() => {
+        setIsClient(true)
+      }, [])
+          
+      useEffect(() => {
+        let userData: any = localStorage.getItem("user-info")
+        setUser(JSON.parse(userData))
+        setIsClient(true);
+        fetchProducts();
+        fetchCartItems();
+        fetchWishlist();
+      }, []);
+    useEffect(() => {
+        if (params?.id) {
+            fetchProduct();
+        }
+    }, [params]);
     // Create an array of all product images
     const productImages: any = Object.entries(product.productImage)
         .filter(([key, path]) => path &&
@@ -66,7 +147,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     Home
                 </Link>
                 <span>/</span>
-                <Link href="/dashboard" className="hover:underline">All Categories</Link>
+                <Link href="/" className="hover:underline">All Categories</Link>
                 <span>/</span>
                 <Link href="/dashboard" className="hover:underline capitalize">{product.category}</Link>
                 <span>/</span>
@@ -98,7 +179,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                                 <button
                                     className="absolute left-2 top-1/2 -translate-y-1/2 bg-white rounded-full p-1 shadow-md"
                                     onClick={() => {
-                                        const currentIndex = productImages.findIndex((img:any) => img.path === selectedImage);
+                                        const currentIndex = productImages.findIndex((img: any) => img.path === selectedImage);
                                         const prevIndex = (currentIndex - 1 + productImages.length) % productImages.length;
                                         setSelectedImage(productImages[prevIndex].path);
                                     }}
@@ -108,7 +189,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                                 <button
                                     className="absolute right-2 top-1/2 -translate-y-1/2 bg-white rounded-full p-1 shadow-md"
                                     onClick={() => {
-                                        const currentIndex = productImages.findIndex((img:any) => img.path === selectedImage);
+                                        const currentIndex = productImages.findIndex((img: any) => img.path === selectedImage);
                                         const nextIndex = (currentIndex + 1) % productImages.length;
                                         setSelectedImage(productImages[nextIndex].path);
                                     }}
@@ -165,18 +246,44 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
                     {/* Price Display */}
                     <div className="bg-gray-100 p-6 rounded-lg mb-6 text-center">
-                        <p className="text-lg text-gray-600 mb-2">Sale Price</p>
-                        <p className="text-4xl font-bold text-emerald-600">₹{product.originalPurchasePrice}</p>
+                        <p className="text-lg text-gray-600 mb-2">{product.listingType.includes('rent') ? "Rent Price" : "Sell Price"}</p>
+                        {product.listingType.includes('rent') ?
+                            <p className="text-4xl font-bold text-emerald-600">₹{Math.round((product?.originalPurchasePrice) * 21 / 100)} for 3 days</p>
+                            :
+                            <p className="text-4xl font-bold text-emerald-600">₹{Math.round(product?.originalPurchasePrice * 50 / 100)}</p>
+                        }
                     </div>
 
                     {/* Buy Button */}
                     <div className="flex gap-4 mb-6">
-                        <Button className="w-1/2 bg-primary text-primary-foreground py-5 text-lg rounded-lg shadow-md transition">
-                            BUY NOW
-                        </Button>
-                        <Button variant="outline" className="w-1/2 border-emerald-600 text-emerald-600 py-5 text-lg rounded-lg shadow-sm hover:bg-emerald-50 transition">
-                            RENT NOW
-                        </Button>
+                        {product.listingType.includes('rent') &&
+                            <Button  className="w-1/2 border-emerald-600 bg-primary text-primary-foreground py-5 text-lg rounded-lg shadow-sm  transition">
+                                RENT NOW
+                            </Button>
+                        }
+                        {product.listingType.includes('sell') &&
+                            <Button className="w-1/2 bg-primary text-primary-foreground py-5 text-lg rounded-lg shadow-md transition">
+                                BUY NOW
+                            </Button>
+                        }
+                      
+                                <Button
+                      onClick={() => cartItems.includes(product.id)
+                        ? router.push('/cart')
+                        : handleAddToCart(product.id)
+                      }
+                      disabled={isAddingToCart === product.id}
+                     className="w-1/2  py-5 text-lg rounded-lg shadow-md transition"
+                      variant={cartItems.includes(product.id) ? "default" : "outline"}
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      {isAddingToCart === product.id
+                        ? 'Adding...'
+                        : cartItems.includes(product.id)
+                          ? 'Go to Cart'
+                          : 'Add to Cart'
+                      }
+                    </Button>
                     </div>
 
                     {/* Tags */}
@@ -224,8 +331,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                             <span className="font-medium capitalize">{product.color}</span>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                            <span className="text-gray-600">RETAIL PRICE</span>
-                            <span className="font-medium">₹{product.originalPurchasePrice}</span>
+                            <span className="text-gray-600">{product.listingType.includes('sell')?"BUY FOR":"RENTAL PRICE"}</span>
+                            {product.listingType.includes('rent') ?
+                            <span className="font-medium">₹{Math.round((product?.originalPurchasePrice) * 21 / 100)} for 3 days</span>
+                            :
+                            <span className="font-medium">₹{Math.round(product?.originalPurchasePrice * 50 / 100)}</span>
+                        }
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-gray-100">
                             <span className="text-gray-600">PRODUCT CONDITION</span>
@@ -238,7 +349,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                         All purchases are verified and guaranteed authentic.
                     </p>
 
-                    
+
                 </motion.div>
             </div>
         </div>

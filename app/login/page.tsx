@@ -19,6 +19,8 @@ import { GoogleLogin, GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/g
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
 import { toast } from "sonner";
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from '@/lib/firebase'
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -36,7 +38,7 @@ export default function LoginPage() {
     resolver: yupResolver(loginSchema)
   });
 
- 
+
   const responseGoogle = async (authResult: any) => {
 
     try {
@@ -46,7 +48,7 @@ export default function LoginPage() {
         const token = result.data.token
         const object = { email, name, image, token }
         localStorage.setItem('user-info', JSON.stringify(object))
-        
+
         router.push('/profile');
       }
     } catch (error) {
@@ -67,11 +69,11 @@ export default function LoginPage() {
         email: data.email,
         password: data.password
       });
-  
+
       if (response.success) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('user-info', JSON.stringify(response.user));
-        
+
         toast.success("Login successful!");
         router.push('/profile');
       } else {
@@ -84,7 +86,7 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-  
+
 
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -95,45 +97,82 @@ export default function LoginPage() {
       window.location.href = "/profile"
     }, 1500)
   }
-  const handleLoginSuccess = async (credentialResponse: any) => {
-    const decoded: any = jwtDecode(credentialResponse.credential);
+  // const handleLoginSuccess = async (credentialResponse: any) => {
+  //   const decoded: any = jwtDecode(credentialResponse.credential);
 
-    const { email, name, picture } = decoded;
-    const token = credentialResponse.credential;
+  //   const { email, name, picture } = decoded;
+  //   const token = credentialResponse.credential;
 
-    const object = { email, name, image: picture, token };
+  //   const object = { email, name, image: picture, token };
+  //   try {
+  //     if (token) {
+  //       const result: any = await loginUser({ id_token: token });
+  //       if (result.success == true) {
+  //         const userInfo = {
+  //           email: result.user.email,
+  //           name: result.user.name,
+  //           image: result.user.avatar,
+  //           id: result.user.id,
+  //           role: result.user.role
+  //         };
+
+  //         localStorage.setItem('user-info', JSON.stringify(userInfo));
+  //         localStorage.setItem('token', result.token); // Store token without JSON.stringify
+
+  //         router.push('/profile');
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.log('Erro while requesting goggle code', error)
+  //   }
+
+  // };
+  const handleGoogleLogin = async () => {
     try {
-      if (token) {
-        const result: any = await loginUser({ id_token: token });
-        if (result.success == true) {
-          const userInfo = {
-            email: result.user.email,
-            name: result.user.name,
-            image: result.user.avatar,
-            id: result.user.id,
-            role: result.user.role
-          };
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
 
-          localStorage.setItem('user-info', JSON.stringify(userInfo));
-          localStorage.setItem('token', result.token); // Store token without JSON.stringify
-         
-          router.push('/profile');
-        }
+      const object = {
+        email: user.email,
+        name: user.displayName,
+        image: user.photoURL,
+        token: await user.getIdToken()
+      };
+
+      // Optional: send ID token to backend
+      const response: any = await loginUser({ id_token: object.token });
+
+      if (response.success) {
+        const userInfo = {
+          email: response.user.email,
+          name: response.user.name,
+          image: response.user.avatar,
+          id: response.user.id,
+          role: response.user.role
+        };
+
+        localStorage.setItem("user-info", JSON.stringify(userInfo));
+        localStorage.setItem("token", response.token);
+
+        router.push("/profile");
+      } else {
+        toast.error("Login failed");
       }
     } catch (error) {
-      console.log('Erro while requesting goggle code', error)
+      console.error("Firebase login error", error);
+      toast.error("Login failed");
     }
-
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 pattern-bg">
       <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-background/0 to-background/0 z-0"></div>
       <div className="w-full max-w-md z-10">
-      <div className="bg-background/95 rounded-xl shadow-2xl overflow-hidden border border-gray-800/10 backdrop-blur-sm">
-      <div className="p-6">
+        <div className="bg-background/95 rounded-xl shadow-2xl overflow-hidden border border-gray-800/10 backdrop-blur-sm">
+          <div className="p-6">
             <h1 className="text-2xl font-bold text-center mb-6">Welcome Back</h1>
             <div className="w-full flex justify-center">
-              <GoogleLogin
+              {/* <GoogleLogin
                 onSuccess={handleLoginSuccess}
                 onError={() => {
                   console.error("Google Login Failed");
@@ -142,7 +181,11 @@ export default function LoginPage() {
                 size="large"
                 width={340}
                 useOneTap
-              />
+              /> */}
+              <Button onClick={handleGoogleLogin} variant="outline" className="w-full mb-4">
+                <img src="/google-logo.png" alt="Google" className="w-5 h-5 mr-2" />
+                Continue with Google
+              </Button>
             </div>
             <div className="relative my-6">
               <Separator />
