@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Loader } from "@/components/ui/loader";
 
 export default function ProductPage({ params }: { params: { id: string } }) {
     const [product, setProduct] = useState<any>(null);
@@ -59,9 +60,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[70vh]">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+           <div className="flex items-center justify-center py-8 h-full">
+  <Loader text="Loading product..." />
+</div>
         );
     }
 
@@ -126,6 +127,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         fetchCartItems();
         fetchWishlist();
       }, []);
+      console.log(params?.id,"params?.id")
     useEffect(() => {
         if (params?.id) {
             fetchProduct();

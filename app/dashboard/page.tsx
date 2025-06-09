@@ -1,3 +1,5 @@
+
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -74,117 +76,235 @@ const savedItems = [
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview")
   const [isLoading, setIsLoading] = useState(false);
-const[myListings,setMyListings]=useState<any>([])
-useEffect(() => {
-  if (activeTab === "listings" && myListings?.length==0) {
-    listProductApi();
-  }
-}, [activeTab]);
-const listProductApi = async () => {
-  setIsLoading(true);
-  try {
-    const response = await getUserProducts();
-    if (response.success === true) {
-      const formattedProducts = response.products.map((product: any) => ({
-        id: product.id,
-        productName: product.productName,
-        status: product.status || "Active",
-        frontLook: product.productImage.frontLook,
-        rentalCount: product.rentalCount || 0,
-        earnings: product.earnings || "₹0",
-        category: product.category,
-        originalPurchasePrice: product.originalPurchasePrice,
-        color: product.color,
-        size: product.size,
-        listingType: product.listingType,
-        createdAt: new Date(product.createdAt).toLocaleDateString('en-IN')
-      }));
-      setMyListings(formattedProducts);
+  const [myListings, setMyListings] = useState<any>([])
+  useEffect(() => {
+    if (activeTab === "listings" && myListings?.length == 0) {
+      listProductApi();
     }
-  } catch (error) {
-    console.error('Error fetching products:', error);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  }, [activeTab]);
+  const listProductApi = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getUserProducts();
+      if (response.success === true) {
+        const formattedProducts = response.products.map((product: any) => ({
+          id: product.id,
+          productName: product.productName,
+          status: product.status || "Active",
+          frontLook: product.productImage.frontLook,
+          rentalCount: product.rentalCount || 0,
+          earnings: product.earnings || "₹0",
+          category: product.category,
+          originalPurchasePrice: product.originalPurchasePrice,
+          color: product.color,
+          size: product.size,
+          listingType: product.listingType,
+          createdAt: new Date(product.createdAt).toLocaleDateString('en-IN')
+        }));
+        setMyListings(formattedProducts);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div
+      style={{
+        background: `linear-gradient(to bottom right, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.15))`
+      }}   >
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+        
+        @keyframes shimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+        
+        .animate-fadeInUp {
+          animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .animate-slideIn {
+          animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        .animate-pulse-gentle {
+          animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .gradient-card {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: none;
+          color: white;
+        }
+        
+        .gradient-card-2 {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          border: none;
+          color: white;
+        }
+        
+        .gradient-card-3 {
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          border: none;
+          color: white;
+        }
+        
+        .gradient-card-4 {
+          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+          border: none;
+          color: white;
+        }
+        
+        .glass-card {
+          background: rgba(255, 255, 255, 0.25);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        
+        .hover-lift {
+          transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .shimmer {
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+          background-size: 200% 100%;
+          animation: shimmer 2s infinite;
+        }
+        
+        .tab-active {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+        }
+      `}</style>
+
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex items-center justify-between space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <div className="flex items-center justify-between space-y-2 animate-fadeInUp">
+          <div>
+            <h2 className="text-4xl bg-primary text-primary-foreground font-bold tracking-tight bg-clip-text text-transparent">
+              Dashboard
+            </h2>
+            <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your business.</p>
+          </div>
           <div className="flex items-center space-x-2">
             <Link href="/profile">
-              <Button>
+              <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <Upload className="mr-2 h-4 w-4" />
-Add New Listing              </Button>
+                Add New Listing
+              </Button>
             </Link>
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-4" onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="listings">My Listings</TabsTrigger>
-            <TabsTrigger value="saved">Saved Items</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-4 animate-slideIn" onValueChange={setActiveTab}>
+          <TabsList className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
+            <TabsTrigger
+              value="overview"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="orders"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
+            >
+              Active Orders
+            </TabsTrigger>
+            <TabsTrigger
+              value="listings"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
+            >
+              My Listings
+            </TabsTrigger>
+            <TabsTrigger
+              value="analytics"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
+            >
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card className="hover-scale">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">₹6,050</div>
-                  <p className="text-xs text-muted-foreground">+20.1% from last month</p>
-                </CardContent>
-              </Card>
-              <Card className="hover-scale">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Rentals</CardTitle>
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">1</div>
-                  <p className="text-xs text-muted-foreground">2 items returning soon</p>
-                </CardContent>
-              </Card>
-              <Card className="hover-scale">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
-                  <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">2</div>
-                  <p className="text-xs text-muted-foreground">8 total rental transactions</p>
-                </CardContent>
-              </Card>
-              <Card className="hover-scale">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Saved Items</CardTitle>
-                  <Heart className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">2</div>
-                  <p className="text-xs text-muted-foreground">+2 new items this week</p>
-                </CardContent>
-              </Card>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+           <Card className="bg-gradient-to-br from-blue-50 via-white to-blue-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02]">
+  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <CardTitle className="text-sm font-medium text-blue-800">Total Earnings</CardTitle>
+    <CreditCard className="h-5 w-5 text-blue-500" />
+  </CardHeader>
+  <CardContent>
+    <div className="text-3xl font-bold text-blue-900">₹6,050</div>
+    <p className="text-xs text-blue-600">+20.1% from last month</p>
+  </CardContent>
+</Card>
+
+<Card className="bg-gradient-to-br from-green-50 via-white to-green-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02]">
+  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <CardTitle className="text-sm font-medium text-green-800">Total Listings</CardTitle>
+    <ShoppingBag className="h-5 w-5 text-green-500" />
+  </CardHeader>
+  <CardContent>
+    <div className="text-3xl font-bold text-green-900">2</div>
+    <p className="text-xs text-green-600">8 total rental transactions</p>
+  </CardContent>
+</Card>
+
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4 hover-scale">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7  w-full">
+              <Card className="col-span-8 glass-card hover-lift animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
                 <CardHeader>
-                  <CardTitle>Recent Orders</CardTitle>
+                  <CardTitle className="text-gray-800 flex items-center">
+                    <Package className="mr-2 h-5 w-5 text-purple-600" />
+                    Active Orders
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent >
                   <div className="space-y-4">
-                    {recentOrders.map((order) => (
-                      <div key={order.id} className="flex items-center">
-                        <div className="relative h-12 w-12 rounded-md overflow-hidden mr-4">
+                    {recentOrders.map((order, index) => (
+                      <div key={order.id} className="flex items-center p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-300 animate-slideIn" style={{ animationDelay: `${0.1 * index}s` }}>
+                        <div className="relative h-12 w-12 rounded-lg overflow-hidden mr-4 shadow-md">
                           <Image
                             src={order.image || "/placeholder.svg"}
                             alt={order.product}
@@ -193,8 +313,8 @@ Add New Listing              </Button>
                           />
                         </div>
                         <div className="flex-1 space-y-1">
-                          <p className="text-sm font-medium leading-none">{order.product}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-sm font-medium leading-none text-gray-800">{order.product}</p>
+                          <p className="text-xs text-gray-600">
                             {order.date} · {order.type}
                           </p>
                         </div>
@@ -207,74 +327,46 @@ Add New Listing              </Button>
                                   ? "secondary"
                                   : "default"
                             }
+                            className={`${order.status === "Delivered"
+                                ? "bg-green-100 text-green-800 border-green-300"
+                                : order.status === "On Rent"
+                                  ? "bg-blue-100 text-blue-800 border-blue-300"
+                                  : "bg-purple-100 text-purple-800 border-purple-300"
+                              } shadow-sm`}
                           >
                             {order.status}
                           </Badge>
-                          <div className="text-sm font-medium">{order.amount}</div>
+                          <div className="text-sm font-semibold text-gray-800">{order.amount}</div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Link href="/orders" className="text-sm text-primary hover:underline">
-                    View all orders
+                  <Link href="/orders" className="text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium transition-colors duration-200">
+                    View all orders →
                   </Link>
                 </CardFooter>
               </Card>
-              <Card className="col-span-3 hover-scale">
-                <CardHeader>
-                  <CardTitle>Upcoming Returns</CardTitle>
-                  <CardDescription>Items that need to be returned soon</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center">
-                      <div className="relative h-12 w-12 rounded-md overflow-hidden mr-4">
-                        <Image
-                          src="https://images.unsplash.com/photo-1599032909756-5deb82fea3b0?q=80&w=1000"
-                          alt="Wedding Sherwani"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">Wedding Sherwani</p>
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <Clock className="mr-1 h-3 w-3" />
-                          <span>Return in 2 days</span>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        Extend
-                      </Button>
-                    </div>
 
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="text-muted-foreground">Rental Period</div>
-                        <div className="font-medium">75% complete</div>
-                      </div>
-                      <Progress value={75} className="mt-2" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-4">
-            <Card>
+            <Card className="glass-card hover-lift animate-fadeInUp">
               <CardHeader>
-                <CardTitle>Order History</CardTitle>
-                <CardDescription>View all your past rentals and purchases</CardDescription>
+                <CardTitle className="text-gray-800 flex items-center">
+                  <Calendar className="mr-2 h-5 w-5 text-purple-600" />
+                  Order History
+                </CardTitle>
+                <CardDescription className="text-gray-600">View all your past rentals and purchases</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {recentOrders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between border-b pb-4">
+                  {recentOrders.map((order, index) => (
+                    <div key={order.id} className="flex items-center justify-between border-b border-white/30 pb-4 animate-slideIn" style={{ animationDelay: `${0.1 * index}s` }}>
                       <div className="flex items-center">
-                        <div className="relative h-16 w-16 rounded-md overflow-hidden mr-4">
+                        <div className="relative h-16 w-16 rounded-lg overflow-hidden mr-4 shadow-lg">
                           <Image
                             src={order.image || "/placeholder.svg"}
                             alt={order.product}
@@ -283,8 +375,8 @@ Add New Listing              </Button>
                           />
                         </div>
                         <div>
-                          <h4 className="font-medium">{order.product}</h4>
-                          <div className="flex items-center text-sm text-muted-foreground mt-1">
+                          <h4 className="font-medium text-gray-800">{order.product}</h4>
+                          <div className="flex items-center text-sm text-gray-600 mt-1">
                             <Calendar className="mr-1 h-3 w-3" />
                             <span>{order.date}</span>
                           </div>
@@ -296,16 +388,21 @@ Add New Listing              </Button>
                                   ? "secondary"
                                   : "default"
                             }
-                            className="mt-2"
+                            className={`mt-2 ${order.status === "Delivered"
+                                ? "bg-green-100 text-green-800 border-green-300"
+                                : order.status === "On Rent"
+                                  ? "bg-blue-100 text-blue-800 border-blue-300"
+                                  : "bg-purple-100 text-purple-800 border-purple-300"
+                              } shadow-sm`}
                           >
                             {order.status}
                           </Badge>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">{order.amount}</div>
-                        <div className="text-sm text-muted-foreground">{order.type}</div>
-                        <Button variant="ghost" size="sm" className="mt-2">
+                        <div className="font-semibold text-gray-800 text-lg">{order.amount}</div>
+                        <div className="text-sm text-gray-600">{order.type}</div>
+                        <Button variant="ghost" size="sm" className="mt-2 text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-all duration-200">
                           Details
                           <ChevronRight className="ml-1 h-4 w-4" />
                         </Button>
@@ -318,93 +415,66 @@ Add New Listing              </Button>
           </TabsContent>
 
           <TabsContent value="listings" className="space-y-4">
-            <Card>
+            <Card className="glass-card hover-lift animate-fadeInUp">
               <CardHeader>
-                <CardTitle>My Listings</CardTitle>
-                <CardDescription>Manage your items listed for rent or sale</CardDescription>
+                <CardTitle className="text-gray-800 flex items-center">
+                  <ShoppingBag className="mr-2 h-5 w-5 text-purple-600" />
+                  My Listings
+                </CardTitle>
+                <CardDescription className="text-gray-600">Manage your items listed for rent or sale</CardDescription>
               </CardHeader>
               <CardContent>
-  {isLoading ? (
-    <div className="flex justify-center py-8">
-      <Loader text="Loading products..." />
-    </div>
-  ) : (
-    <ProductList
-      products={myListings}
-      onEditClick={(product:any) => {
-        console.log('Edit product:', product)
-      }}
-    />
-  )}
-</CardContent>
-             
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="saved" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Saved Items</CardTitle>
-                <CardDescription>Items you've saved for later</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-6 md:grid-cols-2">
-                  {savedItems.map((item) => (
-                    <Card key={item.id} className="overflow-hidden hover-scale">
-                      <div className="relative h-48 w-full">
-                        <Image src={item.image || "/placeholder.svg"} alt={item.title} fill className="object-cover" />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full"
-                        >
-                          <Heart className="h-4 w-4 fill-primary text-primary" />
-                          <span className="sr-only">Remove from saved</span>
-                        </Button>
-                      </div>
-                      <CardContent className="p-4">
-                        <h4 className="font-medium">{item.title}</h4>
-                        <div className="flex justify-between items-center mt-2">
-                          <div>
-                            <div className="text-sm text-muted-foreground">Buy for</div>
-                            <div className="font-medium">{item.price}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-sm text-muted-foreground">Rent for</div>
-                            <div className="font-medium">{item.rentalPrice}/day</div>
-                          </div>
-                        </div>
-                        <Button className="w-full mt-4">View Details</Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="relative">
+                      <Loader text="Loading products..." />
+                      <div className="absolute inset-0 shimmer rounded-lg"></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="animate-fadeInUp">
+                    <ProductList
+                      products={myListings}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
-            <Card>
+            <Card className="glass-card hover-lift animate-fadeInUp">
               <CardHeader>
-                <CardTitle>Rental Analytics</CardTitle>
-                <CardDescription>Track the performance of your listings</CardDescription>
+                <CardTitle className="text-gray-800 flex items-center">
+                  <TrendingUp className="mr-2 h-5 w-5 text-purple-600" />
+                  Rental Analytics
+                </CardTitle>
+                <CardDescription className="text-gray-600">Track the performance of your listings</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-8">
-                  <div>
-                    <h4 className="font-medium mb-2">Monthly Earnings</h4>
-                    <div className="h-[200px] w-full bg-muted rounded-md flex items-center justify-center">
-                      <TrendingUp className="h-8 w-8 text-muted-foreground" />
-                      <span className="ml-2 text-muted-foreground">Earnings chart will appear here</span>
+                  <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
+                    <h4 className="font-medium mb-4 text-gray-800 flex items-center">
+                      <CreditCard className="mr-2 h-4 w-4 text-purple-600" />
+                      Monthly Earnings
+                    </h4>
+                    <div className="h-[200px] w-full bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center shadow-inner border border-white/30">
+                      <div className="text-center">
+                        <TrendingUp className="h-12 w-12 text-purple-500 mx-auto mb-2 animate-pulse-gentle" />
+                        <span className="text-gray-600 font-medium">Earnings chart will appear here</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <h4 className="font-medium mb-2">Popular Items</h4>
+                  <div className="animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+                    <h4 className="font-medium mb-4 text-gray-800 flex items-center">
+                      <Heart className="mr-2 h-4 w-4 text-purple-600" />
+                      Popular Items
+                    </h4>
                     <div className="space-y-4">
-                      {myListings?.map((listing:any) => (
-                        <div key={listing.id} className="flex items-center">
-                          <div className="relative h-12 w-12 rounded-md overflow-hidden mr-4">
+                      {myListings?.map((listing: any, index: number) => (
+                        <div key={listing.id} className="flex items-center p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-300 animate-slideIn" style={{ animationDelay: `${0.1 * index}s` }}>
+                          <div className="relative h-12 w-12 rounded-lg overflow-hidden mr-4 shadow-md">
                             <Image
                               src={listing.image || "/placeholder.svg"}
                               alt={listing.title}
@@ -413,10 +483,10 @@ Add New Listing              </Button>
                             />
                           </div>
                           <div className="flex-1">
-                            <p className="font-medium">{listing.title}</p>
-                            <p className="text-sm text-muted-foreground">{listing.rentalCount} rentals</p>
+                            <p className="font-medium text-gray-800">{listing.title}</p>
+                            <p className="text-sm text-gray-600">{listing.rentalCount} rentals</p>
                           </div>
-                          <div className="font-medium">{listing.earnings}</div>
+                          <div className="font-semibold text-gray-800">{listing.earnings}</div>
                         </div>
                       ))}
                     </div>
@@ -430,4 +500,3 @@ Add New Listing              </Button>
     </div>
   )
 }
-
