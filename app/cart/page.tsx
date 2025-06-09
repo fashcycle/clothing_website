@@ -276,7 +276,7 @@ if(user){
                       </div>
 
                       {user?.addresses?.length > 0 && (
-                        <div className="border rounded-lg p-4 w-full">
+                        <div className="border rounded-lg p-4 w-full mt-8">
                           <div className="flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-medium">

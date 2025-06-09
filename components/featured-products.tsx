@@ -69,13 +69,13 @@ export default function FeaturedProducts() {
   const router = useRouter();
   const [favorites, setFavorites] = useState<number[]>([])
   const [isClient, setIsClient] = useState(false)
+  const [user, setUser] = useState<any>("")
   const [products, setProducts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<string[]>([]);
   const [wishlistedItems, setWishlistedItems] = useState<string[]>([]);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
-  const [user, setUser] = useState<any>("")
   const fetchWishlist = async () => {
     try {
       const response = await getWishlistedProducts();

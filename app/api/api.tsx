@@ -394,3 +394,22 @@ export const getAllProducts = async () => {
     throw error;
   }
 };
+export const filteredProductList = async (query?: any) => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_FILTERED_PRODUCT_LIST as string,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        params: query, // 🔁 Add query here
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || 'Failed to fetch all products');
+    }
+    throw error;
+  }
+};

@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, Edit, Eye, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { formatDate } from "@/app/utils/dateUtils";
+import { formatDate, formatDateToDDMMYYYY } from "@/app/utils/dateUtils";
 import { useRouter } from "next/navigation";
 
-export function ProductList({ products, onEditClick }: any) {
+export function ProductList({ products }: any) {
     const router = useRouter();
 
     const handleViewProduct = (e: React.MouseEvent, productId: string) => {
@@ -21,7 +21,7 @@ export function ProductList({ products, onEditClick }: any) {
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: index * 0.05 }}
-               onClick={() => onEditClick(product)}
+                                onClick={(e) => handleViewProduct(e, product.id)}
                className="group flex items-center justify-between border border-gray-200 rounded-xl p-5 hover:bg-gradient-to-r from-primary/10 to-accent/5 shadow-md transition-all duration-300"
            >
                     <div className="flex items-center space-x-5">
@@ -35,11 +35,15 @@ export function ProductList({ products, onEditClick }: any) {
                         </div>
                         <div className="space-y-2">
                             <div>
+                                <div className="flex gap-4">
                                 <h4 className="font-semibold text-xl text-primary tracking-wide">{product.productName}</h4>
-                                <p className="text-sm text-muted-foreground mb-6">Added on {formatDate(product.createdAt)}</p>
+                                
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-6">  Added on {formatDate(product.createdAt)}
+</p>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                <Badge variant="outline" className="border-blue-400 text-blue-600">
+                                <Badge variant="outline" className="border-blue-400 text-blue-600 capitalize">
                                     {product.category}
                                 </Badge>
                                 {product.listingType.map((type: string) => (
@@ -47,15 +51,10 @@ export function ProductList({ products, onEditClick }: any) {
                                         {type}
                                     </Badge>
                                 ))}
-                                <Badge
-                                    variant={product.status === "Active" ? "default" : "outline"}
-                                    className={product.status === "Active" ? "bg-green-100 text-green-700" : "text-gray-500"}
-                                >
-                                    {product.status}
-                                </Badge>
+                               
                             </div>
                             <div className="flex gap-6 text-sm text-gray-600 font-medium ">
-                                <span>🎨 Color: <span className="text-black">{product.color}</span></span>
+                                <span>🎨 Color: <span className="text-black capitalize">{product.color}</span></span>
                                 <span>📏 Size: <span className="text-black">{product.size}</span></span>
                             </div>
                         </div>
@@ -63,12 +62,20 @@ export function ProductList({ products, onEditClick }: any) {
 
                     <div className="flex flex-col items-end space-y-2">
                         <div className="text-right">
+                                                            <div className="flex gap-10">
+
+                             <Badge
+                                    variant={product.status === "Active" ? "default" : "outline"}
+                                    className={product.status === "Active" ? "bg-green-100 text-green-700" : "text-gray-500"}
+                                >
+                                    {product.status}
+                                </Badge>
                             <div className="font-bold text-xl text-emerald-600">₹ {product.originalPurchasePrice}</div>
+                            </div>
                             <div className="text-sm text-gray-500">{product.rentalCount} Rentals</div>
                             <div className="text-sm font-semibold text-emerald-600">+ {product.earnings} Earned</div>
                             <div 
                                 className="flex items-center text-sm text-primary mt-6 font-medium group/view cursor-pointer"
-                                onClick={(e) => handleViewProduct(e, product.id)}
                             >
                                 <span className="group-hover/view:translate-x-1 transition-transform">View Product</span>
                                 <ChevronRight className="h-4 w-4 ml-1 group-hover/view:translate-x-1 transition-transform" />
