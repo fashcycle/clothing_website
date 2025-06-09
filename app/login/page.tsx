@@ -21,6 +21,7 @@ import { jwtDecode } from 'jwt-decode';
 import { toast } from "sonner";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from '@/lib/firebase'
+import { sendPasswordResetEmail } from "firebase/auth";
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -163,6 +164,7 @@ export default function LoginPage() {
       toast.error("Login failed");
     }
   };
+ 
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 pattern-bg">
