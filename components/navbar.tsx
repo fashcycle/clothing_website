@@ -80,6 +80,7 @@ export default function Navbar() {
           <nav className="flex flex-col gap-4">
             <Link
               href="/"
+              
             >
               Fashcycle
             </Link>
