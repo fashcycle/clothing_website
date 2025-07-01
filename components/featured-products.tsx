@@ -288,7 +288,7 @@ export default function FeaturedProducts() {
                         ? 'Adding...'
                         : cartItems.includes(product.id)
                           ? 'Go to Cart'
-                          : 'Add to Cart'
+                          : 'Have a Look'
                       }
                     </Button>
                   </div>

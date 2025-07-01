@@ -6,70 +6,40 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { getAllCategories } from "@/app/api/api"
 
-const categories = [
-  {
-    id: 1,
-    name: "Lehenga",
-    image: "/lehnga.png",
-    count: 120,
-  },
-  {
-    id: 2,
-    name: "Gown",
-    image: "/gown.png",
-    count: 85,
-  },
-  {
-    id: 3,
-    name: "Sharara Set",
-    image: "/sharara-set.png",
-    count: 64,
-  },
-  {
-    id: 4,
-    name: "Anarkali",
-    image: "/anarkali.png",
-    count: 92,
-  },
-  {
-    id: 5,
-    name: "Saree",
-    image: "/saree.png",
-    count: 150,
-  },
-  {
-    id: 6,
-    name: "Rajasthani Poshak",
-    image: "/rajesthani-poshak.png",
-    count: 150,
-  },
-  {
-    id: 7,
-    name: "Suit",
-    image: "/suit.png",
-    count: 110,
-  },
-  {
-    id: 8,
-    name: "Other",
-    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000",
-    count: 110,
-  },
-]
+type Category = {
+  id: number
+  name: string
+  image: string
+  count: number
+}
 
 export default function CategorySlider() {
+  const [categories, setCategories] = useState<Category[]>([])
   const [isClient, setIsClient] = useState(false)
   const sliderRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setIsClient(true)
+
+    const fetchCategories = async () => {
+      try {
+        const data = await getAllCategories()
+        setCategories(data.categories || []) // or just `data` depending on API response shape
+      } catch (error) {
+        console.error("Failed to fetch categories:", error)
+      }
+    }
+
+    fetchCategories()
   }, [])
 
   const scroll = (direction: "left" | "right") => {
     if (sliderRef.current) {
       const { current } = sliderRef
-      const scrollAmount = direction === "left" ? current.scrollLeft - 300 : current.scrollLeft + 300
+      const scrollAmount =
+        direction === "left" ? current.scrollLeft - 300 : current.scrollLeft + 300
 
       current.scrollTo({
         left: scrollAmount,
@@ -100,10 +70,10 @@ export default function CategorySlider() {
           className="flex overflow-x-auto scrollbar-hide gap-4 pb-4 -mx-4 px-4 snap-x"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {categories?.map((category, index) => (
+          {categories.map((category, index) => (
             <Link
               key={category.id}
-              href={`/category/${category.name.toLowerCase().replace(" ", "-")}`}
+              href={`/category/${category.name.toLowerCase().replace(/\s+/g, "-")}`}
               className={cn("flex-shrink-0 w-[250px] snap-start", isClient && `animate-fade-in-delay-${index % 3}`)}
             >
               <div className="relative h-[300px] overflow-hidden group hover-scale">
@@ -115,7 +85,7 @@ export default function CategorySlider() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 p-6 w-full">
-                  <h3 className="text-white font-serif text-xl">{category.name}</h3>
+                  <h3 className="text-white font-serif text-xl capitalize">{category.name}</h3>
                   <p className="text-white/80 text-sm mt-1">{category.count} items</p>
                 </div>
               </div>
@@ -126,4 +96,3 @@ export default function CategorySlider() {
     </section>
   )
 }
-

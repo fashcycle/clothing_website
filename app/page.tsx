@@ -23,7 +23,7 @@ export default function Home() {
       localStorage.removeItem("hasSeenLocationPopup");
     }
   }, []);
-
+const isLogin = localStorage.getItem("token") ? true : false;
   return (
     <div className="flex flex-col">
       {/* Location Popup - Only shown on home page */}
@@ -255,7 +255,7 @@ export default function Home() {
                 Start renting, lending, and buying designer fashion from people like you.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4 md:justify-end">
+            {!isLogin ? <div className="flex flex-col sm:flex-row gap-4 md:justify-end">
               <Link href="/signup">
                 <Button size="lg" variant="secondary" className="w-full sm:w-auto group">
                   Sign Up Now
@@ -271,7 +271,7 @@ export default function Home() {
                   Browse Collection
                 </Button>
               </Link> */}
-            </div>
+            </div> : <></>}
           </div>
         </div>
       </section>
