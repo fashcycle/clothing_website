@@ -33,7 +33,7 @@ interface AddressFormDialogProps {
 
 // Fix the schema definition
 const addressSchema = yup.object().shape({
-  address: yup.string().required("Address type is required"),
+  address: yup.string(),
   customAddressType: yup.string().when("address", {
     is: "OTHER", // Changed from 'Other' to match the SelectItem value
     then: (schema) => schema.required("Custom address type is required"),

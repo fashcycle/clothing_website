@@ -1,6 +1,5 @@
+import ProductPage from "@/components/productPage";
 
-import ProductPage from "@/components/productPage"; // adjust if needed
-
-export default function Page({ params }: { params: { id: any } }) {
+export default async function Page({ params }: { params: { id: string } }) {
   return <ProductPage id={params.id} />;
 }

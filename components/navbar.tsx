@@ -13,6 +13,8 @@ import {
   LayoutDashboard,
   LogOut,
   Bell,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Tooltip,
@@ -32,23 +34,33 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { getAllCategories } from "@/app/api/api";
 
-// Updated categories as requested
-const categories = [
-  { name: "HOME", href: "/" },
-  { name: "LEHENGA", href: "/lehenga" },
-  { name: "GOWN", href: "/gown" },
-  { name: "SHARARA SET", href: "/sharara-set" },
-  { name: "ANARKALI", href: "/anarkali" },
-  { name: "SAREE", href: "/saree" },
-  { name: "SUIT", href: "/suit" },
-];
+type Category = {
+  name: string;
+  id: string;
+};
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLogin, setIsLogin] = useState<any>(false);
   const [userImage, setUserImage] = useState<any>();
   const router: any = useRouter();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getAllCategories();
+        setCategories(data.categories || []);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const toggleLogout = () => {
     localStorage.removeItem("user-info");
@@ -56,6 +68,7 @@ export default function Navbar() {
     setIsLogin(false);
     router.push("/login");
   };
+
   useEffect(() => {
     function syncAuthState() {
       const token: any = localStorage.getItem("token");
@@ -77,6 +90,24 @@ export default function Navbar() {
     };
   });
 
+  // Category slider functions
+  const categoriesPerSlide = 6;
+  const totalSlides = Math.ceil((categories.length + 1) / categoriesPerSlide); // +1 for Home
+  const canGoLeft = currentSlide > 0;
+  const canGoRight = currentSlide < totalSlides - 1;
+
+  const slideLeft = () => {
+    if (canGoLeft) {
+      setCurrentSlide((prev) => prev - 1);
+    }
+  };
+
+  const slideRight = () => {
+    if (canGoRight) {
+      setCurrentSlide((prev) => prev + 1);
+    }
+  };
+
   return (
     <header className="w-full bg-primary text-primary-foreground fixed top-0 z-50 left-0 right-0">
       <div className="container flex flex-wrap items-center justify-between h-16 w-full px-4">
@@ -96,10 +127,15 @@ export default function Navbar() {
             <SheetContent side="left">
               <nav className="flex flex-col gap-4">
                 <Link href="/">Fashcycle</Link>
+                <li key="home">
+                  <Link href="/" className="text-lg font-medium">
+                    Home
+                  </Link>
+                </li>
                 {categories.map((category) => (
                   <Link
-                    key={category.name}
-                    href={category.href}
+                    key={category.id}
+                    href={category.name}
                     className="text-lg font-medium"
                   >
                     {category.name}
@@ -308,19 +344,89 @@ export default function Navbar() {
       </div>
 
       <nav className="hidden md:block border-t border-primary-foreground/10">
-        <div className="container flex justify-center">
-          <ul className="flex space-x-8 py-3">
-            {categories.map((category) => (
-              <li key={category.name}>
-                <Link
-                  href={category.href}
-                  className="category-link text-primary-foreground/90 hover:text-primary-foreground"
-                >
-                  {category.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <div className="container flex items-center justify-center">
+          <div className="flex items-center gap-4">
+            {/* Debug info - remove in production */}
+            <div className="text-xs text-primary-foreground/70 absolute top-0 left-0">
+              {currentSlide}/{totalSlides - 1} | L:{canGoLeft.toString()} | R:
+              {canGoRight.toString()}
+            </div>
+
+            {canGoLeft && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={slideLeft}
+                className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            )}
+
+            <div className="overflow-hidden">
+              <ul
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{
+                  transform: `translateX(-${currentSlide * 100}%)`,
+                  width: `${totalSlides * 100}%`, // Fixed: use totalSlides, not categories.length
+                }}
+              >
+                {Array.from({ length: totalSlides }, (_, slideIndex) => {
+                  const startIndex = slideIndex * categoriesPerSlide;
+                  const endIndex = startIndex + categoriesPerSlide;
+
+                  return (
+                    <li
+                      key={slideIndex}
+                      className="flex justify-center py-3"
+                      style={{ width: `${100 / totalSlides}%` }} // Fixed: use totalSlides
+                    >
+                      <div className="flex space-x-8">
+                        {slideIndex === 0 && (
+                          <Link
+                            href="/"
+                            className="category-link text-primary-foreground/90 hover:text-primary-foreground whitespace-nowrap transition-all duration-200 hover:scale-105 hover:drop-shadow-lg relative group"
+                          >
+                            Home
+                            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+                          </Link>
+                        )}
+
+                        {categories
+                          .slice(
+                            slideIndex === 0 ? 0 : startIndex - 1, // Adjust for Home link
+                            slideIndex === 0
+                              ? categoriesPerSlide - 1
+                              : endIndex - 1
+                          )
+                          .map((category, index) => (
+                            <Link
+                              key={`${slideIndex}-${index}`} // Fixed: use index instead of category.id
+                              href={`/${category.name}`} // Fixed: add leading slash
+                              className="category-link text-primary-foreground/90 hover:text-primary-foreground whitespace-nowrap transition-all duration-200 hover:scale-105 hover:drop-shadow-lg relative group"
+                            >
+                              {category.name}
+                              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+                            </Link>
+                          ))}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            {canGoRight && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={slideRight}
+                className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
         </div>
       </nav>
     </header>

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowRight, TrendingUp, Truck, Users, CheckCircle, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -23,7 +23,12 @@ export default function Home() {
       localStorage.removeItem("hasSeenLocationPopup");
     }
   }, []);
-const isLogin = localStorage.getItem("token") ? true : false;
+    const [isLogin, setIsLogin] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLogin(!!token);
+  }, []);
   return (
     <div className="flex flex-col">
       {/* Location Popup - Only shown on home page */}

@@ -1,5 +1,7 @@
 "use client";
-
+// i have added size dropdown where user can select size of product
+// static sized (S,M,L) bacause ofc category name issue
+// once categoty are created then we remove (size ) 
 import { useState, useRef, useEffect } from "react";
 import {
   User,
@@ -56,6 +58,7 @@ import {
   createProduct,
   updateAddress,
   deleteAddress,
+  getAllCategories,
 } from "@/app/api/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -107,6 +110,7 @@ interface ProductForm {
   category: string;
   mobileNumber: string;
   addressId: string;
+  size: string;
   originalPurchasePrice: number;
   productSize: string;
   sizeFlexibility: string;
@@ -191,26 +195,28 @@ export default function ProfilePage() {
     listingType: [],
     mobileNumber: "",
     addressId: "",
+    size: "",
   });
   const handleProjectCreat = async () => {
     const errors: any = {};
-
+    console.log("productForm", productForm);
     try {
       setIsSubmitting(true);
-      await productSchema.validate(productForm, { abortEarly: false });
+      // await productSchema.validate(productForm, { abortEarly: false });
 
       const formData = new FormData();
       // Append all text fields
       formData.append("productName", productForm.productName);
-      formData.append("category", productForm.category);
+      formData.append("categoryId", productForm.category);
       formData.append("mobileNumber", productForm.mobileNumber);
       formData.append("addressId", productForm.addressId);
       formData.append(
         "originalPurchasePrice",
         productForm.originalPurchasePrice.toString()
       );
-      formData.append("size", productForm.productSize);
+      // formData.append("size", productForm.productSize);
       formData.append("sizeFlexibility", productForm.sizeFlexibility);
+      formData.append("size", productForm.size);
       formData.append("color", productForm.color);
 
       // Append required images
@@ -249,8 +255,9 @@ export default function ProfilePage() {
       formData.append("listingType", listingTypeValue);
       delete errors.productVideo;
       // Make API call here with formData
+      console.log("formData", formData);
       const response = await createProduct(formData);
-      if (response.success == true) {
+      if (response.success === true) {
         setProductForm({
           productName: "",
           category: "",
@@ -270,12 +277,16 @@ export default function ProfilePage() {
           listingType: [],
           mobileNumber: "",
           addressId: "",
+          size: "",
         });
         setFormErrors({});
         setSelectedAddressId("");
+        toast.success("Product created successfully!");
         router.push("/dashboard");
+      } else {
+        toast.error(response.message || "Failed to create product");
       }
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof yup.ValidationError) {
         const errors: { [key: string]: string } = {};
         err.inner.forEach((e) => {
@@ -284,6 +295,8 @@ export default function ProfilePage() {
           }
         });
         setFormErrors(errors);
+      } else {
+        toast.error(err.message || "Something went wrong");
       }
     } finally {
       setIsSubmitting(false);
@@ -298,6 +311,7 @@ export default function ProfilePage() {
       .required("Original price is required"),
     productSize: yup.string().required("Product size is required"),
     sizeFlexibility: yup.string().required("Size flexibility is required"),
+    size: yup.string().required("Size is required"),
     color: yup.string().required("Color is required"),
     frontLook: yup.mixed().required("Front look image is required"),
     sideLook: yup.mixed().required("Side look image is required"),
@@ -332,7 +346,6 @@ export default function ProfilePage() {
 
   // Inside ProfilePage component, add this state
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
-  console.log("savedAddresses", savedAddresses);
   const fetchAddresses = async () => {
     try {
       const response = await getUserAddresses();
@@ -573,7 +586,20 @@ export default function ProfilePage() {
       console.error("Error updating profile:", error);
     }
   };
+  const [categories, setCategories] = useState();
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getAllCategories();
+        setCategories(data.categories || []);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   return (
     <div className="container py-10">
       <div className="flex flex-col md:flex-row gap-6">
@@ -948,18 +974,11 @@ export default function ProfilePage() {
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="lehenga">Lehenga</SelectItem>
-                          <SelectItem value="gown">Gown</SelectItem>
-                          <SelectItem value="sharara-set">
-                            Sharara Set
-                          </SelectItem>
-                          <SelectItem value="anarkali">Anarkali</SelectItem>
-                          <SelectItem value="saree">Saree</SelectItem>
-                          <SelectItem value="rajasthani-poshak">
-                            Rajasthani Poshak
-                          </SelectItem>
-                          <SelectItem value="suit">Suit</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          {categories?.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       {formErrors.category && (
@@ -1138,7 +1157,56 @@ export default function ProfilePage() {
                         </div>
                       </TooltipProvider>
                     </div>
-
+                    <div className="grid grid-cols-2 gap-4">
+                      <TooltipProvider>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-1">
+                            <Label className="font-large font-bold">
+                              Size *
+                            </Label>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
+                              </TooltipTrigger>
+                              <TooltipContent
+                                side="bottom"
+                                className="bg-black text-white px-2 py-1 rounded-md text-sm max-w-xs"
+                              >
+                                Size shows the possibility of alteration
+                                available in the product.
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>{" "}
+                          <Select
+                            onValueChange={(value) => {
+                              setProductForm({
+                                ...productForm,
+                                size: value,
+                              });
+                              const newErrors = { ...formErrors };
+                              delete newErrors.size;
+                              setFormErrors(newErrors);
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {["S", "M", "L"].map((flex) => (
+                                <SelectItem key={flex} value={flex}>
+                                  {flex}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {formErrors.size && (
+                            <p className="text-sm text-destructive">
+                              {formErrors.size}
+                            </p>
+                          )}
+                        </div>
+                      </TooltipProvider>
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="color" className="font-large font-bold">
                         Color *

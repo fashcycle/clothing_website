@@ -14,7 +14,7 @@ type Category = {
   image: string
   count: number
 }
-
+// 
 export default function CategorySlider() {
   const [categories, setCategories] = useState<Category[]>([])
   const [isClient, setIsClient] = useState(false)
