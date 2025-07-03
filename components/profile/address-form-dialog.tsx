@@ -1,124 +1,167 @@
-"use client"
+"use client";
 
-import * as yup from "yup"
-import { useState,useEffect } from "react"
-import { Loader } from "@/components/ui/loader"
+import * as yup from "yup";
+import { useState, useEffect } from "react";
+import { Loader } from "@/components/ui/loader";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-
+} from "@/components/ui/select";
+import { getPincodes } from "@/app/api/api";
+import { toast } from "sonner";
 interface AddressFormDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSave: (address: any) => void
-  setIsSubmitting: (value: boolean) => void
-    isSubmitting:boolean
-    initialData?: any
-    openFor:string
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (address: any) => void;
+  setIsSubmitting: (value: boolean) => void;
+  isSubmitting: boolean;
+  initialData?: any;
+  openFor: string;
 }
 
 // Fix the schema definition
 const addressSchema = yup.object().shape({
-  address: yup.string().required("Address type is required"),
-  customAddressType: yup.string().when('address', {
-    is: 'OTHER', // Changed from 'Other' to match the SelectItem value
+  address: yup.string(),
+  customAddressType: yup.string().when("address", {
+    is: "OTHER", // Changed from 'Other' to match the SelectItem value
     then: (schema) => schema.required("Custom address type is required"),
     otherwise: (schema) => schema.nullable().optional(),
   }),
   landmark: yup.string().required("Landmark is required"),
   addressLine1: yup.string().required("Address Line 1 is required"),
-  pincode: yup.string().required("Pincode is required").length(6, "Pincode must be 6 digits"),
-})
+  pincode: yup
+    .string()
+    .required("Pincode is required")
+    .length(6, "Pincode must be 6 digits"),
+});
 
-// Update the handleSubmit function
-
-
-export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmitting,initialData }: AddressFormDialogProps) {
-    const initialFormData :any= {
-        address: "",
-        customAddressType: "",
-        landmark: "",
-        addressLine1: "",
-        addressLine2: "",
-        pincode: "",
-        city: "",
-        state: "",
-        country: "India"
+export function AddressFormDialog({
+  open,
+  onOpenChange,
+  onSave,
+  openFor,
+  isSubmitting,
+  initialData,
+}: AddressFormDialogProps) {
+  const initialFormData: any = {
+    address: "HOME",
+    customAddressType: "",
+    landmark: "",
+    addressLine1: "",
+    addressLine2: "",
+    pincode: "",
+    city: "",
+    state: "",
+    country: "India",
+  };
+  const [formData, setFormData] = useState(initialData || initialFormData);
+  const [pincodes, setPincodes] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    } else {
+      setFormData(initialFormData);
+    }
+  }, [initialData]);
+  useEffect(() => {
+    if (open) {
+      if (openFor === "add") {
+        setFormData(initialFormData);
+      } else if (initialData) {
+        setFormData(initialData);
       }
-      const [formData, setFormData] = useState(initialData || initialFormData)
-      useEffect(() => {
-        if (initialData) {
-          setFormData(initialData)
-        } else {
-          setFormData(initialFormData)
-        }
-      }, [initialData])
+    }
+  }, [open, initialData, openFor]);
   const handlePincodeChange = async (pincode: string) => {
     if (pincode.length === 6) {
       try {
-        const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`)
-        const [data] = await response.json()
+        const response = await fetch(
+          `https://api.postalpincode.in/pincode/${pincode}`
+        );
+        const [data] = await response.json();
         if (data.Status === "Success") {
-          const postOffice = data.PostOffice[0]
+          const postOffice = data.PostOffice[0];
           setFormData({
             ...formData,
             city: postOffice.District,
             state: postOffice.State,
-            pincode
-          })
+            pincode,
+          });
         }
       } catch (error) {
-        console.error("Error fetching pincode data:", error)
+        console.error("Error fetching pincode data:", error);
       }
     }
-  }
+  };
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleSubmit = async () => {
     try {
-      await addressSchema.validate(formData, { abortEarly: false })
-      onSave(formData)
-      onOpenChange(false)
-      setErrors({})
+      await addressSchema.validate(formData, { abortEarly: false });
+      onSave(formData);
+      onOpenChange(false);
+      setErrors({});
     } catch (error) {
       if (error instanceof yup.ValidationError) {
-        const newErrors: { [key: string]: string } = {}
+        const newErrors: { [key: string]: string } = {};
         error.inner.forEach((err) => {
           if (err.path) {
-            newErrors[err.path] = err.message
+            newErrors[err.path] = err.message;
           }
-        })
-        setErrors(newErrors)
+        });
+        setErrors(newErrors);
       }
     }
-  }
+  };
   const handleDialogClose = (open: boolean) => {
     if (!open) {
-      setFormData(initialData)
-      setErrors({})
+      setFormData(initialData);
+      setErrors({});
     }
-    onOpenChange(open)
-  }
-
+    onOpenChange(open);
+  };
+  const fetchPincodes = async () => {
+    try {
+      const response = await getPincodes();
+      if (response?.success) {
+        setPincodes(response.pincodes);
+      } else if (response?.message) {
+        toast.error(response.message);
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Error fetching pincodes");
+      console.error("Error fetching products:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (open) {
+      setIsLoading(true);
+      fetchPincodes();
+    }
+  }, [open]);
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{openFor=="add"?"Add New Address":"Update Address"}</DialogTitle>
+          <DialogTitle>
+            {openFor == "add" ? "Add New Address" : "Update Address"}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
@@ -126,12 +169,12 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
             <Select
               value={formData?.address}
               onValueChange={(value) => {
-                setFormData({ ...formData, address: value })
-                setErrors({ ...errors, address: "" })
+                setFormData({ ...formData, address: value });
+                setErrors({ ...errors, address: "" });
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select address type" />
+                <SelectValue placeholder="Home" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="HOME">Home</SelectItem>
@@ -139,7 +182,9 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
                 <SelectItem value="OTHER">Other</SelectItem>
               </SelectContent>
             </Select>
-            {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
+            {errors.address && (
+              <p className="text-sm text-destructive">{errors.address}</p>
+            )}
           </div>
 
           {formData?.address === "OTHER" && (
@@ -148,12 +193,19 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
               <Input
                 value={formData?.customAddressType}
                 onChange={(e) => {
-                  setFormData({ ...formData, customAddressType: e.target.value })
-                  setErrors({ ...errors, customAddressType: "" })
+                  setFormData({
+                    ...formData,
+                    customAddressType: e.target.value,
+                  });
+                  setErrors({ ...errors, customAddressType: "" });
                 }}
                 placeholder="Enter custom address type"
               />
-              {errors.customAddressType && <p className="text-sm text-destructive">{errors.customAddressType}</p>}
+              {errors.customAddressType && (
+                <p className="text-sm text-destructive">
+                  {errors.customAddressType}
+                </p>
+              )}
             </div>
           )}
 
@@ -162,11 +214,13 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
             <Input
               value={formData?.landmark}
               onChange={(e) => {
-                setFormData({ ...formData, landmark: e.target.value })
-                setErrors({ ...errors, landmark: "" })
+                setFormData({ ...formData, landmark: e.target.value });
+                setErrors({ ...errors, landmark: "" });
               }}
             />
-            {errors.landmark && <p className="text-sm text-destructive">{errors.landmark}</p>}
+            {errors.landmark && (
+              <p className="text-sm text-destructive">{errors.landmark}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -174,33 +228,64 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
             <Input
               value={formData?.addressLine1}
               onChange={(e) => {
-                setFormData({ ...formData, addressLine1: e.target.value })
-                setErrors({ ...errors, addressLine1: "" })
+                setFormData({ ...formData, addressLine1: e.target.value });
+                setErrors({ ...errors, addressLine1: "" });
               }}
             />
-            {errors.addressLine1 && <p className="text-sm text-destructive">{errors.addressLine1}</p>}
+            {errors.addressLine1 && (
+              <p className="text-sm text-destructive">{errors.addressLine1}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label>Address Line 2</Label>
             <Input
               value={formData?.addressLine2}
-              onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, addressLine2: e.target.value })
+              }
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Pincode *</Label>
-              <Input
-                value={formData?.pincode}
-                onChange={(e) => {
-                  setFormData({ ...formData, pincode: e.target.value })
-                  setErrors({ ...errors, pincode: "" })
-                  handlePincodeChange(e.target.value)
+              <Select
+                value={formData?.pincode?.pincode}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, pincode: value });
+                  setErrors({ ...errors, pincode: "" });
+                  handlePincodeChange(value);
                 }}
-              />
-              {errors.pincode && <p className="text-sm text-destructive">{errors.pincode}</p>}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Enter Pincode">
+                    {formData?.pincode.pincode}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {formData?.pincode.pincode &&
+                    !pincodes.some(
+                      (p) => p.pincode === formData.pincode.pincode
+                    ) && (
+                      <SelectItem
+                        key={formData.pincode.pincode}
+                        value={formData.pincode.pincode}
+                      >
+                        {formData.pincode.pincode}
+                      </SelectItem>
+                    )}
+                  {pincodes.map((pincode) => (
+                    <SelectItem key={pincode.id} value={pincode.pincode}>
+                      {pincode.pincode}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {errors.pincode && (
+                <p className="text-sm text-destructive">{errors.pincode}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>City</Label>
@@ -218,15 +303,16 @@ export function AddressFormDialog({ open, onOpenChange, onSave ,openFor,isSubmit
               <Input value={formData?.country} disabled />
             </div>
           </div>
-          <Button type="submit" disabled={isSubmitting} className="w-full"onClick={handleSubmit}>
-  {isSubmitting ? (
-   <Loader text="Saving..." />
-  ) : (
-    "Save Address"
-  )}
-</Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full"
+            onClick={handleSubmit}
+          >
+            {isSubmitting ? <Loader text="Saving..." /> : "Save Address"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

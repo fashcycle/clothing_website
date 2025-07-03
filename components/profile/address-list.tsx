@@ -75,7 +75,7 @@ export function AddressList({ addresses, onAddressUpdate, onAddressDelete, onAdd
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{address.customAddressType || address.address}</span>
-                  <Badge variant="outline">{address.pincode}</Badge>
+                  <Badge variant="outline">{address.pincode.pincode}</Badge>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -102,7 +102,7 @@ export function AddressList({ addresses, onAddressUpdate, onAddressDelete, onAdd
                 <p className="text-sm text-muted-foreground">{address.addressLine2}</p>
               )}
               <p className="text-sm text-muted-foreground">
-                {address.city}, {address.state}, {address.country}
+                {address.pincode.city}, {address.pincode.state}, {address.pincode.country}
               </p>
             </div>
           ))}
