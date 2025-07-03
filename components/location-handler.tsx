@@ -40,7 +40,6 @@ export function useRealLocation() {
       })
 
       const { latitude, longitude } = position.coords
-
       // Use reverse geocoding to get address from coordinates
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
@@ -60,7 +59,6 @@ export function useRealLocation() {
         state: data.address.state || "Unknown state",
         country: data.address.country || "Unknown country",
       }
-
       setLocation(locationData)
       localStorage.setItem("userLocation", JSON.stringify(locationData))
     } catch (error) {

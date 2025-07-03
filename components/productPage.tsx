@@ -175,12 +175,25 @@ export default function ProductPage({ id }: { id: string }) {
           Home
         </Link>
         <span>/</span>
-        <Link href="/" className="hover:underline">
+        <Link href="/browse" className="hover:underline">
           All Categories
         </Link>
         <span>/</span>
-        <Link href="/dashboard" className="hover:underline capitalize">
-          {product?.category}
+        <Link
+          href={
+            product?.category &&
+            typeof product.category === "object" &&
+            product.category.slug
+              ? `/${product.category.id}`
+              : "/dashboard"
+          }
+          className="hover:underline capitalize"
+        >
+          {product?.category && typeof product.category === "object"
+            ? product.category.name
+            : typeof product?.category === "string"
+            ? product.category
+            : "Category"}
         </Link>
         <span>/</span>
         <span className="text-gray-500">{product?.productName}</span>
@@ -197,12 +210,18 @@ export default function ProductPage({ id }: { id: string }) {
           {/* Main Product Image */}
           <div className="relative">
             <div className="relative h-[500px] w-full rounded-md overflow-hidden shadow-md">
-              <Image
-                src={selectedImage || product?.productImage?.frontLook}
-                alt={product?.productName}
-                fill
-                className="object-cover transition-transform duration-300 hover:scale-105"
-              />
+              {selectedImage || product?.productImage?.frontLook ? (
+                <Image
+                  src={selectedImage || product?.productImage?.frontLook}
+                  alt={product?.productName || "productImg"}
+                  fill
+                  className="object-cover transition-transform duration-300 hover:scale-105"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full w-full bg-gray-100 text-gray-400">
+                  No Image
+                </div>
+              )}
             </div>
 
             {/* Navigation arrows */}
@@ -292,7 +311,7 @@ export default function ProductPage({ id }: { id: string }) {
             {product?.productName}
           </h1>
           <p className="text-center mb-6">
-            {product?.color} {product?.category}, {product?.size}
+            {product?.color} {product?.category?.name}, {product?.size}
           </p>
 
           {/* Price Display */}
@@ -304,7 +323,7 @@ export default function ProductPage({ id }: { id: string }) {
                 : "Sell Price"}
             </p>
             {Array.isArray(product?.listingType) &&
-              product.listingType.includes("rent") ? (
+            product.listingType.includes("rent") ? (
               <p className="text-4xl font-bold text-emerald-600">
                 ₹{Math.round((product?.originalPurchasePrice * 21) / 100)} for 3
                 days
@@ -320,16 +339,16 @@ export default function ProductPage({ id }: { id: string }) {
           <div className="flex gap-4 mb-6">
             {Array.isArray(product?.listingType) &&
               product.listingType.includes("rent") && (
-              <Button className="w-1/2 border-emerald-600 bg-primary text-primary-foreground py-5 text-lg rounded-lg shadow-sm  transition">
-                RENT NOW
-              </Button>
-            )}
+                <Button className="w-1/2 border-emerald-600 bg-primary text-primary-foreground py-5 text-lg rounded-lg shadow-sm  transition">
+                  RENT NOW
+                </Button>
+              )}
             {Array.isArray(product?.listingType) &&
               product.listingType.includes("sell") && (
-              <Button className="w-1/2 bg-primary text-primary-foreground py-5 text-lg rounded-lg shadow-md transition">
-                BUY NOW
-              </Button>
-            )}
+                <Button className="w-1/2 bg-primary text-primary-foreground py-5 text-lg rounded-lg shadow-md transition">
+                  BUY NOW
+                </Button>
+              )}
 
             <Button
               onClick={() =>
@@ -352,12 +371,13 @@ export default function ProductPage({ id }: { id: string }) {
 
           {/* Tags */}
           <div className="flex gap-2 mb-4">
-            <Badge
-              variant="outline"
-              className="border-blue-400 bg-blue-100 text-blue-800 rounded-full px-3 capitalize"
-            >
-              {product?.category}
-            </Badge>
+           <Badge
+  variant="outline"
+  className="border-blue-400 bg-blue-100 text-blue-800 rounded-full px-3 capitalize"
+>
+  {product?.category?.name}
+</Badge>
+
             {product?.listingType?.map((type: string) => (
               <Badge
                 key={type}
@@ -398,8 +418,8 @@ export default function ProductPage({ id }: { id: string }) {
             </div>
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <span className="text-gray-600">
-               {Array.isArray(product?.listingType) &&
-              product.listingType.includes("sell")
+                {Array.isArray(product?.listingType) &&
+                product.listingType.includes("sell")
                   ? "BUY FOR"
                   : "RENTAL PRICE"}
               </span>

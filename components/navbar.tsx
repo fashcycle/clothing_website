@@ -402,7 +402,7 @@ export default function Navbar() {
                           .map((category, index) => (
                             <Link
                               key={`${slideIndex}-${index}`} // Fixed: use index instead of category.id
-                              href={`/${category.name}`} // Fixed: add leading slash
+                              href={`/${category.id}`} // Fixed: add leading slash
                               className="category-link text-primary-foreground/90 hover:text-primary-foreground whitespace-nowrap transition-all duration-200 hover:scale-105 hover:drop-shadow-lg relative group"
                             >
                               {category.name}

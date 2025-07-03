@@ -230,7 +230,7 @@ export default function FeaturedProducts() {
                   <div className="overflow-hidden">
                     <Image
                       src={product.productImage.frontLook || "/placeholder.svg"}
-                      alt={product.title}
+                      alt={product.title||"productImg"}
                       width={300}
                       height={400}
                       className="w-full h-[350px] object-cover product-image"

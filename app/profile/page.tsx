@@ -199,7 +199,6 @@ export default function ProfilePage() {
   });
   const handleProjectCreat = async () => {
     const errors: any = {};
-    console.log("productForm", productForm);
     try {
       setIsSubmitting(true);
       // await productSchema.validate(productForm, { abortEarly: false });
@@ -255,7 +254,6 @@ export default function ProfilePage() {
       formData.append("listingType", listingTypeValue);
       delete errors.productVideo;
       // Make API call here with formData
-      console.log("formData", formData);
       const response = await createProduct(formData);
       if (response.success === true) {
         setProductForm({
