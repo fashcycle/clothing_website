@@ -259,7 +259,7 @@ export default function CartPage() {
   const tax = taxAmount;
   useEffect(() => {
     if (user) {
-      // console.log(user)
+      console.log(user?.addresses[0]);
       setSelectedAddress(user?.addresses[0]);
     }
   }, [user]);
