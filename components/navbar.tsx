@@ -266,7 +266,7 @@ export default function Navbar() {
                   size="icon"
                   className="rounded-full p-0 border"
                 >
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-10 w-10 ">
                     {userImage ? (
                       <Image
                         src={userImage}
