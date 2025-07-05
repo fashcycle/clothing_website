@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
           <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
           
           <div className="space-y-8">
-            <p className="text-muted-foreground text-lg">This Privacy Policy covers the practices for handling and securing your Personal Information by Fashcycle. The domain name www.fashcycle.com (hereinafter referred to as the “Website”) is owned by AMKA JHAMKA PRIVATE LIMITED, with GSTIN xxxxxxxx having its registered office at Office no 806, 8th Floor, Skye Corporate, Vijay Nagar, Indore, M.P., 452010.
+            <p className="text-muted-foreground text-lg">This Privacy Policy covers the practices for handling and securing your Personal Information by Fashcycle. The domain name www.fashcycle.com (hereinafter referred to as the “Website”) is owned by AMKA JHAMKA PRIVATE LIMITED, with GSTIN 23ABCCA8906B1Z5 having its registered office at Office no 806, 8th Floor, Skye Corporate, Vijay Nagar, Indore, M.P., 452010.
 This Privacy Policy is applicable to persons who purchase any product or services from Fashcycle through any Sales Channel of Fashcycle (like website, mobile site, mobile app (both android and IOS ). This Privacy Policy also applies to persons who visit the Fashcycle’s offices. As a user or customer of Fashcycle, the person agrees with this Privacy Policy and the terms and conditions mentioned herein.
 </p>
             <section>

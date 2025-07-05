@@ -250,7 +250,7 @@ export default function EveningDressesPage() {
                 </div>
               </FilterSection>
 
-              <FilterSection title="Brand">
+              {/* <FilterSection title="Brand">
                 <div className="space-y-2">
                   <label className="flex items-center">
                     <input
@@ -262,7 +262,7 @@ export default function EveningDressesPage() {
                     <span className="text-sm">ALL</span>
                   </label>
                 </div>
-              </FilterSection>
+              </FilterSection> */}
 
               <FilterSection title="Size">
                 <div className="space-y-2">
