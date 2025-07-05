@@ -89,7 +89,7 @@ export default function FeaturedProducts() {
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(
     null
   );
-  console.log("products.length", products.length);
+  // console.log("products.length", products.length);
   const fetchWishlist = async () => {
     try {
       const response = await getWishlistedProducts();
@@ -302,17 +302,32 @@ export default function FeaturedProducts() {
                     {/* Pricing */}
                     <div className="space-y-2">
                       {product.listingType.includes("rent") && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Rent (3 days):
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            ₹
-                            {Math.round(
-                              (product?.originalPurchasePrice * 21) / 100
-                            )}
-                          </span>
-                        </div>
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">
+                              Rent (3 days):
+                            </span>
+                            <span className="text-sm font-medium text-gray-900">
+                              ₹{product.rentPrice3Days}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">
+                              Rent (7 days):
+                            </span>
+                            <span className="text-sm font-medium text-gray-900">
+                              ₹{product.rentPrice7Days}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">
+                              Rent (14 days):
+                            </span>
+                            <span className="text-sm font-medium text-gray-900">
+                              ₹{product.rentPrice14Days}
+                            </span>
+                          </div>
+                        </>
                       )}
 
                       {product.listingType.includes("sell") && (
@@ -331,147 +346,15 @@ export default function FeaturedProducts() {
                     {/* Action Button */}
                     <Link href={`/products/${product.id}`}>
                       <Button
-                          disabled={isAddingToCart === product.id}
-                          className="mt-2 w-full"
-                          variant={
-                            cartItems.includes(product.id)
-                              ? "default"
-                              : "outline"
-                          }
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-2" />
-                          Have a Look
-                        </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {products?.slice(4, 8).map((product: any, index: any) => (
-              <Card
-                key={product.id}
-                className={cn(
-                  "product-card border-0 rounded-none luxury-shadow",
-                  isClient && `animate-fade-in-delay-${index + 4}`
-                )}
-              >
-                <div className="relative">
-                  <Link href={`/products/${product.id}`}>
-                    <div className="overflow-hidden">
-                      <Image
-                        src={
-                          product.productImage.frontLook || "/placeholder.svg"
+                        disabled={isAddingToCart === product.id}
+                        className="mt-2 w-full"
+                        variant={
+                          cartItems.includes(product.id) ? "default" : "outline"
                         }
-                        alt={product.title || "productImg"}
-                        width={300}
-                        height={400}
-                        className="w-full h-[350px] object-cover product-image"
-                      />
-                    </div>
-                  </Link>
-                  <button
-                    onClick={() => toggleFavorite(product.id)}
-                    disabled={isAddingToWishlist === product.id}
-                    className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-transform duration-300 hover:scale-110 z-10"
-                    aria-label={
-                      wishlistedItems.some(
-                        (item: any) => item.id === product.id
-                      )
-                        ? "Remove from wishlist"
-                        : "Add to wishlist"
-                    }
-                  >
-                    <Heart
-                      className={cn(
-                        "h-5 w-5 transition-colors",
-                        isAddingToWishlist === product.id && "animate-pulse",
-                        wishlistedItems.some(
-                          (item: any) => item.id === product.id
-                        )
-                          ? "fill-red-500 text-red-500"
-                          : "text-muted-foreground"
-                      )}
-                    />
-                  </button>
-                </div>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {/* Product Name */}
-                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 capitalize">
-                      {product.productName}
-                    </h3>
-
-                    {/* Color and Size Info */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Color:</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-800 capitalize">
-                            {product.color}
-                          </span>
-                          <div
-                            className="w-3 h-3 rounded-full border border-gray-300"
-                            style={{ backgroundColor: product.color }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Size:</span>
-                        <span className="text-sm text-gray-800">
-                          {product.size}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-gray-100"></div>
-
-                    {/* Pricing */}
-                    <div className="space-y-2">
-                      {product.listingType.includes("rent") && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Rent (3 days):
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            ₹
-                            {Math.round(
-                              (product?.originalPurchasePrice * 21) / 100
-                            )}
-                          </span>
-                        </div>
-                      )}
-
-                      {product.listingType.includes("sell") && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Buy:</span>
-                          <span className="text-sm font-medium text-gray-900">
-                            ₹
-                            {Math.round(
-                              (product?.originalPurchasePrice * 50) / 100
-                            )}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Button */}
-                    <Link href={`/products/${product.id}`}>
-                       <Button
-                          disabled={isAddingToCart === product.id}
-                          className="mt-2 w-full"
-                          variant={
-                            cartItems.includes(product.id)
-                              ? "default"
-                              : "outline"
-                          }
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-2" />
-                          Have a Look
-                        </Button>
+                      >
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        Have a Look
+                      </Button>
                     </Link>
                   </div>
                 </CardContent>

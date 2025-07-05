@@ -145,9 +145,16 @@ export default function EveningDressesPage() {
     let userData: any = localStorage.getItem("user-info");
     setUser(JSON.parse(userData));
     setIsClient(true);
+    scrollToTop();
   }, []);
 
   // Fetch products when filters change
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
   useEffect(() => {
     let query: any = {};
     if (selectedCategory && selectedCategory !== "browse") {
@@ -494,20 +501,20 @@ export default function EveningDressesPage() {
 
                               {/* Action Button */}
                               <Link href={`/products/${product.id}`}>
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  // Add to cart or quick rent action
-                                }}
-                                className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transform hover:scale-[1.02] transition-all duration-300 shadow-md hover:shadow-lg text-sm"
-                              >
-                                {product.listingType[0] === "rent"
-                                  ? "Quick Rent"
-                                  : product.listingType[0] === "sell"
-                                  ? "Quick Buy"
-                                  : "Buy or Rent "}
+                                <button
+                                  // onClick={(e) => {
+                                  //   e.preventDefault();
+                                  //   // Add to cart or quick rent action
+                                  // }}
+                                  className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transform hover:scale-[1.02] transition-all duration-300 shadow-md hover:shadow-lg text-sm"
+                                >
+                                  {product.listingType[0] === "rent"
+                                    ? "Quick Rent"
+                                    : product.listingType[0] === "sell"
+                                    ? "Quick Buy"
+                                    : "Buy or Rent "}
                                 </button>
-                                </Link>
+                              </Link>
                             </div>
                           </CardContent>
                         </Card>
