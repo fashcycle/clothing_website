@@ -18,6 +18,7 @@ import {
   Clock,
   CreditCard,
   Badge,
+  CloudCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +54,8 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { AddressFormDialog } from "@/components/profile/address-form-dialog";
+import axios from "axios";
+import Script from "next/script"; // agar global layout me load nahin kiya
 
 interface SavedAddress {
   id: string;
@@ -82,35 +85,108 @@ export default function CartPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>();
+  const [isPaying, setIsPaying] = useState(false);
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) return toast.error("Cart is empty!");
+
+    const cartIDS = cartItems.map((item: any) => item.id);
+    try {
+      setIsPaying(true);
+      const { data } = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE}/orders/create`,
+        { selectedItems: cartIDS, shippingAddressId: selectedAddressId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: total * 100,
+        currency: "INR",
+        name: "FashCycle",
+        description: `Order #${data.orderId}`,
+        order_id: data.orderId,
+        prefill: {
+          name: user?.name,
+          email: user?.email,
+          contact: user?.mobileNumber,
+        },
+        notes: {
+          address: `${selectedAddress?.addressLine1}, ${selectedAddress?.city}`,
+        },
+        theme: { color: "#0160D8" },
+
+        handler: async (response: any) => {
+          console.log("Payment Response:", response);
+          console.log("Verify sending payload:", {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+
+          try {
+            const verifyRes = await axios.post(
+              `${process.env.NEXT_PUBLIC_API_BASE}/orders/verify-payment`,
+              {
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+
+            if (verifyRes.data.status) {
+              toast.success("Payment successful! 🎉");
+              router.push("/order-success");
+            } else {
+              toast.error("Signature verify failed");
+            }
+          } catch (err) {
+            console.error(err);
+            toast.error("Verify API error");
+          } finally {
+            setIsPaying(false);
+          }
+        },
+
+        modal: {
+          ondismiss: () => setIsPaying(false),
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      toast.error("Payment init error");
+      setIsPaying(false);
+    }
+  };
 
   // Add this function after the state declarations
   const updateItemRentalPeriod = (itemId: string, period: string) => {
     setCartItems((prevItems: any) =>
       prevItems.map((item: any) =>
-        item.id === itemId ? { ...item, selectedRentalPeriod: period } : item
+        item.id === itemId ? { ...item, rentDurationInDays: period } : item
       )
     );
   };
 
   // Add this function to calculate price for individual items
   const calculateItemPrice = (item: any) => {
-    const originalPrice = item?.product?.originalPurchasePrice || 0;
-    const rentalPeriod = item.selectedRentalPeriod || "3";
+    const originalPrice = item?.securityAmount + item?.convenienceFee || 0;
+    // const rentalPeriod = item.rentDurationInDays;
 
-    if (item?.product?.listingType?.includes("rent")) {
-      switch (rentalPeriod) {
-        case "3":
-          return Math.round(originalPrice * 0.21); // 21% for 3 days
-        case "7":
-          return Math.round(originalPrice * 0.35); // 35% for 7 days
-        case "14":
-          return Math.round(originalPrice * 0.42); // 42% for 14 days
-        default:
-          return Math.round(originalPrice * 0.21);
-      }
-    } else {
-      return Math.round(originalPrice * 0.5); // 50% for purchase
-    }
+    return originalPrice;
   };
 
   useEffect(() => {
@@ -126,10 +202,10 @@ export default function CartPage() {
     try {
       const response = await getCartItems();
       if (response.success) {
-        // Initialize selectedRentalPeriod for each item if not present
+        // Initialize rentDurationInDays for each item if not present
         const itemsWithRentalPeriod = response.cart.map((item: any) => ({
           ...item,
-          selectedRentalPeriod: item.selectedRentalPeriod || "3",
+          rentDurationInDays: item.rentDurationInDays || "3",
         }));
         setCartItems(itemsWithRentalPeriod);
         setIsLoading(false);
@@ -259,7 +335,7 @@ export default function CartPage() {
   const tax = taxAmount;
   useEffect(() => {
     if (user) {
-      console.log(user?.addresses[0]);
+      // console.log(user?.addresses[0]);
       setSelectedAddress(user?.addresses[0]);
     }
   }, [user]);
@@ -452,17 +528,19 @@ export default function CartPage() {
                                   whileHover={{ scale: 1.1 }}
                                   transition={{ duration: 0.5 }}
                                 >
-                                  <Image
-                                    src={
-                                      item?.product?.frontLook ||
-                                      "/placeholder.svg"
-                                    }
-                                    alt={item.product.productName}
-                                    width={144}
-                                    height={144}
-                                    className="w-full h-full object-cover"
-                                    priority
-                                  />
+                                  <Link href={`/products/${item.product.id}`}>
+                                    <Image
+                                      src={
+                                        item?.product?.frontLook ||
+                                        "/placeholder.svg"
+                                      }
+                                      alt={item.product.productName}
+                                      width={144}
+                                      height={144}
+                                      className="w-full h-full object-cover"
+                                      priority
+                                    />
+                                  </Link>
                                 </motion.div>
                               </div>
 
@@ -491,9 +569,11 @@ export default function CartPage() {
                             <div className="flex-grow space-y-3">
                               {/* Product Title and Rating */}
                               <div>
-                                <h3 className="font-medium text-lg line-clamp-2">
-                                  {item.productName}
-                                </h3>
+                                <Link href={`/products/${item.product.id}`}>
+                                  <h3 className="font-medium text-lg line-clamp-2">
+                                    {item.product.productName}
+                                  </h3>
+                                </Link>
                                 <div className="flex items-center gap-2 mt-1">
                                   <div className="flex items-center gap-1">
                                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -561,10 +641,8 @@ export default function CartPage() {
                                     </div>
 
                                     <Tabs
-                                      defaultValue={
-                                        item.selectedRentalPeriod || "3"
-                                      }
-                                      value={item.selectedRentalPeriod || "3"}
+                                      defaultValue={item?.rentDurationInDays}
+                                      value={item?.rentDurationInDays}
                                       onValueChange={(value) =>
                                         updateItemRentalPeriod(item.id, value)
                                       }
@@ -649,25 +727,23 @@ export default function CartPage() {
                                 ) : (
                                   <div className="flex items-baseline gap-3">
                                     <span className="text-2xl font-bold text-emerald-600">
-                                      ₹
-                                      {item.product.originalPurchasePrice * 0.5}
+                                      ₹{item.securityAmount}
                                     </span>
-                                    {item.product.mrp >
+                                    {/* {item.product.mrp >
                                       item.product.originalPurchasePrice && (
                                       <span className="text-sm text-gray-500 line-through">
                                         ₹{item.product.mrp}
                                       </span>
-                                    )}
+                                    )} */}
+                                    <span className="text-sm text-gray-500">
+                                      + ₹{item.convenienceFee} (Convenience Fee)
+                                    </span>
                                   </div>
                                 )}
                               </div>
 
-                              {/* Actions Row */}
                               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                                {/* Quantity Controls */}
                                 <div className="flex items-center gap-2"></div>
-
-                                {/* Remove Button */}
                                 <motion.button
                                   whileHover={{
                                     scale: 1.05,
@@ -691,7 +767,6 @@ export default function CartPage() {
               )}
             </div>
 
-            {/* Right Column - Order Summary */}
             <div className="lg:col-span-1">
               <motion.div
                 variants={itemVariants}
@@ -778,9 +853,17 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  <Button className="w-full mt-6 py-4 text-lg">
-                    <Shield className="w-5 h-5" />
-                    Proceed to Checkout
+                  <Button
+                    className="w-full mt-6 py-4 text-lg"
+                    disabled={isPaying || cartItems.length === 0}
+                    onClick={handleCheckout}
+                  >
+                    {isPaying ? (
+                      <Loader className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Shield className="h-5 w-5" />
+                    )}
+                    {isPaying ? "Processing…" : "Proceed to Checkout"}
                   </Button>
 
                   <div className="mt-4 space-y-2 text-xs text-gray-500">

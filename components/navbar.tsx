@@ -347,10 +347,10 @@ export default function Navbar() {
         <div className="container flex items-center justify-center">
           <div className="flex items-center gap-4">
             {/* Debug info - remove in production */}
-            <div className="text-xs text-primary-foreground/70 absolute top-0 left-0">
+            {/* <div className="text-xs text-primary-foreground/70 absolute top-0 left-0">
               {currentSlide}/{totalSlides - 1} | L:{canGoLeft.toString()} | R:
               {canGoRight.toString()}
-            </div>
+            </div> */}
 
             {canGoLeft && (
               <Button
@@ -394,19 +394,21 @@ export default function Navbar() {
 
                         {categories
                           .slice(
-                            slideIndex === 0 ? 0 : startIndex - 1, // Adjust for Home link
-                            slideIndex === 0
-                              ? categoriesPerSlide - 1
-                              : endIndex - 1
+                            0,
+                            6
+                            // slideIndex === 0 ? 0 : startIndex - 1, // Adjust for Home link
+                            // slideIndex === 0
+                            //   ? categoriesPerSlide - 1
+                            //   : endIndex - 1
                           )
                           .map((category, index) => (
                             <Link
-                              key={`${slideIndex}-${index}`} // Fixed: use index instead of category.id
-                              href={`/${category.id}`} // Fixed: add leading slash
+                              key={`${slideIndex}-${index}`}
+                              href={`/${category.id}`}
                               className="category-link text-primary-foreground/90 hover:text-primary-foreground whitespace-nowrap transition-all duration-200 hover:scale-105 hover:drop-shadow-lg relative group"
                             >
                               {category.name}
-                              {/* <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span> */}
+                              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
                             </Link>
                           ))}
                       </div>

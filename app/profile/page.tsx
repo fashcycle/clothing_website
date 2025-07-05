@@ -1,7 +1,7 @@
 "use client";
 // i have added size dropdown where user can select size of product
 // static sized (S,M,L) bacause ofc category name issue
-// once categoty are created then we remove (size ) 
+// once categoty are created then we remove (size )
 import { useState, useRef, useEffect } from "react";
 import {
   User,
@@ -1190,7 +1190,7 @@ export default function ProfilePage() {
                               <SelectValue placeholder="Select size" />
                             </SelectTrigger>
                             <SelectContent>
-                              {["S", "M", "L"].map((flex) => (
+                              {["S", "M", "L", "XL", "XXl"].map((flex) => (
                                 <SelectItem key={flex} value={flex}>
                                   {flex}
                                 </SelectItem>
