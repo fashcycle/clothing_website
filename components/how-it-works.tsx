@@ -10,7 +10,7 @@ export default function HowItWorks() {
     {
       icon: <Search className="h-10 w-10 text-primary" />,
       title: "Discover & Rent",
-      description: "Browse thousands of designer items and rent them for a fraction of the retail price.",
+      description: "Browse thousands of occasion-wear and rent them for a fraction of the retail price.",
     },
     {
       icon: <CreditCard className="h-10 w-10 text-primary" />,
@@ -29,7 +29,7 @@ export default function HowItWorks() {
       <div className="text-center mb-10 ">
         <h2 className="text-2xl md:text-3xl font-serif font-medium">How It Works</h2>
         <p className="mt-4  md:text-lg max-w-3xl mx-auto">
-          Join our community of fashion lovers who rent, lend, and buy designer pieces
+          Join our community of fashion lovers who rent, lend, and buy occasion-wear
         </p>
       </div>
 
