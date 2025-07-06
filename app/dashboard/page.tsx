@@ -1,10 +1,8 @@
+"use client";
 
-
-"use client"
-
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import {
   ShoppingBag,
   Package,
@@ -15,16 +13,23 @@ import {
   Calendar,
   Clock,
   ChevronRight,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { ProductList } from "@/components/dashboard/product-list"
-import { getUserProducts } from "../api/api"
-import { Loader } from "@/components/ui/loader"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { ProductList } from "@/components/dashboard/product-list";
+import { getUserProducts } from "../api/api";
+import { Loader } from "@/components/ui/loader";
 
 // Mock data
 const recentOrders = [
@@ -35,7 +40,8 @@ const recentOrders = [
     status: "Delivered",
     amount: "₹500",
     type: "Rental",
-    image: "https://images.unsplash.com/photo-1610189020382-668a5fc65ebf?q=80&w=1000",
+    image:
+      "https://images.unsplash.com/photo-1610189020382-668a5fc65ebf?q=80&w=1000",
   },
   {
     id: "ORD-002",
@@ -44,7 +50,8 @@ const recentOrders = [
     status: "On Rent",
     amount: "₹1,200",
     type: "Rental",
-    image: "https://images.unsplash.com/photo-1599032909756-5deb82fea3b0?q=80&w=1000",
+    image:
+      "https://images.unsplash.com/photo-1599032909756-5deb82fea3b0?q=80&w=1000",
   },
   {
     id: "ORD-003",
@@ -53,32 +60,17 @@ const recentOrders = [
     status: "Completed",
     amount: "₹3,500",
     type: "Purchase",
-    image: "https://images.unsplash.com/photo-1610189020382-668a5fc65ebf?q=80&w=1000",
+    image:
+      "https://images.unsplash.com/photo-1610189020382-668a5fc65ebf?q=80&w=1000",
   },
-]
-const savedItems = [
-  {
-    id: "SAV-001",
-    title: "Designer Top",
-    price: "₹2,500",
-    rentalPrice: "₹350",
-    image: "https://images.unsplash.com/photo-1551048632-24e444b48a3e?q=80&w=1000",
-  },
-  {
-    id: "SAV-002",
-    title: "Formal Suit",
-    price: "₹6,000",
-    rentalPrice: "₹900",
-    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000",
-  },
-]
-
+];
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("overview")
+  const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(false);
-  const [myListings, setMyListings] = useState<any>([])
+  const [myListings, setMyListings] = useState<any>([]);
+  console.log("My Listings:", myListings);
   useEffect(() => {
-    if (activeTab === "listings" && myListings?.length == 0) {
+    if (activeTab === "overview" || activeTab === "listings") {
       listProductApi();
     }
   }, [activeTab]);
@@ -99,12 +91,12 @@ export default function DashboardPage() {
           color: product.color,
           size: product.size,
           listingType: product.listingType,
-          createdAt: new Date(product.createdAt).toLocaleDateString('en-IN')
+          createdAt: new Date(product.createdAt).toLocaleDateString("en-IN"),
         }));
         setMyListings(formattedProducts);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
     } finally {
       setIsLoading(false);
     }
@@ -113,8 +105,9 @@ export default function DashboardPage() {
   return (
     <div
       style={{
-        background: `linear-gradient(to bottom right, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.15))`
-      }}   >
+        background: `linear-gradient(to bottom right, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.15))`,
+      }}
+    >
       <style jsx>{`
         @keyframes fadeInUp {
           from {
@@ -126,7 +119,7 @@ export default function DashboardPage() {
             transform: translateY(0);
           }
         }
-        
+
         @keyframes slideIn {
           from {
             opacity: 0;
@@ -137,16 +130,17 @@ export default function DashboardPage() {
             transform: translateX(0);
           }
         }
-        
+
         @keyframes pulse {
-          0%, 100% {
+          0%,
+          100% {
             transform: scale(1);
           }
           50% {
             transform: scale(1.05);
           }
         }
-        
+
         @keyframes shimmer {
           0% {
             background-position: -200% 0;
@@ -155,65 +149,70 @@ export default function DashboardPage() {
             background-position: 200% 0;
           }
         }
-        
+
         .animate-fadeInUp {
           animation: fadeInUp 0.6s ease-out forwards;
         }
-        
+
         .animate-slideIn {
           animation: slideIn 0.5s ease-out forwards;
         }
-        
+
         .animate-pulse-gentle {
           animation: pulse 2s ease-in-out infinite;
         }
-        
+
         .gradient-card {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           border: none;
           color: white;
         }
-        
+
         .gradient-card-2 {
           background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
           border: none;
           color: white;
         }
-        
+
         .gradient-card-3 {
           background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
           border: none;
           color: white;
         }
-        
+
         .gradient-card-4 {
           background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
           border: none;
           color: white;
         }
-        
+
         .glass-card {
           background: rgba(255, 255, 255, 0.25);
           backdrop-filter: blur(10px);
           border: 1px solid rgba(255, 255, 255, 0.18);
           box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
         }
-        
+
         .hover-lift {
           transition: all 0.3s ease;
         }
-        
+
         .hover-lift:hover {
           transform: translateY(-8px);
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
-        
+
         .shimmer {
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.6),
+            transparent
+          );
           background-size: 200% 100%;
           animation: shimmer 2s infinite;
         }
-        
+
         .tab-active {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
@@ -226,7 +225,9 @@ export default function DashboardPage() {
             <h2 className="text-4xl bg-primary text-primary-foreground font-bold tracking-tight bg-clip-text text-transparent">
               Dashboard
             </h2>
-            <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your business.</p>
+            <p className="text-gray-600 mt-2">
+              Welcome back! Here's what's happening with your business.
+            </p>
           </div>
           <div className="flex items-center space-x-2">
             <Link href="/profile">
@@ -238,7 +239,11 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-4 animate-slideIn" onValueChange={setActiveTab}>
+        <Tabs
+          defaultValue="overview"
+          className="space-y-4 animate-slideIn"
+          onValueChange={setActiveTab}
+        >
           <TabsList className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
             <TabsTrigger
               value="overview"
@@ -268,42 +273,56 @@ export default function DashboardPage() {
 
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-           <Card className="bg-gradient-to-br from-blue-50 via-white to-blue-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02]">
-  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-    <CardTitle className="text-sm font-medium text-blue-800">Total Earnings</CardTitle>
-    <CreditCard className="h-5 w-5 text-blue-500" />
-  </CardHeader>
-  <CardContent>
-    <div className="text-3xl font-bold text-blue-900">₹6,050</div>
-    <p className="text-xs text-blue-600">+20.1% from last month</p>
-  </CardContent>
-</Card>
+              <Card className="bg-gradient-to-br from-blue-50 via-white to-blue-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02]">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-blue-800">
+                    Total Earnings
+                  </CardTitle>
+                  <CreditCard className="h-5 w-5 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-blue-900">₹6,050</div>
+                  <p className="text-xs text-blue-600">
+                    +20.1% from last month
+                  </p>
+                </CardContent>
+              </Card>
 
-<Card className="bg-gradient-to-br from-green-50 via-white to-green-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02]">
-  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-    <CardTitle className="text-sm font-medium text-green-800">Total Listings</CardTitle>
-    <ShoppingBag className="h-5 w-5 text-green-500" />
-  </CardHeader>
-  <CardContent>
-    <div className="text-3xl font-bold text-green-900">2</div>
-    <p className="text-xs text-green-600">8 total rental transactions</p>
-  </CardContent>
-</Card>
-
+              <Card className="bg-gradient-to-br from-green-50 via-white to-green-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02]">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-green-800">
+                    Total Listings
+                  </CardTitle>
+                  <ShoppingBag className="h-5 w-5 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-green-900">{myListings.length}</div>
+                  {/* <p className="text-xs text-green-600">
+                    8 total rental transactions
+                  </p> */}
+                </CardContent>
+              </Card>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7  w-full">
-              <Card className="col-span-8 glass-card hover-lift animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
+              <Card
+                className="col-span-8 glass-card hover-lift animate-fadeInUp"
+                style={{ animationDelay: "0.3s" }}
+              >
                 <CardHeader>
                   <CardTitle className="text-gray-800 flex items-center">
                     <Package className="mr-2 h-5 w-5 text-purple-600" />
                     Active Orders
                   </CardTitle>
                 </CardHeader>
-                <CardContent >
+                <CardContent>
                   <div className="space-y-4">
                     {recentOrders.map((order, index) => (
-                      <div key={order.id} className="flex items-center p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-300 animate-slideIn" style={{ animationDelay: `${0.1 * index}s` }}>
+                      <div
+                        key={order.id}
+                        className="flex items-center p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-300 animate-slideIn"
+                        style={{ animationDelay: `${0.1 * index}s` }}
+                      >
                         <div className="relative h-12 w-12 rounded-lg overflow-hidden mr-4 shadow-md">
                           <Image
                             src={order.image || "/placeholder.svg"}
@@ -313,7 +332,9 @@ export default function DashboardPage() {
                           />
                         </div>
                         <div className="flex-1 space-y-1">
-                          <p className="text-sm font-medium leading-none text-gray-800">{order.product}</p>
+                          <p className="text-sm font-medium leading-none text-gray-800">
+                            {order.product}
+                          </p>
                           <p className="text-xs text-gray-600">
                             {order.date} · {order.type}
                           </p>
@@ -324,31 +345,36 @@ export default function DashboardPage() {
                               order.status === "Delivered"
                                 ? "outline"
                                 : order.status === "On Rent"
-                                  ? "secondary"
-                                  : "default"
+                                ? "secondary"
+                                : "default"
                             }
-                            className={`${order.status === "Delivered"
+                            className={`${
+                              order.status === "Delivered"
                                 ? "bg-green-100 text-green-800 border-green-300"
                                 : order.status === "On Rent"
-                                  ? "bg-blue-100 text-blue-800 border-blue-300"
-                                  : "bg-purple-100 text-purple-800 border-purple-300"
-                              } shadow-sm`}
+                                ? "bg-blue-100 text-blue-800 border-blue-300"
+                                : "bg-purple-100 text-purple-800 border-purple-300"
+                            } shadow-sm`}
                           >
                             {order.status}
                           </Badge>
-                          <div className="text-sm font-semibold text-gray-800">{order.amount}</div>
+                          <div className="text-sm font-semibold text-gray-800">
+                            {order.amount}
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Link href="/orders" className="text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium transition-colors duration-200">
+                  <Link
+                    href="/orders"
+                    className="text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium transition-colors duration-200"
+                  >
                     View all orders →
                   </Link>
                 </CardFooter>
               </Card>
-
             </div>
           </TabsContent>
 
@@ -359,12 +385,18 @@ export default function DashboardPage() {
                   <Calendar className="mr-2 h-5 w-5 text-purple-600" />
                   Order History
                 </CardTitle>
-                <CardDescription className="text-gray-600">View all your past rentals and purchases</CardDescription>
+                <CardDescription className="text-gray-600">
+                  View all your past rentals and purchases
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   {recentOrders.map((order, index) => (
-                    <div key={order.id} className="flex items-center justify-between border-b border-white/30 pb-4 animate-slideIn" style={{ animationDelay: `${0.1 * index}s` }}>
+                    <div
+                      key={order.id}
+                      className="flex items-center justify-between border-b border-white/30 pb-4 animate-slideIn"
+                      style={{ animationDelay: `${0.1 * index}s` }}
+                    >
                       <div className="flex items-center">
                         <div className="relative h-16 w-16 rounded-lg overflow-hidden mr-4 shadow-lg">
                           <Image
@@ -375,7 +407,9 @@ export default function DashboardPage() {
                           />
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-800">{order.product}</h4>
+                          <h4 className="font-medium text-gray-800">
+                            {order.product}
+                          </h4>
                           <div className="flex items-center text-sm text-gray-600 mt-1">
                             <Calendar className="mr-1 h-3 w-3" />
                             <span>{order.date}</span>
@@ -385,24 +419,33 @@ export default function DashboardPage() {
                               order.status === "Delivered"
                                 ? "outline"
                                 : order.status === "On Rent"
-                                  ? "secondary"
-                                  : "default"
+                                ? "secondary"
+                                : "default"
                             }
-                            className={`mt-2 ${order.status === "Delivered"
+                            className={`mt-2 ${
+                              order.status === "Delivered"
                                 ? "bg-green-100 text-green-800 border-green-300"
                                 : order.status === "On Rent"
-                                  ? "bg-blue-100 text-blue-800 border-blue-300"
-                                  : "bg-purple-100 text-purple-800 border-purple-300"
-                              } shadow-sm`}
+                                ? "bg-blue-100 text-blue-800 border-blue-300"
+                                : "bg-purple-100 text-purple-800 border-purple-300"
+                            } shadow-sm`}
                           >
                             {order.status}
                           </Badge>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold text-gray-800 text-lg">{order.amount}</div>
-                        <div className="text-sm text-gray-600">{order.type}</div>
-                        <Button variant="ghost" size="sm" className="mt-2 text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-all duration-200">
+                        <div className="font-semibold text-gray-800 text-lg">
+                          {order.amount}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {order.type}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-2 text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-all duration-200"
+                        >
                           Details
                           <ChevronRight className="ml-1 h-4 w-4" />
                         </Button>
@@ -421,7 +464,9 @@ export default function DashboardPage() {
                   <ShoppingBag className="mr-2 h-5 w-5 text-purple-600" />
                   My Listings
                 </CardTitle>
-                <CardDescription className="text-gray-600">Manage your items listed for rent or sale</CardDescription>
+                <CardDescription className="text-gray-600">
+                  Manage your items listed for rent or sale
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -433,9 +478,7 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="animate-fadeInUp">
-                    <ProductList
-                      products={myListings}
-                    />
+                    <ProductList products={myListings} />
                   </div>
                 )}
               </CardContent>
@@ -449,11 +492,16 @@ export default function DashboardPage() {
                   <TrendingUp className="mr-2 h-5 w-5 text-purple-600" />
                   Rental Analytics
                 </CardTitle>
-                <CardDescription className="text-gray-600">Track the performance of your listings</CardDescription>
+                <CardDescription className="text-gray-600">
+                  Track the performance of your listings
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-8">
-                  <div className="animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
+                  <div
+                    className="animate-fadeInUp"
+                    style={{ animationDelay: "0.1s" }}
+                  >
                     <h4 className="font-medium mb-4 text-gray-800 flex items-center">
                       <CreditCard className="mr-2 h-4 w-4 text-purple-600" />
                       Monthly Earnings
@@ -461,19 +509,28 @@ export default function DashboardPage() {
                     <div className="h-[200px] w-full bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center shadow-inner border border-white/30">
                       <div className="text-center">
                         <TrendingUp className="h-12 w-12 text-purple-500 mx-auto mb-2 animate-pulse-gentle" />
-                        <span className="text-gray-600 font-medium">Earnings chart will appear here</span>
+                        <span className="text-gray-600 font-medium">
+                          Earnings chart will appear here
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+                  <div
+                    className="animate-fadeInUp"
+                    style={{ animationDelay: "0.2s" }}
+                  >
                     <h4 className="font-medium mb-4 text-gray-800 flex items-center">
                       <Heart className="mr-2 h-4 w-4 text-purple-600" />
                       Popular Items
                     </h4>
                     <div className="space-y-4">
                       {myListings?.map((listing: any, index: number) => (
-                        <div key={listing.id} className="flex items-center p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-300 animate-slideIn" style={{ animationDelay: `${0.1 * index}s` }}>
+                        <div
+                          key={listing.id}
+                          className="flex items-center p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-300 animate-slideIn"
+                          style={{ animationDelay: `${0.1 * index}s` }}
+                        >
                           <div className="relative h-12 w-12 rounded-lg overflow-hidden mr-4 shadow-md">
                             <Image
                               src={listing.image || "/placeholder.svg"}
@@ -483,10 +540,16 @@ export default function DashboardPage() {
                             />
                           </div>
                           <div className="flex-1">
-                            <p className="font-medium text-gray-800">{listing.title}</p>
-                            <p className="text-sm text-gray-600">{listing.rentalCount} rentals</p>
+                            <p className="font-medium text-gray-800">
+                              {listing.title}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {listing.rentalCount} rentals
+                            </p>
                           </div>
-                          <div className="font-semibold text-gray-800">{listing.earnings}</div>
+                          <div className="font-semibold text-gray-800">
+                            {listing.earnings}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -498,5 +561,5 @@ export default function DashboardPage() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }
