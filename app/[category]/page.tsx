@@ -237,7 +237,7 @@ export default function EveningDressesPage() {
                         checked={selectedCategory === category.id}
                         onChange={() => setSelectedCategory(category.id)}
                       />
-                      <span className="text-sm">{category.name}</span>
+                      <span className="text-sm capitalize">{category.name}</span>
                     </label>
                   ))}
                 </div>
@@ -341,11 +341,9 @@ export default function EveningDressesPage() {
           {/* Main Content */}
           <div className="flex-1">
             <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                {
-                  categories.find((category) => category.id === categoryParam)
-                    ?.name
-                }
+              <h1 className="text-3xl font-bold capitalize text-gray-900 mb-4">
+                {categories.find((category) => category.id === selectedCategory)
+                  ?.name || "All"}
               </h1>
               <div className="text-gray-600 text-sm leading-relaxed">
                 <p>

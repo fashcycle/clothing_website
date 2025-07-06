@@ -5,135 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import {
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  ShoppingCart,
-  X,
-  CalendarDays,
-} from "lucide-react";
+import { Home, ShoppingCart, CalendarDays, RotateCcw } from "lucide-react";
 import { addDays, isBefore, format, differenceInDays } from "date-fns";
-import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
-import {
-  addToCart,
-  getAllProducts,
-  getCartItems,
-  getSingleProduct,
-  getWishlistedProducts,
-} from "@/app/api/api";
+import { addToCart, getCartItems, getSingleProduct } from "@/app/api/api";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-
-// Modal Component
-const CalendarModal = ({
-  isOpen,
-  onClose,
-  selectedRentalDays,
-  rentFromDate,
-  rentToDate,
-  onDaySelect,
-  onConfirm,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedRentalDays: number | null;
-  rentFromDate: Date | null;
-  rentToDate: Date | null;
-  onDaySelect: (day: Date | undefined) => void;
-  onConfirm: () => void;
-}) => {
-  const minSelectableDate = addDays(new Date(), 2);
-
-  if (!isOpen) return null;
-
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.2 }}
-          className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-        >
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Select Rental Dates</h2>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {selectedRentalDays && (
-              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Selected Duration:</strong> {selectedRentalDays} days
-                </p>
-              </div>
-            )}
-
-            <div className="border rounded-lg p-4">
-              <DayPicker
-                mode="single"
-                selected={rentFromDate ?? undefined}
-                onSelect={onDaySelect}
-                disabled={{ before: minSelectableDate }}
-                modifiers={{
-                  rentalRange:
-                    rentFromDate && rentToDate
-                      ? { from: rentFromDate, to: rentToDate }
-                      : undefined,
-                }}
-                modifiersClassNames={{
-                  rentalRange: "bg-emerald-200 text-emerald-900",
-                }}
-                className="w-full"
-              />
-            </div>
-
-            {rentFromDate && rentToDate && (
-              <div className="mt-4 p-4 bg-emerald-50 rounded-lg">
-                <p className="text-sm text-emerald-800 text-center">
-                  <strong>Rental Period:</strong>
-                  <br />
-                  {format(rentFromDate, "MMM dd, yyyy")} →{" "}
-                  {format(rentToDate, "MMM dd, yyyy")}
-                  <br />
-                  <span className="text-xs">
-                    ({differenceInDays(rentToDate, rentFromDate)} days)
-                  </span>
-                </p>
-              </div>
-            )}
-
-            <div className="flex gap-3 mt-6">
-              <Button variant="outline" onClick={onClose} className="flex-1">
-                Cancel
-              </Button>
-              <Button
-                onClick={onConfirm}
-                disabled={!rentFromDate || !rentToDate}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
-              >
-                Confirm Dates
-              </Button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
-};
+import CalendarModal from "@/components/CalendarModal";
 
 export default function ProductPage({ id }: { id: string }) {
   const [product, setProduct] = useState<any>(null);
@@ -148,8 +30,55 @@ export default function ProductPage({ id }: { id: string }) {
   const [rentFromDate, setRentFromDate] = useState<Date | null>(null);
   const [rentToDate, setRentToDate] = useState<Date | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isDateSelected, setIsDateSelected] = useState(false);
+  const [cartSelectionState, setCartSelectionState] = useState<{
+    rentalDays: number | null;
+    fromDate: Date | null;
+    toDate: Date | null;
+  }>({
+    rentalDays: null,
+    fromDate: null,
+    toDate: null,
+  });
 
   const router = useRouter();
+
+  // Save state to localStorage when rental details change
+  useEffect(() => {
+    if (product?.id && selectedRentalDays && rentFromDate && rentToDate) {
+      const stateKey = `rental_state_${product.id}`;
+      const state = {
+        rentalDays: selectedRentalDays,
+        fromDate: rentFromDate.toISOString(),
+        toDate: rentToDate.toISOString(),
+      };
+      localStorage.setItem(stateKey, JSON.stringify(state));
+    }
+  }, [product?.id, selectedRentalDays, rentFromDate, rentToDate]);
+
+  // Load state from localStorage on component mount
+  useEffect(() => {
+    if (product?.id) {
+      const stateKey = `rental_state_${product.id}`;
+      const savedState = localStorage.getItem(stateKey);
+      if (savedState) {
+        try {
+          const parsed = JSON.parse(savedState);
+          setSelectedRentalDays(parsed.rentalDays);
+          setRentFromDate(new Date(parsed.fromDate));
+          setRentToDate(new Date(parsed.toDate));
+          setIsDateSelected(true);
+          setCartSelectionState({
+            rentalDays: parsed.rentalDays,
+            fromDate: new Date(parsed.fromDate),
+            toDate: new Date(parsed.toDate),
+          });
+        } catch (error) {
+          console.error("Error parsing saved rental state:", error);
+        }
+      }
+    }
+  }, [product?.id]);
 
   const fetchProduct = async () => {
     try {
@@ -178,6 +107,7 @@ export default function ProductPage({ id }: { id: string }) {
       console.error("Failed fetching cart items", err);
     }
   };
+
   useEffect(() => {
     setIsLoading(true);
     if (id) fetchProduct();
@@ -205,6 +135,7 @@ export default function ProductPage({ id }: { id: string }) {
     if (selectedRentalDays) {
       const to = addDays(day, selectedRentalDays);
       setRentToDate(to);
+      setIsDateSelected(true);
     }
   };
 
@@ -213,10 +144,12 @@ export default function ProductPage({ id }: { id: string }) {
     // Reset dates when changing rental duration
     setRentFromDate(null);
     setRentToDate(null);
+    setIsDateSelected(false);
   };
 
   const handleCalendarConfirm = () => {
     setIsCalendarOpen(false);
+    setIsDateSelected(true);
     toast.success("Rental dates selected successfully!");
   };
 
@@ -224,6 +157,18 @@ export default function ProductPage({ id }: { id: string }) {
     setRentFromDate(null);
     setRentToDate(null);
     setSelectedRentalDays(null);
+    setIsDateSelected(false);
+    setCartSelectionState({
+      rentalDays: null,
+      fromDate: null,
+      toDate: null,
+    });
+
+    // Clear from localStorage
+    if (product?.id) {
+      const stateKey = `rental_state_${product.id}`;
+      localStorage.removeItem(stateKey);
+    }
   };
 
   const getCurrentRentalPrice = () => {
@@ -240,6 +185,7 @@ export default function ProductPage({ id }: { id: string }) {
         return product.rentPrice3Days;
     }
   };
+
   const handleAddToCart = async (productId: string) => {
     try {
       setIsAddingToCart(productId);
@@ -266,15 +212,21 @@ export default function ProductPage({ id }: { id: string }) {
 
       const response = await addToCart(payload);
       if (response.success) {
-        
         setCartItems((prev) => [...prev, productId]);
         toast.success("Added to cart successfully");
 
-      
+        // Save cart selection state
+        if (isRent && selectedRentalDays && rentFromDate && rentToDate) {
+          setCartSelectionState({
+            rentalDays: selectedRentalDays,
+            fromDate: rentFromDate,
+            toDate: rentToDate,
+          });
+        }
+
         fetchCartItems();
       }
     } catch (err) {
-
       setCartItems((prev) => prev.filter((id) => id !== productId));
       toast.error("Failed to add to cart");
       console.error(err);
@@ -297,6 +249,63 @@ export default function ProductPage({ id }: { id: string }) {
       { days: 14, price: product.rentPrice14Days },
     ];
 
+    // If dates are selected, only show the selected option
+    if (isDateSelected && selectedRentalDays) {
+      const selectedOption = options.find(
+        (opt) => opt.days === selectedRentalDays
+      );
+      if (selectedOption) {
+        return (
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-lg">
+                Selected Rental Duration
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetRentalState}
+                className="text-red-600 hover:text-red-700 flex items-center gap-1"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Change Duration
+              </Button>
+            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="w-full p-4 bg-emerald-600 text-white rounded-lg flex justify-between items-center">
+                <div className="text-left">
+                  <div className="font-semibold">
+                    {selectedOption.days} Days
+                  </div>
+                  <div className="text-sm opacity-90">
+                    Perfect for{" "}
+                    {selectedOption.days === 3
+                      ? "events"
+                      : selectedOption.days === 7
+                      ? "occasions"
+                      : "extended use"}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-lg">
+                    ₹{selectedOption.price}
+                  </div>
+                  <div className="text-xs opacity-90">
+                    ₹{Math.round(selectedOption.price / selectedOption.days)}
+                    /day
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        );
+      }
+    }
+
+    // Show all options if no dates selected
     return (
       <div className="space-y-4 mb-6">
         <h3 className="font-semibold text-lg">Select Rental Duration</h3>
@@ -355,10 +364,11 @@ export default function ProductPage({ id }: { id: string }) {
               onClick={() => {
                 setRentFromDate(null);
                 setRentToDate(null);
+                setIsDateSelected(false);
               }}
               className="text-red-600 hover:text-red-700"
             >
-              Clear
+              Clear Dates
             </Button>
           )}
         </div>
@@ -406,6 +416,7 @@ export default function ProductPage({ id }: { id: string }) {
       </div>
     );
   };
+
   if (isLoading || !product) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -418,10 +429,10 @@ export default function ProductPage({ id }: { id: string }) {
     Array.isArray(product.listingType) && product.listingType.includes("rent");
   const isSellProduct =
     Array.isArray(product.listingType) && product.listingType.includes("sell");
+
   return (
     <>
       <div className="max-w-7xl mx-auto py-8 px-4">
-
         <div className="flex items-center text-sm mb-6 gap-2">
           <Link href="/" className="hover:underline flex items-center gap-1">
             <Home className="h-3 w-3" /> Home
@@ -452,7 +463,6 @@ export default function ProductPage({ id }: { id: string }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-  
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}

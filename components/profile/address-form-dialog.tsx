@@ -85,27 +85,27 @@ export function AddressFormDialog({
       }
     }
   }, [open, initialData, openFor]);
-  const handlePincodeChange = async (pincode: string) => {
-    if (pincode.length === 6) {
-      try {
-        const response = await fetch(
-          `https://api.postalpincode.in/pincode/${pincode}`
-        );
-        const [data] = await response.json();
-        if (data.Status === "Success") {
-          const postOffice = data.PostOffice[0];
-          setFormData({
-            ...formData,
-            city: postOffice.District,
-            state: postOffice.State,
-            pincode,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching pincode data:", error);
-      }
-    }
-  };
+  // const handlePincodeChange = async (pincode: string) => {
+  //   if (pincode.length === 6) {
+  //     try {
+  //       const response = await fetch(
+  //         `https://api.postalpincode.in/pincode/${pincode}`
+  //       );
+  //       const [data] = await response.json();
+  //       if (data.Status === "Success") {
+  //         const postOffice = data.PostOffice[0];
+  //         setFormData({
+  //           ...formData,
+  //           city: postOffice.District,
+  //           state: postOffice.State,
+  //           pincode,
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching pincode data:", error);
+  //     }
+  //   }
+  // };
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -251,33 +251,40 @@ export function AddressFormDialog({
             <div className="space-y-2">
               <Label>Pincode *</Label>
               <Select
-                value={formData?.pincode?.pincode}
+                value={formData.pincode}
                 onValueChange={(value) => {
-                  setFormData({ ...formData, pincode: value });
+                  const selected = pincodes.find((p) => p.pincode === value);
+                  setFormData({
+                    ...formData,
+                    pincode: value, // always a string
+                    city: selected?.city ?? "",
+                    state: selected?.state ?? "",
+                    country: selected?.country ?? "",
+                  });
                   setErrors({ ...errors, pincode: "" });
-                  handlePincodeChange(value);
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Enter Pincode">
-                    {formData?.pincode.pincode}
-                  </SelectValue>
+                  <SelectValue placeholder="Enter Pincode" />
                 </SelectTrigger>
                 <SelectContent>
-                  {formData?.pincode.pincode &&
-                    !pincodes.some(
-                      (p) => p.pincode === formData.pincode.pincode
-                    ) && (
+                  {/* If the current pincode is not in the list, show it as an option */}
+                  {formData.pincode &&
+                    !pincodes.some((p) => p.pincode === formData.pincode) && (
                       <SelectItem
-                        key={formData.pincode.pincode}
-                        value={formData.pincode.pincode}
+                        key={formData.pincode}
+                        value={formData.pincode}
                       >
-                        {formData.pincode.pincode}
+                        {typeof formData.pincode === "string"
+                          ? formData.pincode
+                          : ""}
                       </SelectItem>
                     )}
                   {pincodes.map((pincode) => (
                     <SelectItem key={pincode.id} value={pincode.pincode}>
-                      {pincode.pincode}
+                      {typeof pincode.pincode === "string"
+                        ? pincode.pincode
+                        : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
