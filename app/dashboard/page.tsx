@@ -68,7 +68,6 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(false);
   const [myListings, setMyListings] = useState<any>([]);
-  console.log("My Listings:", myListings);
   useEffect(() => {
     if (activeTab === "overview" || activeTab === "listings") {
       listProductApi();
@@ -281,9 +280,9 @@ export default function DashboardPage() {
                   <CreditCard className="h-5 w-5 text-blue-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-blue-900">₹6,050</div>
+                  <div className="text-3xl font-bold text-blue-900">₹ 0</div>
                   <p className="text-xs text-blue-600">
-                    +20.1% from last month
+                    +0% from last month
                   </p>
                 </CardContent>
               </Card>
@@ -296,7 +295,9 @@ export default function DashboardPage() {
                   <ShoppingBag className="h-5 w-5 text-green-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-green-900">{myListings.length}</div>
+                  <div className="text-3xl font-bold text-green-900">
+                    {myListings.length}
+                  </div>
                   {/* <p className="text-xs text-green-600">
                     8 total rental transactions
                   </p> */}

@@ -213,9 +213,9 @@ export default function ProfilePage() {
         "originalPurchasePrice",
         productForm.originalPurchasePrice.toString()
       );
-      // formData.append("size", productForm.productSize);
+      formData.append("size", productForm.productSize);
       formData.append("sizeFlexibility", productForm.sizeFlexibility);
-      formData.append("size", productForm.size);
+      // formData.append("size", productForm.size);
       formData.append("color", productForm.color);
 
       // Append required images
@@ -300,6 +300,7 @@ export default function ProfilePage() {
       setIsSubmitting(false);
     }
   };
+
   const productSchema = yup.object().shape({
     productName: yup.string().required("Product name is required"),
     category: yup.string().required("Category is required"),
@@ -598,6 +599,10 @@ export default function ProfilePage() {
 
     fetchCategories();
   }, []);
+  const selectedCategoryObj = categories?.find(
+    (cat) => String(cat.id) === String(productForm.category)
+  );
+
   return (
     <div className="container py-10">
       <div className="flex flex-col md:flex-row gap-6">
@@ -974,7 +979,7 @@ export default function ProfilePage() {
                         <SelectContent>
                           {categories?.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
-                              {category.name}
+                              <p className="capitalize ">{category.name}</p>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -985,7 +990,7 @@ export default function ProfilePage() {
                         </p>
                       )}
                     </div>
-                    {productForm.category === "lehenga" && (
+                    {/* {productForm.category === "lehenga" && (
                       <LehengaSizeChart
                         onSizeSelect={(size) => {
                           setProductForm({ ...productForm, productSize: size });
@@ -1044,6 +1049,74 @@ export default function ProfilePage() {
                       />
                     )}
                     {productForm.category === "other" && (
+                      <OtherSizeChart
+                        onSizeSelect={(size: any) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          const newErrors = { ...formErrors };
+                          delete newErrors.productSize;
+                          setFormErrors(newErrors);
+                        }}
+                      />
+                    )} */}
+                    {selectedCategoryObj?.slug === "lehenga" && (
+                      <LehengaSizeChart
+                        onSizeSelect={(size) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          const newErrors = { ...formErrors };
+                          delete newErrors.productSize;
+                          setFormErrors(newErrors);
+                        }}
+                      />
+                    )}
+                    {selectedCategoryObj?.slug === "gown" && (
+                      <GownSizeChart
+                        onSizeSelect={(size: any) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {selectedCategoryObj?.slug === "sharara-set" && (
+                      <ShararaSizeChart
+                        onSizeSelect={(size) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {selectedCategoryObj?.slug === "anarkali" && (
+                      <AnarkaliSizeChart
+                        onSizeSelect={(size) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {selectedCategoryObj?.slug === "saree" && (
+                      <SareeSizeChart
+                        onSizeSelect={(size) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {selectedCategoryObj?.slug === "suit" && (
+                      <SuitSizeChart
+                        onSizeSelect={(size) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {selectedCategoryObj?.slug === "rajasthani-poshak" && (
+                      <RajasthaniPoshakSizeChart
+                        onSizeSelect={(size: any) => {
+                          setProductForm({ ...productForm, productSize: size });
+                          setFormErrors({ ...formErrors, productSize: "" });
+                        }}
+                      />
+                    )}
+                    {selectedCategoryObj?.slug === "other" && (
                       <OtherSizeChart
                         onSizeSelect={(size: any) => {
                           setProductForm({ ...productForm, productSize: size });
@@ -1155,56 +1228,7 @@ export default function ProfilePage() {
                         </div>
                       </TooltipProvider>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <TooltipProvider>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-1">
-                            <Label className="font-large font-bold">
-                              Size *
-                            </Label>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
-                              </TooltipTrigger>
-                              <TooltipContent
-                                side="bottom"
-                                className="bg-black text-white px-2 py-1 rounded-md text-sm max-w-xs"
-                              >
-                                Size shows the possibility of alteration
-                                available in the product.
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>{" "}
-                          <Select
-                            onValueChange={(value) => {
-                              setProductForm({
-                                ...productForm,
-                                size: value,
-                              });
-                              const newErrors = { ...formErrors };
-                              delete newErrors.size;
-                              setFormErrors(newErrors);
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select size" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {["S", "M", "L", "XL", "XXl"].map((flex) => (
-                                <SelectItem key={flex} value={flex}>
-                                  {flex}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {formErrors.size && (
-                            <p className="text-sm text-destructive">
-                              {formErrors.size}
-                            </p>
-                          )}
-                        </div>
-                      </TooltipProvider>
-                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="color" className="font-large font-bold">
                         Color *

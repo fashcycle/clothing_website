@@ -11,6 +11,7 @@ export function ProductList({ products }: any) {
 
   const handleViewProduct = (e: React.MouseEvent, productId: string) => {
     e.stopPropagation(); // Prevent triggering the parent onClick
+    
     router.push(`/products/${productId}`);
   };
   return (
@@ -64,11 +65,11 @@ export function ProductList({ products }: any) {
               </div>
               <div className="flex gap-6 text-sm text-gray-600 font-medium ">
                 <span>
-                  🎨 Color:{" "}
+                  Color:{" "}
                   <span className="text-black capitalize">{product.color}</span>
                 </span>
                 <span>
-                  📏 Size: <span className="text-black">{product.size}</span>
+                  Size: <span className="text-black">{product.size}</span>
                 </span>
               </div>
             </div>
@@ -97,12 +98,16 @@ export function ProductList({ products }: any) {
               <div className="text-sm font-semibold text-emerald-600">
                 + {product.earnings} Earned
               </div>
-              <div className="flex items-center text-sm text-primary mt-6 font-medium group/view cursor-pointer">
-                <span className="group-hover/view:translate-x-1 transition-transform">
-                  View Product
-                </span>
-                <ChevronRight className="h-4 w-4 ml-1 group-hover/view:translate-x-1 transition-transform" />
-              </div>
+              {product.status === "APPROVED" ? (
+                <div className="flex items-center text-sm text-primary mt-6 font-medium group/view cursor-pointer">
+                  <span className="group-hover/view:translate-x-1 transition-transform">
+                    View Product
+                  </span>
+                  <ChevronRight className="h-4 w-4 ml-1 group-hover/view:translate-x-1 transition-transform" />
+                </div>
+              ) : (
+                ""
+              )}
             </div>
           </div>
         </motion.div>
