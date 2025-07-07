@@ -119,13 +119,20 @@ export default function ProductPage({ id }: { id: string }) {
 
   useEffect(() => {
     if (!product) return;
+
     const imgs = Object.entries(product.productImage || {})
-      .filter(([, path]) => path)
+      .filter(
+        ([key, value]) =>
+          value !== null &&
+          value !== undefined &&
+          !["id", "productId"].includes(key)
+      )
       .map(([key, path]) => ({ key, path }));
+
     setProductImages(imgs);
   }, [product]);
 
-  const minSelectableDate = addDays(new Date(), 2);
+  const minSelectableDate = addDays(new Date(), 1);
 
   const handleDaySelect = (day: Date | undefined) => {
     if (!day) return;
@@ -141,10 +148,10 @@ export default function ProductPage({ id }: { id: string }) {
 
   const handleRentalDaySelection = (days: number) => {
     setSelectedRentalDays(days);
-    // Reset dates when changing rental duration
     setRentFromDate(null);
     setRentToDate(null);
     setIsDateSelected(false);
+    setIsCalendarOpen(true); // open calendar immediately
   };
 
   const handleCalendarConfirm = () => {
@@ -309,38 +316,35 @@ export default function ProductPage({ id }: { id: string }) {
     return (
       <div className="space-y-4 mb-6">
         <h3 className="font-semibold text-lg">Select Rental Duration</h3>
-        <div className="grid grid-cols-1 gap-3">
+        <div className="flex flex-row gap-3">
           {options.map(({ days, price }) => (
             <motion.div
               key={days}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              className="flex-1"
             >
               <Button
                 variant={selectedRentalDays === days ? "default" : "outline"}
                 onClick={() => handleRentalDaySelection(days)}
-                className={`w-full p-4 h-auto flex justify-between items-center ${
+                className={`w-full p-4 h-auto flex flex-col items-center justify-between ${
                   selectedRentalDays === days
                     ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                     : "hover:bg-gray-50"
                 }`}
               >
-                <div className="text-left">
-                  <div className="font-semibold">{days} Days</div>
-                  <div className="text-sm opacity-75">
-                    Perfect for{" "}
-                    {days === 3
-                      ? "events"
-                      : days === 7
-                      ? "occasions"
-                      : "extended use"}
-                  </div>
+                <div className="font-semibold">{days} Days</div>
+                <div className="text-sm opacity-75">
+                  Perfect for{" "}
+                  {days === 3
+                    ? "events"
+                    : days === 7
+                    ? "occasions"
+                    : "extended use"}
                 </div>
-                <div className="text-right">
-                  <div className="font-bold text-lg">₹{price}</div>
-                  <div className="text-xs opacity-75">
-                    ₹{Math.round(price / days)}/day
-                  </div>
+                <div className="font-bold text-lg mt-2">₹{price}</div>
+                <div className="text-xs opacity-75">
+                  ₹{Math.round(price / days)}/day
                 </div>
               </Button>
             </motion.div>
