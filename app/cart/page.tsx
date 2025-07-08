@@ -102,14 +102,15 @@ export default function CartPage() {
           },
         }
       );
-
+      const razorpay_order_id = data.order.razorpayOrderId;
+      console.log("Order Data:", razorpay_order_id);
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: total * 100,
         currency: "INR",
         name: "FashCycle",
-        description: `Order #${data.orderId}`,
-        order_id: data.orderId,
+        description: `Order #${razorpay_order_id}`,
+        order_id: razorpay_order_id,
         prefill: {
           name: user?.name,
           email: user?.email,
@@ -121,20 +122,17 @@ export default function CartPage() {
         theme: { color: "#0160D8" },
 
         handler: async (response: any) => {
+          const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+            response;
           console.log("Payment Response:", response);
-          console.log("Verify sending payload:", {
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-          });
 
           try {
             const verifyRes = await axios.post(
               `${process.env.NEXT_PUBLIC_API_BASE}/orders/verify-payment`,
               {
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
+                razorpayOrderId: razorpay_order_id,
+                razorpayPaymentId: razorpay_payment_id,
+                razorpaySignature: razorpay_signature,
               },
               {
                 headers: {
@@ -146,7 +144,8 @@ export default function CartPage() {
 
             if (verifyRes.data.status) {
               toast.success("Payment successful! 🎉");
-              router.push("/order-success");
+              console.log("Payment successful:", verifyRes.data);
+              // router.push("/order-success");
             } else {
               toast.error("Signature verify failed");
             }

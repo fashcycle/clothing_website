@@ -256,163 +256,56 @@ export default function ProductPage({ id }: { id: string }) {
       { days: 14, price: product.rentPrice14Days },
     ];
 
-    // If dates are selected, only show the selected option
-    if (isDateSelected && selectedRentalDays) {
-      const selectedOption = options.find(
-        (opt) => opt.days === selectedRentalDays
-      );
-      if (selectedOption) {
-        return (
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-lg">
-                Selected Rental Duration
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={resetRentalState}
-                className="text-red-600 hover:text-red-700 flex items-center gap-1"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Change Duration
-              </Button>
-            </div>
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="w-full p-4 bg-emerald-600 text-white rounded-lg flex justify-between items-center">
-                <div className="text-left">
-                  <div className="font-semibold">
-                    {selectedOption.days} Days
-                  </div>
-                  <div className="text-sm opacity-90">
-                    Perfect for{" "}
-                    {selectedOption.days === 3
-                      ? "events"
-                      : selectedOption.days === 7
-                      ? "occasions"
-                      : "extended use"}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-lg">
-                    ₹{selectedOption.price}
-                  </div>
-                  <div className="text-xs opacity-90">
-                    ₹{Math.round(selectedOption.price / selectedOption.days)}
-                    /day
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        );
-      }
-    }
-
-    // Show all options if no dates selected
     return (
       <div className="space-y-4 mb-6">
         <h3 className="font-semibold text-lg">Select Rental Duration</h3>
-        <div className="flex flex-row gap-3">
-          {options.map(({ days, price }) => (
-            <motion.div
-              key={days}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex-1"
-            >
-              <Button
-                variant={selectedRentalDays === days ? "default" : "outline"}
-                onClick={() => handleRentalDaySelection(days)}
-                className={`w-full p-4 h-auto flex flex-col items-center justify-between ${
-                  selectedRentalDays === days
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    : "hover:bg-gray-50"
-                }`}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {options.map(({ days, price }) => {
+            const isSelected = selectedRentalDays === days;
+
+            return (
+              <motion.div
+                key={days}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1"
               >
-                <div className="font-semibold">{days} Days</div>
-                <div className="text-sm opacity-75">
-                  Perfect for{" "}
-                  {days === 3
-                    ? "events"
-                    : days === 7
-                    ? "occasions"
-                    : "extended use"}
-                </div>
-                <div className="font-bold text-lg mt-2">₹{price}</div>
-                <div className="text-xs opacity-75">
-                  ₹{Math.round(price / days)}/day
-                </div>
-              </Button>
-            </motion.div>
-          ))}
+                <Button
+                  variant={isSelected ? "default" : "outline"}
+                  onClick={() => handleRentalDaySelection(days)}
+                  className={`w-full p-4 h-auto flex flex-col items-center justify-between ${
+                    isSelected
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                      : "hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="font-semibold">{days} Days</div>
+                  <div className="text-sm opacity-75">
+                    Perfect for{" "}
+                    {days === 3
+                      ? "events"
+                      : days === 7
+                      ? "occasions"
+                      : "extended use"}
+                  </div>
+                  <div className="font-bold text-lg mt-2">₹{price}</div>
+                </Button>
+              </motion.div>
+            );
+          })}
         </div>
-      </div>
-    );
-  };
-
-  const renderDateSelection = () => {
-    if (!selectedRentalDays) return null;
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">Select Dates</h3>
-          {rentFromDate && rentToDate && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setRentFromDate(null);
-                setRentToDate(null);
-                setIsDateSelected(false);
-              }}
-              className="text-red-600 hover:text-red-700"
-            >
-              Clear Dates
-            </Button>
-          )}
-        </div>
-
-        <Button
-          variant="outline"
-          onClick={() => setIsCalendarOpen(true)}
-          className="w-full p-4 h-auto flex items-center justify-between"
-        >
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-5 h-5" />
-            <span>
-              {rentFromDate && rentToDate
-                ? `${format(rentFromDate, "MMM dd")} - ${format(
-                    rentToDate,
-                    "MMM dd, yyyy"
-                  )}`
-                : "Select rental dates"}
-            </span>
-          </div>
-          {rentFromDate && rentToDate && (
-            <Badge
-              variant="secondary"
-              className="bg-emerald-100 text-emerald-800"
-            >
-              {differenceInDays(rentToDate, rentFromDate)} days
-            </Badge>
-          )}
-        </Button>
 
         {rentFromDate && rentToDate && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200"
+            className="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200"
           >
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-emerald-700">Total Cost:</span>
-              <span className="font-bold text-emerald-800">
-                ₹{getCurrentRentalPrice()}
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-700 font-medium">Rental Dates:</span>
+              <span className="font-semibold text-emerald-700">
+                {format(rentFromDate, "MMM dd")} -{" "}
+                {format(rentToDate, "MMM dd, yyyy")}
               </span>
             </div>
           </motion.div>
@@ -520,12 +413,34 @@ export default function ProductPage({ id }: { id: string }) {
           >
             <div className="text-center">
               <h1 className="text-3xl font-bold mb-2">{product.productName}</h1>
-              <p className="text-gray-600">
+              {/* <p className="text-gray-600">
                 {product.color} {product.category?.name}, {product.size}
-              </p>
+              </p> */}
             </div>
-
-            <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-6 rounded-lg text-center">
+            <div className="flex flex-wrap gap-2 justify-center">
+              <Badge
+                variant="outline"
+                className="border-blue-400 bg-blue-100 text-blue-800 rounded-full px-3 py-1 capitalize"
+              >
+                {product.category?.name}
+              </Badge>
+              <Badge
+                variant="outline"
+                className="border-blue-400 bg-emerald-100 text-blue-800 rounded-full px-3 py-1 capitalize"
+              >
+                Size: {product.size}
+              </Badge>
+              {/* {product.listingType?.map((t: string) => (
+                <Badge
+                  key={t}
+                  variant="secondary"
+                  className="bg-emerald-100 text-emerald-800 rounded-full px-3 py-1 uppercase"
+                >
+                  {t}
+                </Badge>
+              ))} */}
+            </div>
+            {/* <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-6 rounded-lg text-center">
               {isRentProduct && !isSellProduct ? (
                 <>
                   <p className="text-lg text-gray-600 mb-2">Rental Price</p>
@@ -563,12 +478,12 @@ export default function ProductPage({ id }: { id: string }) {
                   </div>
                 </>
               )}
-            </div>
+            </div> */}
 
             {isRentProduct && (
               <>
                 {renderRentalButtons()}
-                {renderDateSelection()}
+                {/* {renderDateSelection()} */}
               </>
             )}
 
@@ -610,47 +525,24 @@ export default function ProductPage({ id }: { id: string }) {
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Badge
-                variant="outline"
-                className="border-blue-400 bg-blue-100 text-blue-800 rounded-full px-3 py-1 capitalize"
-              >
-                {product.category?.name}
-              </Badge>
-              {product.listingType?.map((t: string) => (
-                <Badge
-                  key={t}
-                  variant="secondary"
-                  className="bg-emerald-100 text-emerald-800 rounded-full px-3 py-1 uppercase"
-                >
-                  {t}
-                </Badge>
-              ))}
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h2 className="font-semibold mb-2">About this item</h2>
-              <p className="text-gray-700">
-                {product.description ||
-                  `Quality ${product.productName} in ${product.color}. Size ${product.size}.`}
-              </p>
-            </div>
-
             <div className="space-y-3 border-t border-gray-200 pt-6">
-              <h3 className="font-semibold text-lg mb-4">Specifications</h3>
+              <h3 className="font-semibold text-lg mb-4">Product Details</h3>
 
               {[
-                { label: "BRAND", value: "FashCycle" },
-                { label: "SIZE", value: product?.size },
-                { label: "SIZE FLEXIBILITY", value: product.sizeFlexibility },
                 { label: "COLOUR", value: product.color },
+                { label: "SIZE FLEXIBILITY", value: product.sizeFlexibility },
                 {
-                  label: isRentProduct ? "RENTAL PRICE" : "SALE PRICE",
-                  value: isRentProduct
-                    ? `₹${product.rentPrice3Days} (3 days)`
-                    : `₹${product?.originalPurchasePrice}`,
+                  label: "ORIGNAL PURCHASE PRICE  ",
+                  value: `₹${product.originalPurchasePrice}`,
                 },
-                { label: "CONDITION", value: "Excellent" },
+                { label: "SIZE", value: product?.size },
+                // {
+                //   label: isRentProduct ? "RENTAL PRICE" : "SALE PRICE",
+                //   value: isRentProduct
+                //     ? `₹${product.rentPrice3Days} (3 days)`
+                //     : `₹${product?.originalPurchasePrice}`,
+                // },
+                // { label: "CONDITION", value: "Excellent" },
               ].map(({ label, value }) => (
                 <div
                   key={label}
@@ -661,7 +553,13 @@ export default function ProductPage({ id }: { id: string }) {
                 </div>
               ))}
             </div>
-
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h2 className="font-semibold mb-2">About this item</h2>
+              <p className="text-gray-700">
+                {product.description ||
+                  `Quality ${product.productName} in ${product.color}. Size ${product.size}.`}
+              </p>
+            </div>
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-blue-800 text-center">
                 ✓ All purchases are verified and guaranteed authentic
