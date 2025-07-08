@@ -19,6 +19,8 @@ import Testimonials from "@/components/testimonials";
 import CategorySlider from "@/components/category-slider";
 import LocationPopup from "@/components/location-popup";
 import LocationHandler from "@/components/location-handler";
+import appStore from "@/public/appStore.svg";
+import googlePlay from "@/public/googlePlay.svg";
 
 export default function Home() {
   useEffect(() => {
@@ -30,12 +32,14 @@ export default function Home() {
       localStorage.removeItem("hasSeenLocationPopup");
     }
   }, []);
+
   const [isLogin, setIsLogin] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLogin(!!token);
   }, []);
+
   return (
     <div className="flex flex-col">
       {/* Location Popup - Only shown on home page */}
@@ -61,8 +65,6 @@ export default function Home() {
               Future Fashion
             </h1>
             <p className="text-lg md:text-xl text-white/90 max-w-md animate-fade-in-delay">
-              {/* Your one-stop platform for renting, selling, and buying quality
-              clothing. Save money, reduce waste, and stay stylish. */}
               Welcome to the F-Cian tribe — a community of bold, conscious women
               who believe in sharing style, not just owning it.
             </p>
@@ -87,32 +89,34 @@ export default function Home() {
                 Browse Clothes
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
-              {/* <Link href="/upload">
-                <Button size="lg" variant="outline" className="border-white text-primary bg-white/10">
-                  Upload Your Clothes
-                </Button>
-              </Link> */}
             </div>
-            {/* Happy user count and images , commented for now */}
-            {/* <div className="flex items-center gap-4 mt-6 animate-fade-in-delay-2">
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="inline-block rounded-full ring-2 overflow-hidden">
-                    <div className="h-10 w-10 rounded-full object-cover bg-gray-500"></div>
-                    <Image
-                      src={`/placeholder.svg?height=40&width=40&text=User${i}`}
-                      alt={`User ${i}`}
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="text-sm text-white/80">
-                <span className="font-medium">2,000+</span> happy users
-              </div>
-            </div> */}
+            <div className="flex items-center gap-2">
+              <Link
+                href="https://apps.apple.com/app/idXXXXXXXXX"
+                target="_blank"
+              >
+                <Image
+                  src={appStore}
+                  width={150}
+                  height={50}
+                  alt="App Store"
+                  className="object-cover"
+                />
+              </Link>
+
+              <Link
+                href="https://play.google.com/store/apps/details?id=com.yourapp"
+                target="_blank"
+              >
+                <Image
+                  src={googlePlay}
+                  width={150}
+                  height={50}
+                  alt="Google Play"
+                  className="object-cover"
+                />
+              </Link>
+            </div>
           </div>
 
           <div className="hidden md:block md:w-1/2 relative">
@@ -124,12 +128,6 @@ export default function Home() {
                 className="object-cover hover-scale"
               />
             </div>
-            {/* <div className="absolute -bottom-6 -left-6 bg-white rounded-lg shadow-lg p-4 animate-slide-up-delay-2 glass-effect">
-              <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                <span className="font-medium">4.9/5 from 2000+ reviews</span>
-              </div>
-            </div> */}
             <div className="absolute top-4 -right-6 bg-white rounded-lg shadow-lg p-4 animate-slide-in-right glass-effect">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-primary" />
@@ -175,38 +173,6 @@ export default function Home() {
         <HowItWorks />
       </section>
 
-      {/* Stats Section  comment for now*/}
-      {/* <section className="bg-primary text-primary-foreground py-12 md:py-20">
-        <div className="container px-4 md:px-6">
-          <div className="grid gap-8 md:grid-cols-3">
-            <Card className="bg-primary-foreground/5 backdrop-blur-sm border-none animate-fade-in">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <Users className="h-12 w-12 mb-4" />
-                <h3 className="text-3xl font-serif font-medium">500,000+</h3>
-                <p className="text-primary-foreground/80">Active Users</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-primary-foreground/5 backdrop-blur-sm border-none animate-fade-in-delay">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <Truck className="h-12 w-12 mb-4" />
-                <h3 className="text-3xl font-serif font-medium">100,000+</h3>
-                <p className="text-primary-foreground/80">Successful Rentals</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-primary-foreground/5 backdrop-blur-sm border-none animate-fade-in-delay-2">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <TrendingUp className="h-12 w-12 mb-4" />
-                <h3 className="text-3xl font-serif font-medium">₹50M+</h3>
-                <p className="text-primary-foreground/80">Transaction Volume</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section> */}
-
-      {/* Testimonials */}
-      <Testimonials />
-
       {/* Sustainability Section */}
       <section className="container px-4 md:px-6 py-12 md:py-20">
         <div className="grid md:grid-cols-2 gap-10 items-center">
@@ -214,17 +180,13 @@ export default function Home() {
             <h2 className="text-2xl md:text-3xl font-serif font-medium mb-4">
               Fashion That Doesn't Cost the Earth
             </h2>
-            {/* <p className="text-muted-foreground mb-6">
-              By renting instead of buying, you're helping to reduce fashion
-              waste and extend the lifecycle of quality garments.
-            </p> */}
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
                 <div>
                   <h3 className="font-medium">Reduce Fashion Waste</h3>
                   <p className="text-sm text-muted-foreground">
-                    Globally , more than half of all fast fashion is disposed
+                    Globally, more than half of all fast fashion is disposed
                     within the same year.
                   </p>
                 </div>
@@ -244,16 +206,16 @@ export default function Home() {
                 <div>
                   <h3 className="font-medium">Support Circular Economy</h3>
                   <p className="text-sm text-muted-foreground">
-                    For the fashion sector to hit the paris agreement goals , it
-                    is said 1 out 5 garments will need to be traded through
-                    circular consumption model by 2030 .
+                    For the fashion sector to hit the Paris Agreement goals, it
+                    is said 1 out of 5 garments will need to be traded through
+                    circular consumption models by 2030.
                   </p>
                 </div>
               </li>
             </ul>
             <Link href="/sustainability">
               <Button className="mt-6">Learn More About Sustainability</Button>
-            </Link>{" "}
+            </Link>
           </div>
           <div className="relative">
             <Image
@@ -261,32 +223,27 @@ export default function Home() {
               alt="Sustainable Fashion"
               width={600}
               height={700}
-              className="rounded-lg object-cover w-full h-[500px]"
+              className="rounded-lg object-cover w-full h-[300px] md:h-[500px]"
             />
-            {/* <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-lg shadow-lg max-w-xs">
-      <p className="text-lg font-medium mb-2">Our Impact</p>
-      <p className="text-sm text-muted-foreground">
-        Together, our community has saved over 1 million kg of CO₂ emissions by choosing to rent instead of buy.
-      </p>
-    </div> */}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="container px-4 md:px-6 py-12 md:py-16">
-        <div className="bg-primary text-primary-foreground p-8 md:p-12 rounded-lg relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzR2LTRoLTJ2NGgtNHYyaDR2NGgydi00aDR2LTJoLTR6bTAtMzBWMGgtMnY0aC00djJoNHY0aDJWNmg0VjRoLTR6TTYgMzR2LTRINHY0SDB2Mmg0djRoMnYtNGg0di0ySDZ6TTYgNFYwSDR2NEgwdjJoNHY0aDJWNmg0VjRINnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10"></div>
-          <div className="grid gap-6 md:grid-cols-2 items-center relative z-10">
-            <div>
-              <h2 className="text-3xl font-serif font-medium tracking-tight md:text-4xl">
-                Join F-Cian Today
-              </h2>
-              <p className="mt-4 text-primary-foreground/90 md:text-lg">
-               Start Renting, Lending, Selling and Buying occasion-wear from people like you.
-              </p>
-            </div>
-            {!isLogin ? (
+      {!isLogin && (
+        <section className="container px-4 md:px-6 py-12 md:py-16">
+          <div className="bg-primary text-primary-foreground p-8 md:p-12 rounded-lg relative overflow-hidden">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzR2LTRoLTJ2NGgtNHYyaDR2NGgydi00aC00djJoNHY0aDJWNmg0VjRoLTR6bTAtMzBWMGgtMnY0aC00djJoNHY0aDJWNmg0VjRoLTR6TTYgMzR2LTRINHY0SDB2Mmg0djRoMnYtNGg0di0ySDZ6TTYgNFYwSDR2NEgwdjJoNHY0aDJWNmg0VjRINnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10"></div>
+            <div className="grid gap-6 md:grid-cols-2 items-center relative z-10">
+              <div>
+                <h2 className="text-3xl font-serif font-medium tracking-tight md:text-4xl">
+                  Join F-Cian Today
+                </h2>
+                <p className="mt-4 text-primary-foreground/90 md:text-lg">
+                  Start Renting, Lending, Selling, and Buying occasion-wear from
+                  people like you.
+                </p>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4 md:justify-end">
                 <Link href="/signup">
                   <Button
@@ -298,22 +255,14 @@ export default function Home() {
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
-                {/* <Link href="/browse">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20"
-                >
-                  Browse Collection
-                </Button>
-              </Link> */}
               </div>
-            ) : (
-              <></>
-            )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* Testimonials */}
+      <Testimonials />
     </div>
   );
 }

@@ -68,15 +68,27 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(false);
   const [myListings, setMyListings] = useState<any>([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10); // Can be fixed or selectable
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
   useEffect(() => {
-    if (activeTab === "overview" || activeTab === "listings") {
-      listProductApi();
-    }
-  }, [activeTab]);
-  const listProductApi = async () => {
+    const fetchProducts = async () => {
+      if (activeTab === "overview" || activeTab === "listings") {
+        await listProductApi(page); // Pass the current page as param
+      }
+    };
+
+    fetchProducts();
+    // Only re-run when activeTab or page changes
+  }, [activeTab, page]);
+
+  const listProductApi = async (currentPage: number) => {
     setIsLoading(true);
     try {
-      const response = await getUserProducts();
+      // Send page and limit as params to backend
+      const response = await getUserProducts({ page: currentPage, limit });
       if (response.success === true) {
         const formattedProducts = response.products.map((product: any) => ({
           id: product.id,
@@ -92,7 +104,10 @@ export default function DashboardPage() {
           listingType: product.listingType,
           createdAt: new Date(product.createdAt).toLocaleDateString("en-IN"),
         }));
+
         setMyListings(formattedProducts);
+        setTotalItems(response.totalItems);
+        setTotalPages(response.totalPages);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -281,9 +296,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-blue-900">₹ 0</div>
-                  <p className="text-xs text-blue-600">
-                    +0% from last month
-                  </p>
+                  <p className="text-xs text-blue-600">+0% from last month</p>
                 </CardContent>
               </Card>
 
@@ -296,7 +309,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-green-900">
-                    {myListings.length}
+                   {totalItems}
                   </div>
                   {/* <p className="text-xs text-green-600">
                     8 total rental transactions
@@ -479,7 +492,12 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="animate-fadeInUp">
-                    <ProductList products={myListings} />
+                    <ProductList
+                      products={myListings}
+                      page={page}
+                      totalPages={totalPages}
+                      setPage={setPage}
+                    />
                   </div>
                 )}
               </CardContent>

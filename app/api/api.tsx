@@ -200,10 +200,10 @@ export const createProduct = async (productData: any) => {
     throw error;
   }
 };
-export const getUserProducts = async () => {
+export const getUserProducts = async ({ page, limit }) => {
   try {
     const response = await axios.get(
-      process.env.NEXT_PUBLIC_USER_PRODUCT_LIST as string,
+      `${process.env.NEXT_PUBLIC_USER_PRODUCT_LIST}?page=${page}&limit=${limit}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -221,6 +221,7 @@ export const getUserProducts = async () => {
     throw error;
   }
 };
+
 export const getSingleProduct = async (productId: string) => {
   try {
     const response = await axios.get(

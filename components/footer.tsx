@@ -3,20 +3,20 @@ import { Facebook, Instagram, Twitter } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-primary text-primary-foreground">
+    <footer className="bg-primary text-primary-foreground lg: mt-12">
       <div className="container px-4 md:px-6 py-8 md:py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 md:gap-16">
-          <div className="col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8 md:gap-12">
+          <div className="col-span-1 sm:col-span-2 md:col-span-1">
             <Link href="/" className="font-serif text-2xl font-medium">
               Fashcycle
             </Link>
-            <p className="mt-2 text-primary-foreground/80">
+            <p className="mt-4 text-sm text-primary-foreground/80">
               Fashcycle is an India-based sustainable fashion platform that
-              operates on a circular economy model—letting users rent, lend,sell
-              or buy occasion-wear like sarees, anarkalis, lehengas, gowns,
-              sharara sets, and suits directly from others.{" "}
+              operates on a circular economy model—letting users rent, lend,
+              sell or buy occasion-wear like sarees, anarkalis, lehengas, gowns,
+              sharara sets, and suits directly from others.
             </p>
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex items-center gap-4 mt-6">
               <Link
                 href="#"
                 className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
@@ -41,22 +41,22 @@ export default function Footer() {
               </Link>
             </div>
           </div>
-          <div className="col-span-2 lg:col-start-3">
-            <h3 className="font-medium mb-3 uppercase text-sm tracking-wider">
+          <div className="col-span-1">
+            <h3 className="font-medium mb-4 uppercase text-sm tracking-wider">
               Quick Links
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/about-us"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   About Us
                 </Link>
               </li>
               <li>
                 <button
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                   onClick={() => {
                     const element = document.getElementById("how-it-works");
                     const headerOffset = 200; // Adjust this value based on your header height
@@ -77,22 +77,22 @@ export default function Footer() {
               <li>
                 <Link
                   href="/sustainability"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   Sustainability
                 </Link>
               </li>
             </ul>
           </div>
-          <div className="hidden lg:block lg:col-start-5">
-            <h3 className="font-medium mb-3 uppercase text-sm tracking-wider">
+          <div className="col-span-1">
+            <h3 className="font-medium mb-4 uppercase text-sm tracking-wider">
               Support
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/help"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   Help Center
                 </Link>
@@ -100,7 +100,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   Contact Us
                 </Link>
@@ -108,12 +108,12 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-primary-foreground/10 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-primary-foreground/80">
+        <div className="border-t border-primary-foreground/10 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-primary-foreground/80 text-center md:text-left">
             © {new Date().getFullYear()} AMKA JHAMKA PRIVATE LIMITED. All rights
             reserved.
           </p>
-          <div className="flex gap-4 mt-4 md:mt-0">
+          <div className="flex gap-4 md:gap-6 flex-wrap justify-center md:justify-end">
             <Link
               href="/privacy"
               className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"

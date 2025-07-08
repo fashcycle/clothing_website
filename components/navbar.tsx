@@ -13,8 +13,7 @@ import {
   LayoutDashboard,
   LogOut,
   Bell,
-  ChevronLeft,
-  ChevronRight,
+  X,
 } from "lucide-react";
 import {
   Tooltip,
@@ -35,6 +34,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { getAllCategories } from "@/app/api/api";
+import logo from "@/public/HomeLogo.png";
+import appleTouchIcon from "@/public/apple-touch-icon.png";
 
 type Category = {
   name: string;
@@ -45,9 +46,30 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLogin, setIsLogin] = useState<any>(false);
   const [userImage, setUserImage] = useState<any>();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router: any = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [screenSize, setScreenSize] = useState("lg");
+
+  // Screen size detection
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 480) {
+        setScreenSize("xs");
+      } else if (width < 768) {
+        setScreenSize("sm");
+      } else if (width < 1024) {
+        setScreenSize("md");
+      } else {
+        setScreenSize("lg");
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -90,53 +112,70 @@ export default function Navbar() {
     };
   });
 
-  // Category slider functions
-  const categoriesPerSlide = 6;
-  const totalSlides = Math.ceil((categories.length + 1) / categoriesPerSlide); // +1 for Home
-  const canGoLeft = currentSlide > 0;
-  const canGoRight = currentSlide < totalSlides - 1;
-
-  const slideLeft = () => {
-    if (canGoLeft) {
-      setCurrentSlide((prev) => prev - 1);
-    }
-  };
-
-  const slideRight = () => {
-    if (canGoRight) {
-      setCurrentSlide((prev) => prev + 1);
-    }
+  // Mobile search toggle
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
   };
 
   return (
     <header className="w-full bg-primary text-primary-foreground fixed top-0 z-50 left-0 right-0">
-      <div className="container flex flex-wrap items-center justify-between h-16 w-full px-4">
-        {/* ToogleMenus */}
-        <div className="flex items-center gap-2 flex-1 min-w-0 md:flex-[0_0_40%]">
+      {/* Mobile Search Bar - Only visible when search is open */}
+      {isSearchOpen && (
+        <div className="md:hidden bg-primary border-b border-primary-foreground/10 px-4 py-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/70" />
+            <input
+              type="search"
+              placeholder="Search products..."
+              className="pl-9 pr-10 py-2 w-full bg-white rounded text-black placeholder:text-black/70 focus:outline-none focus:ring-2 focus:ring-primary-foreground/50"
+              autoFocus
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSearch}
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 text-black/70"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Navigation */}
+      <div className="container flex items-center justify-between h-14 sm:h-16 w-full px-2 sm:px-4">
+        {/* Left Section - Menu + Search */}
+        <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+          {/* Mobile Menu Toggle */}
           <Sheet modal={false}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden text-primary-foreground"
+                className="lg:hidden text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
-              <nav className="flex flex-col gap-4">
-                <Link href="/">Fashcycle</Link>
-                <li key="home">
-                  <Link href="/" className="text-lg font-medium">
-                    Home
-                  </Link>
-                </li>
+            <SheetContent side="left" className="w-80 sm:w-96">
+              <nav className="flex flex-col gap-4 mt-6">
+                <div className="pb-4 border-b border-gray-200">
+                  <Image
+                    src={screenSize === "xs" ? appleTouchIcon : logo}
+                    alt="Logo"
+                    width={screenSize === "xs" ? 60 : 200}
+                    height={screenSize === "xs" ? 60 : 60}
+                    className="h-auto w-16 sm:w-32 object-contain mx-auto"
+                    priority
+                  />
+                </div>
+
                 {categories.map((category) => (
                   <Link
                     key={category.id}
-                    href={category.name}
-                    className="text-lg font-medium"
+                    href={`/${category.id}`}
+                    className="capitalize text-lg font-medium py-2 px-4 rounded hover:bg-gray-100 transition-colors"
                   >
                     {category.name}
                   </Link>
@@ -145,8 +184,9 @@ export default function Navbar() {
             </SheetContent>
           </Sheet>
 
-          <div className="hidden md:flex relative flex-grow min-w-0 ">
-            <div className="relative w-[50%] border bg-white rounded">
+          {/* Desktop Search */}
+          <div className="hidden lg:flex relative flex-grow min-w-0 max-w-md">
+            <div className="relative w-full border bg-white rounded">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/70" />
               <input
                 type="search"
@@ -155,26 +195,36 @@ export default function Navbar() {
               />
             </div>
           </div>
-        </div>
-        {/* ToogleMenusEnd */}
 
-        <Link
-          href="/"
-          className="font-serif text-lg md:text-xl font-medium absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0 whitespace-nowrap z-10 hidden md:block"
-        >
-          Fashcycle
-        </Link>
-
-        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap md:flex-[0_0_40%] justify-end">
+          {/* Mobile Search Button */}
           <Button
             variant="ghost"
             size="icon"
-            className="hidden text-primary-foreground flex-shrink-0 focus:border-black/20 focus:ring-0"
+            onClick={toggleSearch}
+            className="lg:hidden text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="sr-only">Search</span>
           </Button>
+        </div>
 
+        {/* Center Logo - Always centered */}
+        <Link href="/" className="absolute left-1/2 -translate-x-1/2 z-10">
+          <Image
+            src={screenSize === "xs" ? appleTouchIcon : logo}
+            alt="Logo"
+            width={screenSize === "xs" ? 40 : 200}
+            height={screenSize === "xs" ? 40 : 60}
+            className={`h-auto object-contain mx-auto ${
+              screenSize === "xs" ? "w-10" : "w-20 sm:w-32 lg:w-48"
+            }`}
+            priority
+          />
+        </Link>
+
+        {/* Right Section - Actions */}
+        <div className="flex items-center gap-1 sm:gap-2 justify-end">
+          {/* SELL Button */}
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <Link href={isLogin ? "/profile" : "/login"}>
@@ -182,10 +232,11 @@ export default function Navbar() {
                   <Button
                     variant="default"
                     size="sm"
-                    className="flex items-center gap-2 rounded-full border-4 flex-shrink-0"
+                    className="flex items-center gap-1 sm:gap-2 rounded-full border-2 sm:border-4 text-xs sm:text-sm h-8 sm:h-10 px-2 sm:px-3"
                   >
-                    <Plus className="h-4 w-4" />
-                    <span className="hidden md:inline">SELL</span>
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">SELL</span>
+                    <span className="sm:hidden">+</span>
                   </Button>
                 </TooltipTrigger>
               </Link>
@@ -194,60 +245,68 @@ export default function Navbar() {
               </TooltipContent>
             </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="default"
-                      size="icon"
-                      className="rounded-full p-0 border"
-                    >
-                      <Bell className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="center"
-                    className="w-50 z-50"
-                    sideOffset={5}
-                  >
-                    <div className="px-2 py-1.5">NOTIFICATION1</div>
-                    <DropdownMenuItem>NOTIFICATION2</DropdownMenuItem>
-                    <DropdownMenuItem>NOTIFICATION3</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p>Notifications</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <Link href={isLogin ? "/wishlist" : "/login"}>
+            {/* Notifications - Hidden on very small screens */}
+            {screenSize !== "xs" && (
+              <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className=" md:flex text-primary-foreground flex-shrink-0"
-                  >
-                    <Heart className="h-5 w-5" />
-                    <span className="sr-only">Wishlist</span>
-                  </Button>
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="default"
+                        size="icon"
+                        className="rounded-full p-0 border h-8 w-8 sm:h-10 sm:w-10"
+                      >
+                        <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="center"
+                      className="w-50 z-50"
+                      sideOffset={5}
+                    >
+                      <div className="px-2 py-1.5">NOTIFICATION1</div>
+                      <DropdownMenuItem>NOTIFICATION2</DropdownMenuItem>
+                      <DropdownMenuItem>NOTIFICATION3</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TooltipTrigger>
-              </Link>
-              <TooltipContent side="top">
-                <p>Wishlist</p>
-              </TooltipContent>
-            </Tooltip>
+                <TooltipContent side="top">
+                  <p>Notifications</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
+            {/* Wishlist - Hidden on very small screens */}
+            {screenSize !== "xs" && (
+              <Tooltip>
+                <Link href={isLogin ? "/wishlist" : "/login"}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
+                    >
+                      <Heart className="h-3 w-3 sm:h-5 sm:w-5" />
+                      <span className="sr-only">Wishlist</span>
+                    </Button>
+                  </TooltipTrigger>
+                </Link>
+                <TooltipContent side="top">
+                  <p>Wishlist</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Cart */}
             <Tooltip>
               <Link href={isLogin ? "/cart" : "/login"}>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-primary-foreground flex-shrink-0"
+                    className="text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
                   >
-                    <ShoppingBag className="h-5 w-5" />
+                    <ShoppingBag className="h-3 w-3 sm:h-5 sm:w-5" />
                     <span className="sr-only">Cart</span>
                   </Button>
                 </TooltipTrigger>
@@ -258,15 +317,16 @@ export default function Navbar() {
             </Tooltip>
           </TooltipProvider>
 
+          {/* User Profile/Login */}
           {isLogin ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="default"
                   size="icon"
-                  className="rounded-full p-0 border"
+                  className="rounded-full p-0 border h-8 w-8 sm:h-10 sm:w-10"
                 >
-                  <Avatar className="h-10 w-10 ">
+                  <Avatar className="h-full w-full">
                     {userImage ? (
                       <Image
                         src={userImage}
@@ -277,7 +337,7 @@ export default function Navbar() {
                       />
                     ) : (
                       <AvatarFallback>
-                        <User className="h-5 w-5" color="black" />
+                        <User className="h-3 w-3 sm:h-5 sm:w-5" color="black" />
                       </AvatarFallback>
                     )}
                   </Avatar>
@@ -287,7 +347,6 @@ export default function Navbar() {
                 align="end"
                 className="w-50 z-50"
                 sideOffset={5}
-                style={{ overflowY: "hidden" }}
               >
                 <DropdownMenuItem asChild className="hover:bg-gray-100">
                   <Link
@@ -307,6 +366,28 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                 </DropdownMenuItem>
+                {screenSize === "xs" && (
+                  <>
+                    <DropdownMenuItem asChild className="hover:bg-gray-100">
+                      <Link
+                        href="/wishlist"
+                        className="w-full px-4 py-2 flex items-center gap-2"
+                      >
+                        <Heart className="h-4 w-4" />
+                        Wishlist
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="hover:bg-gray-100">
+                      <Link
+                        href="/notifications"
+                        className="w-full px-4 py-2 flex items-center gap-2"
+                      >
+                        <Bell className="h-4 w-4" />
+                        Notifications
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator className="my-1" />
                 <DropdownMenuItem
                   onClick={toggleLogout}
@@ -325,10 +406,10 @@ export default function Navbar() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-primary-foreground flex-shrink-0"
+                      className="text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
                     >
-                      <div className="bg-gray-100 rounded-full flex items-center justify-center w-10 h-10 border border-gray-200">
-                        <User className="h-5 w-5 text-gray-600" color="black" />
+                      <div className="bg-gray-100 rounded-full flex items-center justify-center w-full h-full border border-gray-200">
+                        <User className="h-3 w-3 sm:h-5 sm:w-5 text-gray-600" />
                       </div>
                       <span className="sr-only">Login</span>
                     </Button>
@@ -343,94 +424,25 @@ export default function Navbar() {
         </div>
       </div>
 
-      <nav className="hidden md:block border-t border-primary-foreground/10">
-        <div className="container flex items-center justify-center">
-          <div className="flex items-center gap-4">
-            {/* Debug info - remove in production */}
-            {/* <div className="text-xs text-primary-foreground/70 absolute top-0 left-0">
-              {currentSlide}/{totalSlides - 1} | L:{canGoLeft.toString()} | R:
-              {canGoRight.toString()}
-            </div> */}
-
-            {canGoLeft && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={slideLeft}
-                className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-            )}
-
-            <div className="overflow-hidden">
-              <ul
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{
-                  transform: `translateX(-${currentSlide * 100}%)`,
-                  width: `${totalSlides * 100}%`, // Fixed: use totalSlides, not categories.length
-                }}
-              >
-                {Array.from({ length: totalSlides }, (_, slideIndex) => {
-                  const startIndex = slideIndex * categoriesPerSlide;
-                  const endIndex = startIndex + categoriesPerSlide;
-
-                  return (
-                    <li
-                      key={slideIndex}
-                      className="flex justify-center py-3"
-                      style={{ width: `${100 / totalSlides}%` }} // Fixed: use totalSlides
-                    >
-                      <div className="flex space-x-8">
-                        {slideIndex === 0 && (
-                          <Link
-                            href="/"
-                            className="category-link text-primary-foreground/90 hover:text-primary-foreground whitespace-nowrap transition-all duration-200 hover:scale-105 hover:drop-shadow-lg relative group"
-                          >
-                            Home
-                            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
-                          </Link>
-                        )}
-
-                        {categories
-                          .slice(
-                            0,
-                            6
-                            // slideIndex === 0 ? 0 : startIndex - 1, // Adjust for Home link
-                            // slideIndex === 0
-                            //   ? categoriesPerSlide - 1
-                            //   : endIndex - 1
-                          )
-                          .map((category, index) => (
-                            <Link
-                              key={`${slideIndex}-${index}`}
-                              href={`/${category.id}`}
-                              className="category-link text-primary-foreground/90 hover:text-primary-foreground whitespace-nowrap transition-all duration-200 hover:scale-105 hover:drop-shadow-lg relative group"
-                            >
-                              {category.name}
-                              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
-                            </Link>
-                          ))}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+      {/* Desktop Category Navigation - Only show if menu toggle is NOT visible */}
+      {screenSize === "lg" && (
+        <nav className="border-t border-primary-foreground/10">
+          <div className="container flex items-center justify-center py-3">
+            <div className="flex items-center gap-6 lg:gap-8">
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/${category.id}`}
+                  className=" capitalize text-primary-foreground/90 hover:text-primary-foreground whitespace-nowrap transition-all duration-200 hover:scale-105 relative group"
+                >
+                  {category.name}
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+                </Link>
+              ))}
             </div>
-
-            {canGoRight && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={slideRight}
-                className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            )}
           </div>
-        </div>
-      </nav>
+        </nav>
+      )}
     </header>
   );
 }

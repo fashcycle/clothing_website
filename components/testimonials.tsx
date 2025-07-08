@@ -68,7 +68,7 @@ export default function Testimonials() {
     : testimonials.slice(0, 3)
 
   return (
-    <section className="container px-4 md:px-6 py-12 md:py-20 bg-primary text-primary-foreground">
+    <section className="container px-4 md:px-6 py-12 md:py-20 bg-primary text-primary-foreground ">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10">
         <div>
           <h2 className="text-2xl md:text-3xl font-serif font-medium">What F-Cian Says.</h2>

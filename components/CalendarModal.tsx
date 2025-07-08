@@ -8,7 +8,7 @@ import "react-day-picker/dist/style.css";
 import { Button } from "@/components/ui/button";
 
 import { motion, AnimatePresence } from "framer-motion";
- const CalendarModal = ({
+const CalendarModal = ({
   isOpen,
   onClose,
   selectedRentalDays,
