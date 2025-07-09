@@ -28,8 +28,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ProductList } from "@/components/dashboard/product-list";
-import { getUserProducts } from "../api/api";
+import { getOrderProducts, getUserProducts } from "../api/api";
 import { Loader } from "@/components/ui/loader";
+import { RecentOrdersList } from "@/components/dashboard/RecentOrdersList";
 
 // Mock data
 const recentOrders = [
@@ -68,6 +69,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(false);
   const [myListings, setMyListings] = useState<any>([]);
+  const [recentOrders, setRecentOrders] = useState<any>([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10); // Can be fixed or selectable
   const [totalItems, setTotalItems] = useState(0);
@@ -75,14 +77,34 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (activeTab === "overview" || activeTab === "listings") {
+      if (activeTab === "listings") {
         await listProductApi(page); // Pass the current page as param
       }
+      if (activeTab === "orders" || activeTab === "overview") {
+        await fetchRecentOrders(page); // Pass the current page as param
+      }
     };
-
     fetchProducts();
-    // Only re-run when activeTab or page changes
-  }, [activeTab, page]);
+  }, [activeTab, page, activeTab]);
+
+  const fetchRecentOrders = async (currentPage: number) => {
+    setIsLoading(true);
+    try {
+      const response = await getOrderProducts({ page: currentPage, limit });
+
+      if (response.success === true) {
+        setRecentOrders(response.orders);
+        setTotalItems(response.totalItems);
+        setTotalPages(response.totalPages);
+      } else {
+        console.error("API Error:", response.message);
+      }
+    } catch (error) {
+      console.error("Error fetching recent orders:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const listProductApi = async (currentPage: number) => {
     setIsLoading(true);
@@ -309,7 +331,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-green-900">
-                   {totalItems}
+                    {totalItems}
                   </div>
                   {/* <p className="text-xs text-green-600">
                     8 total rental transactions
@@ -330,64 +352,27 @@ export default function DashboardPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {recentOrders.map((order, index) => (
-                      <div
-                        key={order.id}
-                        className="flex items-center p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-300 animate-slideIn"
-                        style={{ animationDelay: `${0.1 * index}s` }}
-                      >
-                        <div className="relative h-12 w-12 rounded-lg overflow-hidden mr-4 shadow-md">
-                          <Image
-                            src={order.image || "/placeholder.svg"}
-                            alt={order.product}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <p className="text-sm font-medium leading-none text-gray-800">
-                            {order.product}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {order.date} · {order.type}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={
-                              order.status === "Delivered"
-                                ? "outline"
-                                : order.status === "On Rent"
-                                ? "secondary"
-                                : "default"
-                            }
-                            className={`${
-                              order.status === "Delivered"
-                                ? "bg-green-100 text-green-800 border-green-300"
-                                : order.status === "On Rent"
-                                ? "bg-blue-100 text-blue-800 border-blue-300"
-                                : "bg-purple-100 text-purple-800 border-purple-300"
-                            } shadow-sm`}
-                          >
-                            {order.status}
-                          </Badge>
-                          <div className="text-sm font-semibold text-gray-800">
-                            {order.amount}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                     {isLoading ? (
+                  <div className="py-12 flex justify-center">
+                    <Loader text="Loading orders..." />
                   </div>
+                ) : (
+                  <RecentOrdersList
+                    orders={recentOrders}
+                    page={page}
+                    totalPages={totalPages}
+                    setPage={setPage}
+                  />
+                )}
                 </CardContent>
-                <CardFooter>
+                {/* <CardFooter>
                   <Link
                     href="/orders"
                     className="text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium transition-colors duration-200"
                   >
                     View all orders →
                   </Link>
-                </CardFooter>
+                </CardFooter> */}
               </Card>
             </div>
           </TabsContent>
@@ -404,69 +389,18 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {recentOrders.map((order, index) => (
-                    <div
-                      key={order.id}
-                      className="flex items-center justify-between border-b border-white/30 pb-4 animate-slideIn"
-                      style={{ animationDelay: `${0.1 * index}s` }}
-                    >
-                      <div className="flex items-center">
-                        <div className="relative h-16 w-16 rounded-lg overflow-hidden mr-4 shadow-lg">
-                          <Image
-                            src={order.image || "/placeholder.svg"}
-                            alt={order.product}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-gray-800">
-                            {order.product}
-                          </h4>
-                          <div className="flex items-center text-sm text-gray-600 mt-1">
-                            <Calendar className="mr-1 h-3 w-3" />
-                            <span>{order.date}</span>
-                          </div>
-                          <Badge
-                            variant={
-                              order.status === "Delivered"
-                                ? "outline"
-                                : order.status === "On Rent"
-                                ? "secondary"
-                                : "default"
-                            }
-                            className={`mt-2 ${
-                              order.status === "Delivered"
-                                ? "bg-green-100 text-green-800 border-green-300"
-                                : order.status === "On Rent"
-                                ? "bg-blue-100 text-blue-800 border-blue-300"
-                                : "bg-purple-100 text-purple-800 border-purple-300"
-                            } shadow-sm`}
-                          >
-                            {order.status}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-gray-800 text-lg">
-                          {order.amount}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {order.type}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="mt-2 text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-all duration-200"
-                        >
-                          Details
-                          <ChevronRight className="ml-1 h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {isLoading ? (
+                  <div className="py-12 flex justify-center">
+                    <Loader text="Loading orders..." />
+                  </div>
+                ) : (
+                  <RecentOrdersList
+                    orders={recentOrders}
+                    page={page}
+                    totalPages={totalPages}
+                    setPage={setPage}
+                  />
+                )}
               </CardContent>
             </Card>
           </TabsContent>

@@ -134,17 +134,14 @@ export default function ProductPage({ id }: { id: string }) {
 
   const minSelectableDate = addDays(new Date(), 1);
 
-  const handleDaySelect = (day: Date | undefined) => {
-    if (!day) return;
-    if (isBefore(day, minSelectableDate)) return;
+const handleDaySelect = (fromDate: Date | undefined) => {
+  if (!fromDate || !selectedRentalDays) return;
 
-    setRentFromDate(day);
-    if (selectedRentalDays) {
-      const to = addDays(day, selectedRentalDays);
-      setRentToDate(to);
-      setIsDateSelected(true);
-    }
-  };
+  const toDate = addDays(fromDate, selectedRentalDays);
+  setRentFromDate(fromDate);
+  setRentToDate(toDate);
+};
+
 
   const handleRentalDaySelection = (days: number) => {
     setSelectedRentalDays(days);

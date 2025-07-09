@@ -74,6 +74,10 @@ const sizes = [
     id: 5,
     name: "XL",
   },
+  {
+    id: 6,
+    name: "XXL",
+  },
 ];
 const colors = [
   { name: "Red", color: "bg-red-500" },
@@ -202,7 +206,8 @@ export default function EveningDressesPage() {
             Collections
           </Link>
           <span>/</span>
-          {categories.find((category) => category.id === categoryParam)?.name}
+        <p className="capitalize">  {categories.find((category) => category.id === selectedCategory)
+                  ?.name || "All"}</p>
         </div>
       </nav>
 
@@ -237,7 +242,9 @@ export default function EveningDressesPage() {
                         checked={selectedCategory === category.id}
                         onChange={() => setSelectedCategory(category.id)}
                       />
-                      <span className="text-sm capitalize">{category.name}</span>
+                      <span className="text-sm capitalize">
+                        {category.name}
+                      </span>
                     </label>
                   ))}
                 </div>
