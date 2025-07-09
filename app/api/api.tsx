@@ -222,6 +222,28 @@ export const getUserProducts = async ({ page, limit }) => {
   }
 };
 
+export const getOrderProducts = async ({ page, limit }) => {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_GET_ORDERS}?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to fetch orders products"
+      );
+    }
+    throw error;
+  }
+};
+
 export const getSingleProduct = async (productId: string) => {
   try {
     const response = await axios.get(

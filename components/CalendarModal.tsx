@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-
 import { X } from "lucide-react";
-import { addDays, isBefore, format, differenceInDays } from "date-fns";
+import { addDays, format, differenceInDays, isAfter } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-
 import { Button } from "@/components/ui/button";
-
 import { motion, AnimatePresence } from "framer-motion";
+
 const CalendarModal = ({
   isOpen,
   onClose,
@@ -26,6 +24,14 @@ const CalendarModal = ({
   onConfirm: () => void;
 }) => {
   const minSelectableDate = addDays(new Date(), 2);
+
+  // Handle day selection with automatic 4-day range
+  const handleDaySelect = (day: Date) => {
+    if (day) {
+      // Set rentFromDate to selected day
+      onDaySelect(day);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -60,33 +66,37 @@ const CalendarModal = ({
 
             <div className="border rounded-lg p-4">
               <DayPicker
-                mode="single"
-                selected={rentFromDate ?? undefined}
-                onSelect={onDaySelect}
+                mode="range"
+                selected={rentFromDate && selectedRentalDays ? {
+                  from: rentFromDate,
+                  to: addDays(rentFromDate, selectedRentalDays - 1)
+                } : undefined}
+                onSelect={() => {}} // Disabled since we handle selection manually
                 disabled={{ before: minSelectableDate }}
                 modifiers={{
-                  rentalRange:
-                    rentFromDate && rentToDate
-                      ? { from: rentFromDate, to: rentToDate }
-                      : undefined,
+                  selectedRange: rentFromDate && selectedRentalDays ? {
+                    from: rentFromDate,
+                    to: addDays(rentFromDate, selectedRentalDays - 1)
+                  } : undefined,
                 }}
                 modifiersClassNames={{
-                  rentalRange: "bg-emerald-200 text-emerald-900",
+                  selectedRange: "bg-emerald-200 text-emerald-900",
                 }}
                 className="w-full"
+                onDayClick={handleDaySelect}
               />
             </div>
 
-            {rentFromDate && rentToDate && (
+            {rentFromDate && selectedRentalDays && (
               <div className="mt-4 p-4 bg-emerald-50 rounded-lg">
                 <p className="text-sm text-emerald-800 text-center">
                   <strong>Rental Period:</strong>
                   <br />
                   {format(rentFromDate, "MMM dd, yyyy")} →{" "}
-                  {format(rentToDate, "MMM dd, yyyy")}
+                  {format(addDays(rentFromDate, selectedRentalDays - 1), "MMM dd, yyyy")}
                   <br />
                   <span className="text-xs">
-                    ({differenceInDays(rentToDate, rentFromDate)} days)
+                    ({selectedRentalDays} days)
                   </span>
                 </p>
               </div>
@@ -98,7 +108,7 @@ const CalendarModal = ({
               </Button>
               <Button
                 onClick={onConfirm}
-                disabled={!rentFromDate || !rentToDate}
+                disabled={!rentFromDate || !selectedRentalDays}
                 className="flex-1 bg-emerald-600 hover:bg-emerald-700"
               >
                 Confirm Dates
@@ -110,4 +120,5 @@ const CalendarModal = ({
     </AnimatePresence>
   );
 };
+
 export default CalendarModal;

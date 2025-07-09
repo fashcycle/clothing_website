@@ -333,9 +333,8 @@ export default function CartPage() {
   const total = subtotal + shipping + taxAmount;
   const tax = taxAmount;
   useEffect(() => {
-    if (user) {
-      // console.log(user?.addresses[0]);
-      setSelectedAddress(user?.addresses[0]);
+    if (user && Array.isArray(user.addresses) && user.addresses.length > 0) {
+      setSelectedAddress(user.addresses[0]);
     }
   }, [user]);
 
@@ -912,9 +911,9 @@ export default function CartPage() {
             {user?.addresses?.map((address: any) => (
               <div
                 key={address.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-all hover:border-pink-500 ${
+                className={`p-4 border rounded-lg cursor-pointer transition-all hover:border-green-800 ${
                   selectedAddressId === address.id
-                    ? "border-pink-500 bg-pink-50"
+                    ? "border-green-500 bg-green-50"
                     : ""
                 }`}
                 onClick={() => {
@@ -931,7 +930,7 @@ export default function CartPage() {
                   {selectedAddressId === address.id && (
                     <Badge
                       variant="secondary"
-                      className="bg-pink-100 text-pink-700"
+                      className="bg-green-100 text-green-700 rounded-full"
                     >
                       Selected
                     </Badge>

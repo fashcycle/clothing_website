@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Edit, Eye, Trash2 } from "lucide-react";
+import { ChevronRight, Edit, Eye, Trash2, Package } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { formatDate, formatDateToDDMMYYYY } from "@/app/utils/dateUtils";
@@ -13,6 +13,44 @@ export function ProductList({ products, page, totalPages, setPage }: any) {
     e.stopPropagation();
     router.push(`/products/${productId}`);
   };
+
+  // Empty state when no products
+  if (products.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center justify-center py-16 px-4"
+      >
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-full p-8 mb-6 shadow-sm">
+          <Package className="h-16 w-16 text-gray-400" />
+        </div>
+        <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+          No Products Listed Yet
+        </h3>
+        <p className="text-gray-600 text-center max-w-md mb-8 leading-relaxed">
+          You haven't added any products to your inventory yet. Start by listing
+          your first product to begin earning!
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button
+            onClick={() => router.push("/profile")}
+            className="bg-emerald-600 hover:bg-emerald-700 px-6 py-3 text-white font-medium rounded-lg shadow-md transition-all duration-200"
+          >
+            Add Your First Product
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/help")}
+            className="px-6 py-3 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
+          >
+            Learn How to List
+          </Button>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <div className="space-y-6 cursor-pointer">
