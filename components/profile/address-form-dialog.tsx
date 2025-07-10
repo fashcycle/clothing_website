@@ -251,7 +251,7 @@ export function AddressFormDialog({
             <div className="space-y-2">
               <Label>Pincode *</Label>
               <Select
-                value={formData.pincode}
+                value={formData?.pincode}
                 onValueChange={(value) => {
                   const selected = pincodes.find((p) => p.pincode === value);
                   setFormData({
@@ -269,14 +269,14 @@ export function AddressFormDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {/* If the current pincode is not in the list, show it as an option */}
-                  {formData.pincode &&
-                    !pincodes.some((p) => p.pincode === formData.pincode) && (
+                  {formData?.pincode &&
+                    !pincodes.some((p) => p.pincode === formData?.pincode) && (
                       <SelectItem
-                        key={formData.pincode}
-                        value={formData.pincode}
+                        key={formData?.pincode}
+                        value={formData?.pincode}
                       >
-                        {typeof formData.pincode === "string"
-                          ? formData.pincode
+                        {typeof formData?.pincode === "string"
+                          ? formData?.pincode
                           : ""}
                       </SelectItem>
                     )}

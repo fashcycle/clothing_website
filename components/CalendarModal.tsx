@@ -45,6 +45,14 @@ const CalendarModal = ({
           transition={{ duration: 0.2 }}
           className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
         >
+          <style>{`
+            .bg-emerald-200 {
+              background-color: #a7f3d0 !important;
+            }
+            .text-emerald-900 {
+              color: #064e3b !important;
+            }
+          `}</style>
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Select Rental Dates</h2>
@@ -67,17 +75,24 @@ const CalendarModal = ({
             <div className="border rounded-lg p-4">
               <DayPicker
                 mode="range"
-                selected={rentFromDate && selectedRentalDays ? {
-                  from: rentFromDate,
-                  to: addDays(rentFromDate, selectedRentalDays - 1)
-                } : undefined}
+                selected={
+                  rentFromDate && selectedRentalDays
+                    ? {
+                        from: rentFromDate,
+                        to: addDays(rentFromDate, selectedRentalDays - 1),
+                      }
+                    : undefined
+                }
                 onSelect={() => {}} // Disabled since we handle selection manually
                 disabled={{ before: minSelectableDate }}
                 modifiers={{
-                  selectedRange: rentFromDate && selectedRentalDays ? {
-                    from: rentFromDate,
-                    to: addDays(rentFromDate, selectedRentalDays - 1)
-                  } : undefined,
+                  selectedRange:
+                    rentFromDate && selectedRentalDays
+                      ? {
+                          from: rentFromDate,
+                          to: addDays(rentFromDate, selectedRentalDays - 1),
+                        }
+                      : undefined,
                 }}
                 modifiersClassNames={{
                   selectedRange: "bg-emerald-200 text-emerald-900",
@@ -93,11 +108,12 @@ const CalendarModal = ({
                   <strong>Rental Period:</strong>
                   <br />
                   {format(rentFromDate, "MMM dd, yyyy")} →{" "}
-                  {format(addDays(rentFromDate, selectedRentalDays - 1), "MMM dd, yyyy")}
+                  {format(
+                    addDays(rentFromDate, selectedRentalDays - 1),
+                    "MMM dd, yyyy"
+                  )}
                   <br />
-                  <span className="text-xs">
-                    ({selectedRentalDays} days)
-                  </span>
+                  <span className="text-xs">({selectedRentalDays} days)</span>
                 </p>
               </div>
             )}

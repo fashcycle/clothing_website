@@ -4,9 +4,9 @@ import { Facebook, Instagram, Twitter } from "lucide-react";
 export default function Footer() {
   return (
     <footer className="bg-primary text-primary-foreground lg: mt-12">
-      <div className="container px-4 md:px-6 py-8 md:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8 md:gap-12">
-          <div className="col-span-1 sm:col-span-2 md:col-span-1">
+      <div className="container px-6 md:px-8 py-8 md:py-12 lg: px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 md:gap-12">
+          <div className="col-span-1 sm:col-span-2 md:col-span-2">
             <Link href="/" className="font-serif text-2xl font-medium">
               Fashcycle
             </Link>
