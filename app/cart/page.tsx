@@ -322,7 +322,10 @@ export default function CartPage() {
       setFormErrors(newErrors);
     }
   };
-
+  const totalSecurityAmount = cartItems.reduce(
+    (sum: any, item: any) => sum + (item.securityAmount || 0),
+    0
+  );
   const subtotal = cartItems.reduce((sum: any, item: any) => {
     const itemPrice = calculateItemPrice(item);
     return sum + itemPrice * item.quantity;
@@ -330,7 +333,7 @@ export default function CartPage() {
 
   const shipping = subtotal > 999 ? 0 : 99; // Free shipping over ₹999
   const taxAmount = Math.round(subtotal * 0.18); // 18% GST
-  const total = subtotal + shipping + taxAmount;
+  const total = subtotal + shipping + totalSecurityAmount;
   const tax = taxAmount;
   useEffect(() => {
     if (user && Array.isArray(user.addresses) && user.addresses.length > 0) {
@@ -835,10 +838,16 @@ export default function CartPage() {
                         {subtotal > 999 ? "FREE" : "₹99"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
+                    {/* <div className="flex justify-between">
                       <span className="text-gray-600">Tax (GST 18%)</span>
                       <span className="font-medium">
                         ₹{tax.toLocaleString()}
+                      </span>
+                    </div> */}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Security Amount</span>
+                      <span className="font-medium">
+                        ₹{totalSecurityAmount.toLocaleString()}
                       </span>
                     </div>
                     <div className="border-t pt-3">

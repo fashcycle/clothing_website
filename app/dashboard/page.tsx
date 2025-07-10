@@ -94,7 +94,7 @@ export default function DashboardPage() {
 
       if (response.success === true) {
         setRecentOrders(response.orders);
-        setTotalItems(response.totalItems);
+        setTotalItems(response.totalItems || 0);
         setTotalPages(response.totalPages);
       } else {
         console.error("API Error:", response.message);
@@ -128,7 +128,7 @@ export default function DashboardPage() {
         }));
 
         setMyListings(formattedProducts);
-        setTotalItems(response.totalItems);
+        setTotalItems(response.totalItems || 0);
         setTotalPages(response.totalPages);
       }
     } catch (error) {

@@ -39,6 +39,10 @@ export default function RootLayout({
         />
         <link rel="canonical" href="https://fashcycle.com/" />
         <title>Fashcycle</title>
+        <meta
+          name="google-site-verification"
+          content="fb8RHyQYlT7lj7_xmLtWLCOHPPC18SnpqBTdfEUFA8c"
+        />
       </head>
       <body className={inter.className}>
         <GoogleOAuthProvider
