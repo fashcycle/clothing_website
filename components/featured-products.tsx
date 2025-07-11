@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star } from "lucide-react";
+import { Eye, Heart, Star } from "lucide-react";
 import {
   getAllProducts,
   getCartItems,
@@ -19,6 +19,7 @@ import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
+import { Badge } from "./ui/badge";
 
 // Mock data for featured products
 const mockProducts = [
@@ -118,7 +119,7 @@ export default function FeaturedProducts() {
           const response = await removeFromWishlist(obj);
           if (response.success) {
             await fetchWishlist();
-            toast.success("Removed from wishlist!");
+            toast.error("Removed from wishlist!");
           }
         } else {
           // Add to wishlist
@@ -218,8 +219,8 @@ export default function FeaturedProducts() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-4">
-            {products?.slice(0, 8).map((product: any, index: any) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-4 lg:grid-cols-5 ">
+            {products?.slice(0, 10).map((product: any, index: any) => (
               <Card
                 key={product.id}
                 className={cn(
@@ -237,7 +238,7 @@ export default function FeaturedProducts() {
                         alt={product.title || "productImg"}
                         width={300}
                         height={400}
-                        className="w-full h-[350px] object-cover product-image"
+                        className="w-full aspect-[4/5] object-cover product-image"
                       />
                     </div>
                   </Link>
@@ -267,20 +268,34 @@ export default function FeaturedProducts() {
                   </button>
                 </div>
                 <CardContent className="p-6">
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {/* Product Name */}
                     <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 capitalize">
                       {product.productName}
                     </h3>
-
+                    <div className="flex-column items-center gap-2 lg:flex">
+                      <Badge
+                        variant="outline"
+                        className="border-black-800 text-black-800 rounded-full px-3 py-1 capitalize"
+                      >
+                        Category- {product.category?.name}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-black-800 text-black-800 rounded-full px-3 py-1 capitalize"
+                      >
+                        Size- {product.size}
+                      </Badge>
+                    </div>
                     {/* Color and Size Info */}
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">Color:</span>
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-gray-800 capitalize">
                             {product.color}
                           </span>
+
                           <div
                             className="w-3 h-3 rounded-full border border-gray-300"
                             style={{ backgroundColor: product.color }}
@@ -294,10 +309,7 @@ export default function FeaturedProducts() {
                           {product.size}
                         </span>
                       </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-gray-100"></div>
+                    </div> */}
 
                     {/* Pricing */}
                     <div className="space-y-2">
@@ -352,7 +364,7 @@ export default function FeaturedProducts() {
                           cartItems.includes(product.id) ? "default" : "outline"
                         }
                       >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        <Eye className="w-4 h-4 mr-2" />
                         Have a Look
                       </Button>
                     </Link>
@@ -360,7 +372,6 @@ export default function FeaturedProducts() {
                 </CardContent>
               </Card>
             ))}
-            
           </div>
         </>
       )}

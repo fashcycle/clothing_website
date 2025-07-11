@@ -128,15 +128,15 @@ export default function ContactUs() {
                 <div className="flex flex-col gap-1">
                   {" "}
                   <a
-                    href="https://wa.me/+918971549998"
+                    href="https://wa.me/+918226026868"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline"
                   >
-                    +91 8971549998
+                    +91 8226026868
                   </a>
                   <a
-                    href="https://wa.me/+918971549998"
+                    href="https://wa.me/+918085676103"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline"
