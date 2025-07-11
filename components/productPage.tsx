@@ -269,12 +269,15 @@ export default function ProductPage({ id }: { id: string }) {
                 <Button
                   variant={isSelected ? "default" : "outline"}
                   onClick={() => handleRentalDaySelection(days)}
-                  className={`w-full p-4 h-auto flex flex-col items-center justify-between ${
+                  className={`w-full p-4 h-auto flex flex-col items-center justify-between relative ${
                     isSelected
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                       : "hover:bg-gray-50"
                   }`}
                 >
+                  {days === 7 && (
+                    <Badge   className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold absolute text-center top-[-10px] ">Recommended</Badge>
+                  )}
                   <div className="font-semibold">{days} Days</div>
                   <div className="text-sm opacity-75">
                     Perfect for{" "}
@@ -362,7 +365,7 @@ export default function ProductPage({ id }: { id: string }) {
             transition={{ duration: 0.4 }}
             className="space-y-4"
           >
-            <div className="relative h-[500px] w-full rounded-lg overflow-hidden shadow-lg">
+            <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden shadow-lg">
               {selectedImage ? (
                 <Image
                   src={selectedImage}
@@ -371,7 +374,7 @@ export default function ProductPage({ id }: { id: string }) {
                   className="object-cover"
                 />
               ) : (
-                <div className="flex items-center justify-center h-full bg-gray-100 text-gray-400">
+                <div className="flex items-center justify-center w-full h-full bg-gray-100 text-gray-400">
                   No Image
                 </div>
               )}
@@ -384,7 +387,7 @@ export default function ProductPage({ id }: { id: string }) {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedImage(img.path)}
-                  className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                  className={`relative aspect-[4/5] rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
                     selectedImage === img.path
                       ? "border-emerald-600 shadow-md"
                       : "border-gray-200 hover:border-gray-300"

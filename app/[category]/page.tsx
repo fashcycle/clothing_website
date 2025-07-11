@@ -5,7 +5,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Eye, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -16,8 +16,17 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useParams } from "next/navigation";
-import { filteredProductList, getAllCategories } from "@/app/api/api";
+import {
+  addToWishlist,
+  filteredProductList,
+  getAllCategories,
+  getCartItems,
+  getWishlistedProducts,
+  removeFromWishlist,
+} from "@/app/api/api";
 import { Loader } from "@/components/ui/loader";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 type Category = {
   id: number;
   name: string;
@@ -103,9 +112,12 @@ export default function EveningDressesPage() {
   const [showMore, setShowMore] = useState(false);
   const [postageAvailable, setPostageAvailable] = useState(false);
   const [resaleAvailable, setResaleAvailable] = useState(false);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState<any>(null);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
+  const [cartItems, setCartItems] = useState<any>([]);
+
   const [user, setUser] = useState<any>("");
   const params = useParams();
   const categoryParam = params?.category || "";
@@ -113,16 +125,80 @@ export default function EveningDressesPage() {
   const [selectedCategory, setSelectedCategory] = useState<number | "">("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedListingType, setSelectedListingType] = useState<string>(""); // NEW: listing type filter
+  const [wishlistedItems, setWishlistedItems] = useState<any>([]); // Initialize as empty array
+  const [isAddingToCart, setIsAddingToCart] = useState<any>(null);
+
+  // Pagination state
+  const [page, setPage] = useState(1); // Pagination: current page
+  const [limit, setLimit] = useState(12); // Pagination: items per page
+  const [totalPages, setTotalPages] = useState(1); // Pagination: total pages
+  const [totalItems, setTotalItems] = useState(0); // Pagination: total items
 
   const [categories, setCategories] = useState<Category[]>([]);
+  useEffect(() => {
+    let userData: any = localStorage.getItem("user-info");
+    setUser(JSON.parse(userData));
+    setIsClient(true);
+    fetchCartItems(), fetchWishlist();
+  }, []);
+  const fetchCartItems = async () => {
+    try {
+      const response = await getCartItems();
+      if (response.success) {
+        const cartProductIds = response.cart.map((item: any) => item.productId);
+        setCartItems(cartProductIds);
+      }
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
+    }
+  };
+  const fetchWishlist = async () => {
+    try {
+      const response = await getWishlistedProducts();
+      if (response.success) {
+        setWishlistedItems(response.products);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+    }
+  };
+  const toggleFavorite = async (productId: any) => {
+    try {
+      setIsAddingToWishlist(productId);
 
-  // Fetch categories on mount
+      if (wishlistedItems.some((item: any) => item.id === productId)) {
+        // Remove from wishlist
+        let obj: any = {
+          userId: user?.id,
+          productId: productId,
+        };
+        const response = await removeFromWishlist(obj);
+        if (response.success) {
+          await fetchWishlist();
+          toast.error("Removed from wishlist!");
+        }
+      } else {
+        // Add to wishlist
+        const response = await addToWishlist({ productId });
+        if (response.success) {
+          await fetchWishlist();
+          toast.success("Added to wishlist!");
+        }
+      }
+    } catch (error) {
+      toast.error("Failed to update wishlist");
+      console.error("Error updating wishlist:", error);
+    } finally {
+      setIsAddingToWishlist(null);
+    }
+  };
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const data = await getAllCategories();
         setCategories(data.categories || []);
-        // If categoryParam is present, set selectedCategory to its id
         if (categoryParam && categoryParam !== "browse") {
           // Try to match by id (number or string)
           const found = (data.categories || []).find(
@@ -141,10 +217,8 @@ export default function EveningDressesPage() {
       }
     };
     fetchCategories();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryParam]);
 
-  // Fetch user and set client state
   useEffect(() => {
     let userData: any = localStorage.getItem("user-info");
     setUser(JSON.parse(userData));
@@ -152,7 +226,6 @@ export default function EveningDressesPage() {
     scrollToTop();
   }, []);
 
-  // Fetch products when filters change
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -170,25 +243,32 @@ export default function EveningDressesPage() {
     if (selectedColor) {
       query.color = selectedColor;
     }
+    if (selectedListingType) {
+      query.listingType = selectedListingType;
+    }
+    query.page = page;
+    query.limit = limit;
     setIsLoading(true);
     fetchProducts(query);
-  }, [selectedCategory, selectedSize, selectedColor]);
+  }, [selectedCategory, selectedSize, selectedColor, selectedListingType, page, limit]);
 
   const fetchProducts = async (query: any) => {
     try {
       const response = await filteredProductList(query);
       if (response.success) {
-        const sortedProducts = response.products.sort(
-          (a: any, b: any) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setProducts(sortedProducts);
+        setProducts(response.products);
+        setTotalPages(response.totalPages || 1);
+        setTotalItems(response.totalItems || 0);
       } else {
         setProducts([]);
+        setTotalPages(1);
+        setTotalItems(0);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
       setProducts([]);
+      setTotalPages(1);
+      setTotalItems(0);
     } finally {
       setIsLoading(false);
     }
@@ -206,8 +286,11 @@ export default function EveningDressesPage() {
             Collections
           </Link>
           <span>/</span>
-        <p className="capitalize">  {categories.find((category) => category.id === selectedCategory)
-                  ?.name || "All"}</p>
+          <p className="capitalize">
+            {" "}
+            {categories.find((category) => category.id === selectedCategory)
+              ?.name || "All"}
+          </p>
         </div>
       </nav>
 
@@ -257,9 +340,30 @@ export default function EveningDressesPage() {
                       type="radio"
                       name="productType"
                       className="mr-2"
-                      defaultChecked
+                      checked={selectedListingType === "rent"}
+                      onChange={() => setSelectedListingType("rent")}
                     />
-                    <span className="text-sm">ALL</span>
+                    <span className="text-sm">Rent</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="productType"
+                      className="mr-2"
+                      checked={selectedListingType === "sell"}
+                      onChange={() => setSelectedListingType("sell")}
+                    />
+                    <span className="text-sm">Buy</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="productType"
+                      className="mr-2"
+                      checked={selectedListingType === ""}
+                      onChange={() => setSelectedListingType("")}
+                    />
+                    <span className="text-sm">Both</span>
                   </label>
                 </div>
               </FilterSection>
@@ -393,139 +497,187 @@ export default function EveningDressesPage() {
             ) : products?.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {products?.map((product: any) => {
+                  {products?.map((product: any, index: any) => {
                     return (
-                      <Link href={`/products/${product.id}`} key={product.id}>
-                        <Card className="group cursor-pointer border-0 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden bg-white rounded-2xl">
-                          <CardContent className="p-0">
-                            {/* Image Container */}
-                            <div className="relative aspect-[3/4] overflow-hidden">
+                      <Card
+                        key={product.id}
+                        className={cn(
+                          "product-card border-0 rounded-none luxury-shadow",
+                          isClient && `animate-fade-in-delay-${index}`
+                        )}
+                      >
+                        <div className="relative">
+                          <button
+                            onClick={() => toggleFavorite(product.id)}
+                            disabled={isAddingToWishlist === product.id}
+                            className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-transform duration-300 hover:scale-110 z-10"
+                            aria-label={
+                              wishlistedItems.some(
+                                (item: any) => item.id === product.id
+                              )
+                                ? "Remove from wishlist"
+                                : "Add to wishlist"
+                            }
+                          >
+                            <Heart
+                              className={cn(
+                                "h-5 w-5 transition-colors",
+                                isAddingToWishlist === product.id &&
+                                  "animate-pulse",
+                                wishlistedItems.some(
+                                  (item: any) => item.id === product.id
+                                )
+                                  ? "fill-red-500 text-red-500"
+                                  : "text-muted-foreground"
+                              )}
+                            />
+                          </button>
+                          <Link href={`/products/${product.id}`}>
+                            <div className="overflow-hidden">
                               <Image
                                 src={
-                                  product?.productImage?.frontLook ||
+                                  product.productImage.frontLook ||
                                   "/placeholder.svg"
                                 }
-                                alt={product.productName}
-                                fill
-                                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                alt={product.title || "productImg"}
+                                width={300}
+                                height={400}
+                                className="w-full aspect-[4/5] object-cover product-image"
                               />
-
-                              {/* Gradient Overlay */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                              {/* Status Badges */}
-                              <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-                                {product?.listingType?.map((tag: any) => (
-                                  <Badge
-                                    key={tag}
-                                    className={`text-xs px-3 py-1 font-medium shadow-lg backdrop-blur-sm ${
-                                      tag === "rent"
-                                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0"
-                                        : tag === "Black-Tie"
-                                        ? "bg-black text-white border-0"
-                                        : tag === "Wedding Guest"
-                                        ? "bg-pink-500 text-white border-0"
-                                        : "bg-gray-800 text-white border-0"
-                                    }`}
-                                  >
-                                    {tag === "rent" ? "For Rent" : tag}
-                                  </Badge>
-                                ))}
-
-                                {/* Availability Badge */}
-                                {product?.isAvailability && (
-                                  <Badge className="bg-green-500 text-white text-xs px-3 py-1 font-medium shadow-lg border-0">
-                                    Available
-                                  </Badge>
-                                )}
-                              </div>
-
-                              {/* Quick Info Overlay */}
-                              <div className="absolute bottom-3 left-3 right-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                                <div className="bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg">
-                                  <div className="flex items-center justify-between text-sm">
-                                    <div className="flex items-center gap-1 text-gray-600">
-                                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                      <span>Size {product.size}</span>
-                                    </div>
-                                    <div className="text-purple-600 font-medium">
-                                      ₹{product.rentPrice3Days}/3days
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
                             </div>
+                          </Link>
+                        </div>
+                        <CardContent className="p-6">
+                          <div className="space-y-3">
+                            {/* Product Name */}
+                            <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 capitalize">
+                              {product.productName}
+                            </h3>
+                            <div className="flex-column items-center gap-2 lg:flex">
+                              <Badge
+                                variant="outline"
+                                className="border-black-800 text-black-800 rounded-full px-3 py-1 capitalize"
+                              >
+                                {product.category?.name}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className="border-black-800 text-black-800 rounded-full px-3 py-1 capitalize"
+                              >
+                                {product.size}
+                              </Badge>
+                            </div>
+                            {/* Color and Size Info */}
+                            {/* <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Color:</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-800 capitalize">
+                            {product.color}
+                          </span>
 
-                            {/* Content */}
-                            <div className="p-4">
-                              {/* Category & Color */}
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
-                                  {product.category?.name || "Fashion"}
-                                </span>
-                                {product.color && (
-                                  <>
-                                    <span className="text-xs text-gray-400">
-                                      •
-                                    </span>
-                                    <span className="text-xs text-gray-500 capitalize">
-                                      {product.color}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
+                          <div
+                            className="w-3 h-3 rounded-full border border-gray-300"
+                            style={{ backgroundColor: product.color }}
+                          />
+                        </div>
+                      </div>
 
-                              {/* Product Name */}
-                              <h3 className="font-semibold text-gray-900 text-base mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors duration-300">
-                                {product.productName}
-                              </h3>
-                              {/* Pricing */}
-                              <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Size:</span>
+                        <span className="text-sm text-gray-800">
+                          {product.size}
+                        </span>
+                      </div>
+                    </div> */}
+
+                            {/* Pricing */}
+                            <div className="space-y-2">
+                              {product.listingType.includes("rent") && (
+                                <>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-gray-600">
+                                      Rent (3 days):
+                                    </span>
+                                    <span className="text-sm font-medium text-gray-900">
+                                      ₹{product.rentPrice3Days}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-gray-600">
+                                      Rent (7 days):
+                                    </span>
+                                    <span className="text-sm font-medium text-gray-900">
+                                      ₹{product.rentPrice7Days}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-gray-600">
+                                      Rent (14 days):
+                                    </span>
+                                    <span className="text-sm font-medium text-gray-900">
+                                      ₹{product.rentPrice14Days}
+                                    </span>
+                                  </div>
+                                </>
+                              )}
+
+                              {product.listingType.includes("sell") && (
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm text-gray-600">
-                                    Original Price
+                                    Buy:
                                   </span>
-                                  <span className="text-sm line-through text-gray-400">
-                                    ₹{product.originalPurchasePrice}
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center justify-between">
                                   <span className="text-sm font-medium text-gray-900">
-                                    Rent from
-                                  </span>
-                                  <span className="text-lg font-bold text-purple-600">
-                                    ₹{product.rentPrice3Days}
+                                    ₹
+                                    {Math.round(
+                                      (product?.originalPurchasePrice * 50) /
+                                        100
+                                    )}
                                   </span>
                                 </div>
-
-                                <div className="text-xs text-gray-500 text-center">
-                                  3 days • 7 days • 14 days available
-                                </div>
-                              </div>
-
-                              {/* Action Button */}
-                              <Link href={`/products/${product.id}`}>
-                                <button
-                                  // onClick={(e) => {
-                                  //   e.preventDefault();
-                                  //   // Add to cart or quick rent action
-                                  // }}
-                                  className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transform hover:scale-[1.02] transition-all duration-300 shadow-md hover:shadow-lg text-sm"
-                                >
-                                  {product.listingType[0] === "rent"
-                                    ? "Quick Rent"
-                                    : product.listingType[0] === "sell"
-                                    ? "Quick Buy"
-                                    : "Buy or Rent "}
-                                </button>
-                              </Link>
+                              )}
                             </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
+
+                            {/* Action Button */}
+                            <Link href={`/products/${product.id}`}>
+                              <Button
+                                disabled={isAddingToCart === product.id}
+                                className="mt-2 w-full"
+                                variant={
+                                  cartItems.includes(product.id)
+                                    ? "default"
+                                    : "outline"
+                                }
+                              >
+                                <Eye className="w-4 h-4 mr-2" />
+                                Have a Look
+                              </Button>
+                            </Link>
+                          </div>
+                        </CardContent>
+                      </Card>
                     );
                   })}
+                </div>
+                {/* Pagination Controls */}
+                <div className="flex justify-center mt-8 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="px-4 py-2 text-sm text-gray-700">
+                    Page {page} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </Button>
                 </div>
               </>
             ) : (

@@ -93,7 +93,7 @@ export default function CategorySlider() {
                 isClient && `animate-fade-in-delay-${index % 3}`
               )}
             >
-              <div className="relative h-[300px] overflow-hidden group hover-scale">
+              <div className="relative aspect-[4/6] overflow-hidden group hover-scale">
                 <Image
                   src={category.image || "/placeholder.svg"}
                   alt={category.name}

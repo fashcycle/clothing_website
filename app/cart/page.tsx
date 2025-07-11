@@ -19,6 +19,7 @@ import {
   CreditCard,
   Badge,
   CloudCog,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +32,7 @@ import {
   updateAddress,
   deleteAddress,
   addNewAddress,
+  getUserAddresses,
 } from "@/app/api/api";
 import {
   Card,
@@ -86,6 +88,7 @@ export default function CartPage() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>();
   const [isPaying, setIsPaying] = useState(false);
+  console.log("savedAddresses Address:", cartItems);
   const handleCheckout = async () => {
     if (cartItems.length === 0) return toast.error("Cart is empty!");
 
@@ -103,7 +106,6 @@ export default function CartPage() {
         }
       );
       const razorpay_order_id = data.order.razorpayOrderId;
-      console.log("Order Data:", razorpay_order_id);
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: total * 100,
@@ -124,7 +126,6 @@ export default function CartPage() {
         handler: async (response: any) => {
           const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
             response;
-          console.log("Payment Response:", response);
 
           try {
             const verifyRes = await axios.post(
@@ -141,13 +142,10 @@ export default function CartPage() {
                 },
               }
             );
-
-            if (verifyRes.data.status) {
+            if (verifyRes.data.success === true) {
               toast.success("Payment successful! 🎉");
               console.log("Payment successful:", verifyRes.data);
               // router.push("/order-success");
-            } else {
-              toast.error("Signature verify failed");
             }
           } catch (err) {
             console.error(err);
@@ -231,7 +229,6 @@ export default function CartPage() {
       if (userDetails?.success) {
         localStorage.setItem("user-info", JSON.stringify(userDetails.user));
         setUser(userDetails.user);
-        setSavedAddresses(userDetails?.user?.addresses);
         setSelectedAddressId(userDetails?.user?.addresses?.[0]?.id || "");
       }
     } catch (error) {
@@ -282,7 +279,23 @@ export default function CartPage() {
       console.error("Error removing item:", error);
     }
   };
-
+  const fetchAddresses = async () => {
+    try {
+      const response = await getUserAddresses();
+      if (response.success) {
+        setSavedAddresses(response.addresses);
+      } else if (response?.data && Array.isArray(response.data)) {
+        setSavedAddresses(response.data);
+      } else {
+        setSavedAddresses([]);
+      }
+    } catch (error: any) {
+      setSavedAddresses([]);
+    }
+  };
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
   const handleAddAddressApi = async (newAddress: any) => {
     setIsSubmitting(true);
 
@@ -300,7 +313,6 @@ export default function CartPage() {
     if (response.success) {
       setIsSubmitting(false);
 
-      setSavedAddresses([...savedAddresses, newAddress]);
       fetchUserDetails();
       // setShowNewAddressForm(false);
       // setNewAddressForm({
@@ -340,6 +352,18 @@ export default function CartPage() {
       setSelectedAddress(user.addresses[0]);
     }
   }, [user]);
+
+  // Keep selectedAddress in sync with savedAddresses and selectedAddressId
+  useEffect(() => {
+    if (savedAddresses && savedAddresses.length > 0) {
+      const found = savedAddresses.find(
+        (addr) => addr.id === selectedAddressId
+      );
+      setSelectedAddress(found || savedAddresses[0]);
+    } else {
+      setSelectedAddress(undefined);
+    }
+  }, [savedAddresses, selectedAddressId]);
 
   return (
     <>
@@ -398,16 +422,28 @@ export default function CartPage() {
                             {selectedAddress?.landmark}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {selectedAddress?.addressLine1}
+                            {selectedAddress?.addressLine1}{" "}
+                            {selectedAddress?.addressLine2 &&
+                              selectedAddress?.addressLine2}
                           </p>
-                          {selectedAddress?.addressLine2 && (
-                            <p className="text-sm text-muted-foreground">
-                              {selectedAddress?.addressLine2}
-                            </p>
-                          )}
+
                           <p className="text-sm text-muted-foreground">
-                            {selectedAddress?.city}, {selectedAddress?.state},{" "}
-                            {selectedAddress?.country}
+                            {selectedAddress?.pincode
+                              ? [
+                                  selectedAddress.pincode.city,
+                                  selectedAddress.pincode.state,
+                                  selectedAddress.pincode.country,
+                                  selectedAddress.pincode.pincode,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ")
+                              : [
+                                  selectedAddress?.city,
+                                  selectedAddress?.state,
+                                  selectedAddress?.country,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ")}
                           </p>
                         </div>
                       )}
@@ -506,7 +542,7 @@ export default function CartPage() {
 
                   <AnimatePresence>
                     {cartItems.map((item: any) => {
-                      // console.log(item);
+                      console.log(item);
                       return (
                         <motion.div
                           key={item.id} // Added key property
@@ -615,19 +651,31 @@ export default function CartPage() {
                               </div>
 
                               {/* Listing Type Badges */}
-                              <div className="flex flex-wrap gap-2">
-                                {item?.product?.listingType?.map(
-                                  (type: string) => (
-                                    <div
-                                      key={type}
-                                      className="w-fit bg-purple-100 text-purple-600 uppercase px-1 rounded"
-                                    >
-                                      {`For ${type}`}
-                                    </div>
-                                  )
-                                )}
+                              <div>
+                                <span className="text-xs text-gray-600">
+                                  Rent Duration {item?.rentDurationInDays} Days
+                                </span>
+                                {/* <span className="text-xs text-gray-600">
+                                  From{" "}
+                                  {new Date(item?.rentFrom).toLocaleDateString(
+                                    "en-IN",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    }
+                                  )}{" "}
+                                  to{" "}
+                                  {new Date(item?.rentTo).toLocaleDateString(
+                                    "en-IN",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    }
+                                  )}
+                                </span> */}
                               </div>
-
                               {/* Pricing Section */}
                               <div className="pt-2">
                                 {item?.product?.listingType?.includes(
@@ -744,7 +792,12 @@ export default function CartPage() {
                               </div>
 
                               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                                <div className="flex items-center gap-2"></div>
+                                <div className="flex items-center gap-2">
+                                  <Info className="h-4 w-4  text-red-500 hover:text-red-600" />
+                                  <p className="text-sm text-red-500 hover:text-red-600">
+                                    Your cart will expires in 24 Hours
+                                  </p>
+                                </div>
                                 <motion.button
                                   whileHover={{
                                     scale: 1.05,
@@ -917,7 +970,7 @@ export default function CartPage() {
           </DialogHeader>
 
           <div className="mt-6 space-y-4">
-            {user?.addresses?.map((address: any) => (
+            {savedAddresses?.map((address: any) => (
               <div
                 key={address.id}
                 className={`p-4 border rounded-lg cursor-pointer transition-all hover:border-green-800 ${
@@ -927,9 +980,7 @@ export default function CartPage() {
                 }`}
                 onClick={() => {
                   setSelectedAddressId(address.id);
-                  setSelectedAddress(address);
                   setShowAddressModal(false);
-                  // You can add logic here to update the selected address
                 }}
               >
                 <div className="flex items-center justify-between">
@@ -953,7 +1004,18 @@ export default function CartPage() {
                   </p>
                 )}
                 <p className="text-sm text-gray-600">
-                  {address.city}, {address.state}, {address.pincode}
+                  {address.pincode
+                    ? [
+                        address.pincode.city,
+                        address.pincode.state,
+                        address.pincode.country,
+                        address.pincode.pincode,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")
+                    : [address.city, address.state, address.country]
+                        .filter(Boolean)
+                        .join(", ")}
                 </p>
               </div>
             ))}
