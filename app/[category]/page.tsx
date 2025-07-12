@@ -27,6 +27,7 @@ import {
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { ProductCard } from "@/components/ProductCard";
 type Category = {
   id: number;
   name: string;
@@ -250,7 +251,14 @@ export default function EveningDressesPage() {
     query.limit = limit;
     setIsLoading(true);
     fetchProducts(query);
-  }, [selectedCategory, selectedSize, selectedColor, selectedListingType, page, limit]);
+  }, [
+    selectedCategory,
+    selectedSize,
+    selectedColor,
+    selectedListingType,
+    page,
+    limit,
+  ]);
 
   const fetchProducts = async (query: any) => {
     try {
@@ -274,8 +282,7 @@ export default function EveningDressesPage() {
     }
   };
   return (
-    <div className="container py-10">
-      {/* ...existing code for nav, filters, and product grid... */}
+    <div className="container py-10 lg:mt-10">
       <nav className="px-4 py-3 text-sm">
         <div className="max-w-7xl mx-auto flex items-center space-x-2 text-gray-600">
           <Link href="/" className="hover:text-gray-900">
@@ -497,167 +504,17 @@ export default function EveningDressesPage() {
             ) : products?.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {products?.map((product: any, index: any) => {
-                    return (
-                      <Card
-                        key={product.id}
-                        className={cn(
-                          "product-card border-0 rounded-none luxury-shadow",
-                          isClient && `animate-fade-in-delay-${index}`
-                        )}
-                      >
-                        <div className="relative">
-                          <button
-                            onClick={() => toggleFavorite(product.id)}
-                            disabled={isAddingToWishlist === product.id}
-                            className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-transform duration-300 hover:scale-110 z-10"
-                            aria-label={
-                              wishlistedItems.some(
-                                (item: any) => item.id === product.id
-                              )
-                                ? "Remove from wishlist"
-                                : "Add to wishlist"
-                            }
-                          >
-                            <Heart
-                              className={cn(
-                                "h-5 w-5 transition-colors",
-                                isAddingToWishlist === product.id &&
-                                  "animate-pulse",
-                                wishlistedItems.some(
-                                  (item: any) => item.id === product.id
-                                )
-                                  ? "fill-red-500 text-red-500"
-                                  : "text-muted-foreground"
-                              )}
-                            />
-                          </button>
-                          <Link href={`/products/${product.id}`}>
-                            <div className="overflow-hidden">
-                              <Image
-                                src={
-                                  product.productImage.frontLook ||
-                                  "/placeholder.svg"
-                                }
-                                alt={product.title || "productImg"}
-                                width={300}
-                                height={400}
-                                className="w-full aspect-[4/5] object-cover product-image"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        <CardContent className="p-6">
-                          <div className="space-y-3">
-                            {/* Product Name */}
-                            <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 capitalize">
-                              {product.productName}
-                            </h3>
-                            <div className="flex-column items-center gap-2 lg:flex">
-                              <Badge
-                                variant="outline"
-                                className="border-black-800 text-black-800 rounded-full px-3 py-1 capitalize"
-                              >
-                                {product.category?.name}
-                              </Badge>
-                              <Badge
-                                variant="outline"
-                                className="border-black-800 text-black-800 rounded-full px-3 py-1 capitalize"
-                              >
-                                {product.size}
-                              </Badge>
-                            </div>
-                            {/* Color and Size Info */}
-                            {/* <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Color:</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-800 capitalize">
-                            {product.color}
-                          </span>
-
-                          <div
-                            className="w-3 h-3 rounded-full border border-gray-300"
-                            style={{ backgroundColor: product.color }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Size:</span>
-                        <span className="text-sm text-gray-800">
-                          {product.size}
-                        </span>
-                      </div>
-                    </div> */}
-
-                            {/* Pricing */}
-                            <div className="space-y-2">
-                              {product.listingType.includes("rent") && (
-                                <>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">
-                                      Rent (3 days):
-                                    </span>
-                                    <span className="text-sm font-medium text-gray-900">
-                                      ₹{Math.round(product.rentPrice3Days)}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">
-                                      Rent (7 days):
-                                    </span>
-                                    <span className="text-sm font-medium text-gray-900">
-                                      ₹{Math.round(product.rentPrice7Days)}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">
-                                      Rent (14 days):
-                                    </span>
-                                    <span className="text-sm font-medium text-gray-900">
-                                      ₹{Math.round(product.rentPrice14Days)}
-                                    </span>
-                                  </div>
-                                </>
-                              )}
-
-                              {product.listingType.includes("sell") && (
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">
-                                    Buy:
-                                  </span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    ₹
-                                    {Math.round(
-                                      (product?.originalPurchasePrice * 50) /
-                                        100
-                                    )}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Action Button */}
-                            <Link href={`/products/${product.id}`}>
-                              <Button
-                                disabled={isAddingToCart === product.id}
-                                className="mt-2 w-full"
-                                variant={
-                                  cartItems.includes(product.id)
-                                    ? "default"
-                                    : "outline"
-                                }
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                Have a Look
-                              </Button>
-                            </Link>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                  {products?.map((product: any, index: any) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      isAddingToWishlist={isAddingToWishlist}
+                      isAddingToCart={isAddingToCart}
+                      cartItems={cartItems}
+                      wishlistedItems={wishlistedItems}
+                      toggleFavorite={toggleFavorite}
+                    />
+                  ))}
                 </div>
                 {/* Pagination Controls */}
                 <div className="flex justify-center mt-8 gap-2">

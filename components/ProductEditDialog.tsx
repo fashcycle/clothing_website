@@ -157,9 +157,7 @@ export function ProductEditDialog({
                   <SelectItem value="anarkali">Anarkali</SelectItem>
                   <SelectItem value="saree">Saree</SelectItem>
                   <SelectItem value="suit">Suit</SelectItem>
-                  <SelectItem value="rajasthani-poshak">
-                    Rajasthani Poshak
-                  </SelectItem>
+                  <SelectItem value="poshak">Rajasthani Poshak</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>

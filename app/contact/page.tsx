@@ -47,7 +47,7 @@ export default function ContactUs() {
   };
 
   return (
-    <div className="container w-fit min-w-[100vh] mx-auto px-4 py-12 ">
+    <div className="container w-fit min-w-[100vh]  mx-auto px-4 py-12 lg:pt-24">
       <Card className="shadow-lg rounded-xl overflow-hidden">
         <CardContent className="p-0 md:flex">
           {/* Left: Form Section */}

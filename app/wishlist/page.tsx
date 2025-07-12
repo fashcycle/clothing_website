@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Heart, Trash2, Star, Eye } from "lucide-react";
+import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   getCartItems,
@@ -11,37 +10,14 @@ import {
   getWishlistedProducts,
   addToWishlist,
 } from "@/app/api/api";
-import { Card, CardContent } from "@/components/ui/card";
-import Image from "next/image";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
-import { Badge } from "@/components/ui/badge";
-
-const initialWishlistItems = [
-  {
-    id: 1,
-    name: "Floral Lehenga",
-    price: "₹15,999",
-    image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?w=500",
-    category: "LEHENGA",
-  },
-  {
-    id: 2,
-    name: "Designer Gown",
-    price: "₹12,999",
-    image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=500",
-    category: "GOWN",
-  },
-];
+import { ProductCard } from "@/components/ProductCard";
 
 export default function WishlistPage() {
   const router = useRouter();
-  const [wishlistItems, setWishlistItems] = useState<any>([]); // Initialize as empty array
-  const [wishlistedItems, setWishlistedItems] = useState<any>([]); // Initialize as empty array
+  const [wishlistedItems, setWishlistedItems] = useState<any>([]);
   const [isLoading, setIsLoading] = useState<any>(true);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<any>(null);
   const [isClient, setIsClient] = useState<any>(false);
@@ -49,15 +25,12 @@ export default function WishlistPage() {
   const [cartItems, setCartItems] = useState<any>([]);
   const [user, setUser] = useState<any>("");
 
-  // Move data fetching to useEffect
   useEffect(() => {
     let userData: any = localStorage.getItem("user-info");
     setUser(JSON.parse(userData));
     setIsClient(true);
     fetchCartItems(), fetchWishlist();
   }, []);
-
-  // Remove initialWishlistItems mock data from the top of the file
 
   const fetchCartItems = async () => {
     try {
@@ -106,7 +79,6 @@ export default function WishlistPage() {
       setIsAddingToWishlist(productId);
 
       if (wishlistedItems.some((item: any) => item.id === productId)) {
-        // Remove from wishlist
         let obj: any = {
           userId: user?.id,
           productId: productId,
@@ -117,7 +89,6 @@ export default function WishlistPage() {
           toast.error("Removed from wishlist!");
         }
       } else {
-        // Add to wishlist
         const response = await addToWishlist({ productId });
         if (response.success) {
           await fetchWishlist();
@@ -137,7 +108,7 @@ export default function WishlistPage() {
 
   return (
     <>
-      <div className="container py-8 text-center">
+      <div className="container py-8 text-center lg:pt-24">
         {wishlistedItems?.length > 0 && (
           <>
             <h1 className="text-2xl md:text-3xl font-semibold mb-2">
@@ -168,154 +139,17 @@ export default function WishlistPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6  py-10 container">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 py-10 container lg:grid-cols-5">
           {wishlistedItems?.map((product: any, index: any) => (
-            <Card
+            <ProductCard
               key={product.id}
-              className={cn(
-                "product-card border-0 rounded-none luxury-shadow",
-                isClient && `animate-fade-in-delay-${index}`
-              )}
-            >
-              <div className="relative">
-                <Link href={`/products/${product.id}`}>
-                  <div className="overflow-hidden">
-                    <Image
-                      src={product.productImage.frontLook || "/placeholder.svg"}
-                      alt={product.title || "productImg"}
-                      width={300}
-                      height={400}
-                      className="w-full aspect-[4/5] object-cover product-image"
-                    />
-                  </div>
-                </Link>
-                <button
-                  onClick={() => toggleFavorite(product.id)}
-                  disabled={isAddingToWishlist === product.id}
-                  className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-transform duration-300 hover:scale-110 z-10"
-                  aria-label={
-                    wishlistedItems.some((item: any) => item.id === product.id)
-                      ? "Remove from wishlist"
-                      : "Add to wishlist"
-                  }
-                >
-                  <Heart
-                    className={cn(
-                      "h-5 w-5 transition-colors",
-                      isAddingToWishlist === product.id && "animate-pulse",
-                      wishlistedItems.some(
-                        (item: any) => item.id === product.id
-                      )
-                        ? "fill-red-500 text-red-500"
-                        : "text-muted-foreground"
-                    )}
-                  />
-                </button>
-              </div>
-              <CardContent className="p-6">
-                <div className="space-y-3">
-                  {/* Product Name */}
-                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 capitalize">
-                    {product.productName}
-                  </h3>
-                  <div className="flex-column items-center gap-2 lg:flex">
-                    <Badge
-                      variant="outline"
-                      className="border-black-800 text-black-800 rounded-full px-3 py-1 capitalize"
-                    >
-                      {product.category?.name}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="border-black-800 text-black-800 rounded-full px-3 py-1 capitalize"
-                    >
-                      Size- {product.size}
-                    </Badge>
-                  </div>
-                  {/* Color and Size Info */}
-                  {/* <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Color:</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-800 capitalize">
-                            {product.color}
-                          </span>
-
-                          <div
-                            className="w-3 h-3 rounded-full border border-gray-300"
-                            style={{ backgroundColor: product.color }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Size:</span>
-                        <span className="text-sm text-gray-800">
-                          {product.size}
-                        </span>
-                      </div>
-                    </div> */}
-
-                  {/* Pricing */}
-                  <div className="space-y-2">
-                    {product.listingType.includes("rent") && (
-                      <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Rent (3 days):
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            ₹{Math.round(product.rentPrice3Days)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Rent (7 days):
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            ₹{Math.round(product.rentPrice7Days)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Rent (14 days):
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            ₹{Math.round(product.rentPrice14Days)}
-                          </span>
-                        </div>
-                      </>
-                    )}
-
-                    {product.listingType.includes("sell") && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Buy:</span>
-                        <span className="text-sm font-medium text-gray-900">
-                          ₹
-                          {Math.round(
-                            (product?.originalPurchasePrice * 50) / 100
-                          )}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action Button */}
-                  <Link href={`/products/${product.id}`}>
-                    <Button
-                      disabled={isAddingToCart === product.id}
-                      className="mt-2 w-full"
-                      variant={
-                        cartItems.includes(product.id) ? "default" : "outline"
-                      }
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Have a Look
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+              product={product}
+              isAddingToWishlist={isAddingToWishlist}
+              isAddingToCart={isAddingToCart}
+              cartItems={cartItems}
+              wishlistedItems={wishlistedItems}
+              toggleFavorite={toggleFavorite}
+            />
           ))}
         </div>
       )}

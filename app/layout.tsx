@@ -56,7 +56,9 @@ export default function RootLayout({
           >
             <div className="flex flex-col min-h-screen">
               <Navbar />
-              <main className="flex-grow overflow-container">{children}</main>
+              <main className="pt-12 flex-grow overflow-container">
+                {children}
+              </main>
               {!hideFooter && <Footer />}
             </div>
             <Toaster position="top-right" richColors />

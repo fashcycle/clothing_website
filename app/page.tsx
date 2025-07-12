@@ -59,7 +59,7 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-primary/70"></div>
 
-        <div className="container relative z-10 px-4 md:px-6 flex flex-col md:flex-row items-center min-h-[80vh]">
+        <div className="container relative z-10 px-4 mt-5 md:px-6 flex flex-col md:flex-row items-center min-h-[80vh]">
           <div className="md:w-1/2 text-white space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-tight animate-fade-in">
               Future Fashion
