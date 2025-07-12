@@ -132,8 +132,6 @@ export default function ProductPage({ id }: { id: string }) {
     setProductImages(imgs);
   }, [product]);
 
-  const minSelectableDate = addDays(new Date(), 1);
-
   const handleDaySelect = (fromDate: Date | undefined) => {
     if (!fromDate || !selectedRentalDays) return;
 
@@ -147,7 +145,7 @@ export default function ProductPage({ id }: { id: string }) {
     setRentFromDate(null);
     setRentToDate(null);
     setIsDateSelected(false);
-    setIsCalendarOpen(true); // open calendar immediately
+    setIsCalendarOpen(true);
   };
 
   const handleCalendarConfirm = () => {
@@ -156,44 +154,10 @@ export default function ProductPage({ id }: { id: string }) {
     toast.success("Rental dates selected successfully!");
   };
 
-  const resetRentalState = () => {
-    setRentFromDate(null);
-    setRentToDate(null);
-    setSelectedRentalDays(null);
-    setIsDateSelected(false);
-    setCartSelectionState({
-      rentalDays: null,
-      fromDate: null,
-      toDate: null,
-    });
-
-    // Clear from localStorage
-    if (product?.id) {
-      const stateKey = `rental_state_${product.id}`;
-      localStorage.removeItem(stateKey);
-    }
-  };
-
-  const getCurrentRentalPrice = () => {
-    if (!selectedRentalDays || !product) return 0;
-
-    switch (selectedRentalDays) {
-      case 3:
-        return product.rentPrice3Days;
-      case 7:
-        return product.rentPrice7Days;
-      case 14:
-        return product.rentPrice14Days;
-      default:
-        return product.rentPrice3Days;
-    }
-  };
-
   const handleAddToCart = async (productId: string) => {
     try {
       setIsAddingToCart(productId);
 
-      // Build payload depending on listing type
       let payload: any = { productId };
       const isRent =
         Array.isArray(product?.listingType) &&
@@ -218,7 +182,6 @@ export default function ProductPage({ id }: { id: string }) {
         setCartItems((prev) => [...prev, productId]);
         toast.success("Added to cart successfully");
 
-        // Save cart selection state
         if (isRent && selectedRentalDays && rentFromDate && rentToDate) {
           setCartSelectionState({
             rentalDays: selectedRentalDays,
@@ -253,9 +216,9 @@ export default function ProductPage({ id }: { id: string }) {
     ];
 
     return (
-      <div className="space-y-4 mb-6">
-        <h3 className="font-semibold text-lg">Select Rental Duration</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="space-y-3 mb-4">
+        <h3 className="font-semibold text-base">Select Rental Duration</h3>
+        <div className="grid grid-cols-3 gap-2">
           {options.map(({ days, price }) => {
             const isSelected = selectedRentalDays === days;
 
@@ -269,25 +232,29 @@ export default function ProductPage({ id }: { id: string }) {
                 <Button
                   variant={isSelected ? "default" : "outline"}
                   onClick={() => handleRentalDaySelection(days)}
-                  className={`w-full p-4 h-auto flex flex-col items-center justify-between relative ${
+                  className={`w-full p-2 h-auto flex flex-col items-center justify-center relative text-xs ${
                     isSelected
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                       : "hover:bg-gray-50"
                   }`}
                 >
                   {days === 7 && (
-                    <Badge   className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold absolute text-center top-[-10px] ">Recommended</Badge>
+                    <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold absolute text-[10px] top-[-12px]">
+                      Recommended
+                    </Badge>
                   )}
-                  <div className="font-semibold">{days} Days</div>
-                  <div className="text-sm opacity-75">
-                    Perfect for{" "}
-                    {days === 3
-                      ? "events"
-                      : days === 7
-                      ? "occasions"
-                      : "extended use"}
+                  <div className="font-semibold text-sm">{days} Days</div>
+                  <div className="text-xs opacity-75 flex-col items-center ">
+                    <p> Perfect for </p>
+                    <p>
+                      {days === 3
+                        ? "Events"
+                        : days === 7
+                        ? "Occasions"
+                        : "Extended"}
+                    </p>
                   </div>
-                  <div className="font-bold text-lg mt-2">₹{price}</div>
+                  <div className="font-bold text-sm mt-1">₹{price}</div>
                 </Button>
               </motion.div>
             );
@@ -298,9 +265,9 @@ export default function ProductPage({ id }: { id: string }) {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200"
+            className="mt-3 p-2 bg-emerald-50 rounded-lg border border-emerald-200"
           >
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex justify-between items-center text-xs">
               <span className="text-gray-700 font-medium">Rental Dates:</span>
               <span className="font-semibold text-emerald-700">
                 {format(rentFromDate, "MMM dd")} -{" "}
@@ -328,8 +295,9 @@ export default function ProductPage({ id }: { id: string }) {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto py-8 px-4">
-        <div className="flex items-center text-sm mb-6 gap-2">
+      <div className="max-w-7xl mx-auto py-4 px-4">
+        {/* Compact Breadcrumb */}
+        <div className="flex items-center text-xs mb-4 gap-2 lg:mt-6">
           <Link href="/" className="hover:underline flex items-center gap-1">
             <Home className="h-3 w-3" /> Home
           </Link>
@@ -355,17 +323,19 @@ export default function ProductPage({ id }: { id: string }) {
               : "Category"}
           </Link>
           <span>/</span>
-          <span className="text-gray-500">{product.productName}</span>
+          <span className="text-gray-500 truncate">{product.productName}</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+          {/* Image Section */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            className="space-y-4"
+            className="lg:col-span-1 xl:col-span-1"
           >
-            <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden shadow-lg">
+            <div className="relative w-full aspect-[3/3] rounded-lg overflow-hidden shadow-lg mb-3">
               {selectedImage ? (
                 <Image
                   src={selectedImage}
@@ -404,92 +374,40 @@ export default function ProductPage({ id }: { id: string }) {
             </div>
           </motion.div>
 
+          {/* Product Info Section */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            className="space-y-6"
+            className="lg:col-span-1 xl:col-span-1 space-y-4"
           >
             <div className="text-center">
-              <h1 className="text-3xl font-bold mb-2">{product.productName}</h1>
-              {/* <p className="text-gray-600">
-                {product.color} {product.category?.name}, {product.size}
-              </p> */}
+              <h1 className="text-2xl font-bold mb-2">{product.productName}</h1>
             </div>
+
             <div className="flex flex-wrap gap-2 justify-center">
               <Badge
                 variant="outline"
-                className="border-blue-400 bg-blue-100 text-blue-800 rounded-full px-3 py-1 capitalize"
+                className="border-blue-400 bg-blue-100 text-blue-800 rounded-full px-2 py-1 text-xs capitalize"
               >
                 {product.category?.name}
               </Badge>
               <Badge
                 variant="outline"
-                className="border-blue-400 bg-emerald-100 text-blue-800 rounded-full px-3 py-1 capitalize"
+                className="border-blue-400 bg-emerald-100 text-blue-800 rounded-full px-2 py-1 text-xs capitalize"
               >
                 Size: {product.size}
               </Badge>
-              {/* {product.listingType?.map((t: string) => (
-                <Badge
-                  key={t}
-                  variant="secondary"
-                  className="bg-emerald-100 text-emerald-800 rounded-full px-3 py-1 uppercase"
-                >
-                  {t}
-                </Badge>
-              ))} */}
             </div>
-            {/* <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-6 rounded-lg text-center">
-              {isRentProduct && !isSellProduct ? (
-                <>
-                  <p className="text-lg text-gray-600 mb-2">Rental Price</p>
-                  <p className="text-4xl font-bold text-emerald-600">
-                    ₹{product.rentPrice3Days}
-                    <span className="text-lg text-gray-500 ml-2">/ 3 days</span>
-                  </p>
-                </>
-              ) : isSellProduct && !isRentProduct ? (
-                <>
-                  <p className="text-lg text-gray-600 mb-2">Sale Price</p>
-                  <p className="text-4xl font-bold text-emerald-600">
-                    ₹{Math.round((product.originalPurchasePrice * 50) / 100)}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-lg text-gray-600 mb-2">
-                    Available for Rent & Sale
-                  </p>
-                  <div className="flex justify-center gap-4">
-                    <div>
-                      <p className="text-2xl font-bold text-emerald-600">
-                        ₹{product.rentPrice3Days}
-                      </p>
-                      <p className="text-sm text-gray-500">Rent / 3 days</p>
-                    </div>
-                    <div className="border-l pl-4">
-                      <p className="text-2xl font-bold text-blue-600">
-                        ₹
-                        {Math.round((product.originalPurchasePrice * 50) / 100)}
-                      </p>
-                      <p className="text-sm text-gray-500">Buy now</p>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div> */}
 
-            {isRentProduct && (
-              <>
-                {renderRentalButtons()}
-                {/* {renderDateSelection()} */}
-              </>
-            )}
+            {/* Rental Options */}
+            {isRentProduct && renderRentalButtons()}
 
-            <div className="flex gap-4">
+            {/* Action Buttons */}
+            <div className="flex gap-3">
               {isSellProduct && (
                 <Button
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg rounded-lg shadow-lg"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm rounded-lg shadow-lg"
                   onClick={() => handleAddToCart(product.id)}
                 >
                   BUY NOW
@@ -506,65 +424,73 @@ export default function ProductPage({ id }: { id: string }) {
                   isAddingToCart === product.id ||
                   (isRentProduct && (!rentFromDate || !rentToDate))
                 }
-                className={`flex-1 py-6 text-lg rounded-lg shadow-lg ${
+                className={`flex-1 py-4 text-sm rounded-lg shadow-lg ${
                   cartItems.includes(product.id)
                     ? "bg-emerald-600 hover:bg-emerald-700"
                     : ""
                 }`}
                 variant={cartItems.includes(product.id) ? "default" : "outline"}
               >
-                <ShoppingCart className="w-5 h-5 mr-2" />
+                <ShoppingCart className="w-4 h-4 mr-2" />
                 {isAddingToCart === product.id
                   ? "Adding..."
                   : cartItems.includes(product.id)
                   ? "Go to Cart"
-                  : isRentProduct
-                  ? "Add to Cart"
                   : "Add to Cart"}
               </Button>
             </div>
 
-            <div className="space-y-3 border-t border-gray-200 pt-6">
-              <h3 className="font-semibold text-lg mb-4">Product Details</h3>
-
-              {[
-                { label: "COLOUR", value: product.color },
-                { label: "SIZE FLEXIBILITY", value: product.sizeFlexibility },
-                {
-                  label: "ORIGNAL PURCHASE PRICE  ",
-                  value: `₹${product.originalPurchasePrice}`,
-                },
-                { label: "SIZE", value: product?.size },
-                // {
-                //   label: isRentProduct ? "RENTAL PRICE" : "SALE PRICE",
-                //   value: isRentProduct
-                //     ? `₹${product.rentPrice3Days} (3 days)`
-                //     : `₹${product?.originalPurchasePrice}`,
-                // },
-                // { label: "CONDITION", value: "Excellent" },
-              ].map(({ label, value }) => (
-                <div
-                  key={label}
-                  className="flex justify-between items-center py-3 border-b border-gray-100"
-                >
-                  <span className="text-gray-600 font-medium">{label}</span>
-                  <span className="font-semibold capitalize">{value}</span>
-                </div>
-              ))}
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h2 className="font-semibold mb-2">About this item</h2>
-              <p className="text-gray-700">
-                {product.description ||
-                  `Quality ${product.productName} in ${product.color}. Size ${product.size}.`}
-              </p>
-            </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm text-blue-800 text-center">
+            {/* Guarantee Badge */}
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <p className="text-xs text-blue-800 text-center">
                 ✓ All purchases are verified and guaranteed authentic
               </p>
             </div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="lg:col-span-2 xl:col-span-1 space-y-4"
+            >
+              <div className="space-y-2 border-t border-gray-200 pt-4">
+                <h3 className="font-semibold text-base mb-3">
+                  Product Details
+                </h3>
+
+                {[
+                  { label: "COLOUR", value: product.color },
+                  { label: "SIZE FLEXIBILITY", value: product.sizeFlexibility },
+                  {
+                    label: "ORIGINAL PRICE",
+                    value: `₹${product.originalPurchasePrice}`,
+                  },
+                  { label: "SIZE", value: product?.size },
+                ].map(({ label, value }) => (
+                  <div
+                    key={label}
+                    className="flex justify-between items-center py-2 border-b border-gray-100"
+                  >
+                    <span className="text-gray-600 font-medium text-sm">
+                      {label}
+                    </span>
+                    <span className="font-semibold capitalize text-sm">
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <h2 className="font-semibold mb-2 text-sm">About this item</h2>
+                <p className="text-gray-700 text-sm">
+                  {product.description ||
+                    `Quality ${product.productName} in ${product.color}. Size ${product.size}.`}
+                </p>
+              </div>
+            </motion.div>
           </motion.div>
+
+          {/* Product Details Section */}
         </div>
       </div>
 

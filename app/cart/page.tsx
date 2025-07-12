@@ -162,7 +162,8 @@ export default function CartPage() {
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
     } catch (err: any) {
-      const message = err?.response?.data?.message || "Payment init error";
+      // const message = err?.response?.data?.message || "Payment init error";
+      const message = "Currently only 1 item can be purchased at a time";
       toast.error(message);
       setIsPaying(false);
     }
@@ -366,7 +367,7 @@ export default function CartPage() {
 
   return (
     <>
-      <div className="min-h-screen ">
+      <div className="min-h-screen lg:mt-10 pt-5">
         {/* Header with breadcrumb */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

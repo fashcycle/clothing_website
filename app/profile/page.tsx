@@ -99,7 +99,6 @@ interface UserAddress {
   country?: string;
 }
 
-
 interface ProductForm {
   productName: string;
   category: string;
@@ -156,7 +155,7 @@ export default function ProfilePage() {
     return null;
   });
 
-  // Get location string
+
   const getLocationString = () => {
     if (userAddress) {
       return `${userLocation.city}, ${userLocation.state}`;
@@ -171,7 +170,7 @@ export default function ProfilePage() {
       setUserImage(userData?.image);
     }
   }, [userData]);
-  // In the ProfilePage component, add this state
+
   const [productForm, setProductForm] = useState<ProductForm>({
     productName: "",
     category: "",
@@ -558,7 +557,7 @@ export default function ProfilePage() {
   const [referrerName, setReferrerName] = useState("");
   const [referralVerifying, setReferralVerifying] = useState(false);
   return (
-    <div className="container py-10">
+    <div className="container py-10 lg:pt-24">
       <div className="flex flex-col md:flex-row gap-6">
         <div className="md:w-1/3">
           <Card className="w-full max-w-md mx-auto overflow-hidden border-2 transition-all duration-300 hover:shadow-lg">
@@ -1077,7 +1076,7 @@ export default function ProfilePage() {
                         }}
                       />
                     )}
-                    {productForm.category === "rajasthani-poshak" && (
+                    {productForm.category === "poshak" && (
                       <RajasthaniPoshakSizeChart
                         onSizeSelect={(size: any) => {
                           setProductForm({ ...productForm, productSize: size });
@@ -1145,7 +1144,7 @@ export default function ProfilePage() {
                         }}
                       />
                     )}
-                    {selectedCategoryObj?.slug === "rajasthani-poshak" && (
+                    {selectedCategoryObj?.slug === "poshak" && (
                       <RajasthaniPoshakSizeChart
                         onSizeSelect={(size: any) => {
                           setProductForm({ ...productForm, productSize: size });

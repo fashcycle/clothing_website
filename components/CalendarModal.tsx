@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { X } from "lucide-react";
-import { addDays, format, differenceInDays, isAfter } from "date-fns";
+import { addDays, format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ const CalendarModal = ({
   onClose,
   selectedRentalDays,
   rentFromDate,
-  rentToDate,
   onDaySelect,
   onConfirm,
 }: {
@@ -19,16 +18,13 @@ const CalendarModal = ({
   onClose: () => void;
   selectedRentalDays: number | null;
   rentFromDate: Date | null;
-  rentToDate: Date | null;
   onDaySelect: (day: Date | undefined) => void;
   onConfirm: () => void;
 }) => {
   const minSelectableDate = addDays(new Date(), 2);
 
-  // Handle day selection with automatic 4-day range
   const handleDaySelect = (day: Date) => {
     if (day) {
-      // Set rentFromDate to selected day
       onDaySelect(day);
     }
   };
@@ -37,60 +33,69 @@ const CalendarModal = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
+          exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto"
         >
-          <style>{`
-            .bg-emerald-200 {
-              background-color: #a7f3d0 !important;
+          <style>
+            {`
+              .bg-emerald-200 {
+                background-color: #a7f3d0 !important;
+              }
+              .text-emerald-900 {
+                color: #064e3b !important;
+              }
+              .rdp {
+                --rdp-cell-size: 2rem;
+                --rdp-caption-font-size: 1rem;
+              }
+              .rdp-months {
+                justify-content: center;
             }
-            .text-emerald-900 {
-              color: #064e3b !important;
-            }
-          `}</style>
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Select Rental Dates</h2>
+            `}
+          </style>
+          <div className="p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-lg font-semibold">Select Rental Dates</h2>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {selectedRentalDays && (
-              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="mb-3 p-2 bg-blue-50 rounded-lg">
+                <p className="text-xs text-blue-800">
                   <strong>Selected Duration:</strong> {selectedRentalDays} days
                 </p>
               </div>
             )}
 
-            <div className="border rounded-lg p-4">
+            <div className="border rounded-lg p-2 mb-3">
               <DayPicker
                 mode="range"
                 selected={
                   rentFromDate && selectedRentalDays
                     ? {
                         from: rentFromDate,
-                        to: addDays(rentFromDate, selectedRentalDays - 1),
+                        to: addDays(rentFromDate, selectedRentalDays ),
                       }
                     : undefined
                 }
-                onSelect={() => {}} // Disabled since we handle selection manually
+                onSelect={() => {}}
                 disabled={{ before: minSelectableDate }}
                 modifiers={{
                   selectedRange:
                     rentFromDate && selectedRentalDays
                       ? {
                           from: rentFromDate,
-                          to: addDays(rentFromDate, selectedRentalDays - 1),
+                          to: addDays(rentFromDate, selectedRentalDays ),
                         }
                       : undefined,
                 }}
@@ -103,13 +108,13 @@ const CalendarModal = ({
             </div>
 
             {rentFromDate && selectedRentalDays && (
-              <div className="mt-4 p-4 bg-emerald-50 rounded-lg">
-                <p className="text-sm text-emerald-800 text-center">
+              <div className="mb-3 p-2 bg-emerald-50 rounded-lg">
+                <p className="text-xs text-emerald-800 text-center">
                   <strong>Rental Period:</strong>
                   <br />
                   {format(rentFromDate, "MMM dd, yyyy")} →{" "}
                   {format(
-                    addDays(rentFromDate, selectedRentalDays - 1),
+                    addDays(rentFromDate, selectedRentalDays),
                     "MMM dd, yyyy"
                   )}
                   <br />
@@ -118,14 +123,18 @@ const CalendarModal = ({
               </div>
             )}
 
-            <div className="flex gap-3 mt-6">
-              <Button variant="outline" onClick={onClose} className="flex-1">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="flex-1 text-xs p-2"
+              >
                 Cancel
               </Button>
               <Button
                 onClick={onConfirm}
                 disabled={!rentFromDate || !selectedRentalDays}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-xs p-2"
               >
                 Confirm Dates
               </Button>

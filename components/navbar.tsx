@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,12 +7,10 @@ import {
   User,
   Heart,
   Menu,
-  Upload,
   Plus,
   LayoutDashboard,
   LogOut,
   Bell,
-  X,
 } from "lucide-react";
 import {
   Tooltip,
@@ -22,7 +19,6 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -34,8 +30,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { getAllCategories } from "@/app/api/api";
-import logo from "@/public/HomeLogo.png";
-import appleTouchIcon from "@/public/apple-touch-icon.png";
 
 type Category = {
   name: string;
@@ -44,32 +38,11 @@ type Category = {
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isLogin, setIsLogin] = useState<any>(false);
-  const [userImage, setUserImage] = useState<any>();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const router: any = useRouter();
+  const [isLogin, setIsLogin] = useState(false);
+  const [userImage, setUserImage] = useState<string | undefined>();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [screenSize, setScreenSize] = useState("lg");
-
-  // Screen size detection
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      if (width < 480) {
-        setScreenSize("xs");
-      } else if (width < 768) {
-        setScreenSize("sm");
-      } else if (width < 1024) {
-        setScreenSize("md");
-      } else {
-        setScreenSize("lg");
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -80,7 +53,6 @@ export default function Navbar() {
         console.error("Failed to fetch categories:", error);
       }
     };
-
     fetchCategories();
   }, []);
 
@@ -93,11 +65,11 @@ export default function Navbar() {
 
   useEffect(() => {
     function syncAuthState() {
-      const token: any = localStorage.getItem("token");
-      const userData: any = localStorage.getItem("user-info");
-      let parsedUserData: any = JSON.parse(userData);
+      const token = localStorage.getItem("token");
+      const userData = localStorage.getItem("user-info");
+      const parsedUserData = userData ? JSON.parse(userData) : null;
       if (parsedUserData) {
-        setUserImage(parsedUserData?.image);
+        setUserImage(parsedUserData.image);
       } else {
         setUserImage(undefined);
       }
@@ -110,339 +82,312 @@ export default function Navbar() {
       window.removeEventListener("storage", syncAuthState);
       window.removeEventListener("focus", syncAuthState);
     };
-  });
+  }, []);
 
-  // Mobile search toggle
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
+  const handleLinkClick = () => {
+    setIsSheetOpen(false);
   };
 
   return (
     <header className="w-full bg-primary text-primary-foreground fixed top-0 z-50 left-0 right-0">
-      {/* Mobile Search Bar - Only visible when search is open */}
-      {isSearchOpen && (
-        <div className="md:hidden bg-primary border-b border-primary-foreground/10 px-4 py-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/70" />
-            <input
-              type="search"
-              placeholder="Search products..."
-              className="pl-9 pr-10 py-2 w-full bg-white rounded text-black placeholder:text-black/70 focus:outline-none focus:ring-2 focus:ring-primary-foreground/50"
-              autoFocus
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSearch}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 text-black/70"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Main Navigation */}
-      <div className="container flex items-center justify-between h-14 sm:h-16 w-full px-2 sm:px-4">
-        {/* Left Section - Menu + Search */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
-          {/* Mobile Menu Toggle */}
-          <Sheet modal={false}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
-              >
-                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80 sm:w-96">
-              <nav className="flex flex-col gap-4 mt-6">
-                <div className="pb-4 border-b border-gray-200">
-                  <Image
-                    src={screenSize === "xs" ? appleTouchIcon : logo}
-                    alt="Logo"
-                    width={screenSize === "xs" ? 60 : 200}
-                    height={screenSize === "xs" ? 60 : 60}
-                    className="h-auto w-16 sm:w-32 object-contain mx-auto"
-                    priority
-                  />
-                </div>
-
-                {categories.map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/${category.id}`}
-                    className="capitalize text-lg font-medium py-2 px-4 rounded hover:bg-gray-100 transition-colors"
-                  >
-                    {category.name}
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16 relative">
+          <div className="flex items-center gap-2 flex-1 lg:flex-none">
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden text-primary-foreground hover:bg-primary-foreground/20"
+                >
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 h-full flex flex-col p-4">
+                <style jsx>{`
+                  .scrollable-content::-webkit-scrollbar {
+                    display: none;
+                  }
+                  .scrollable-content {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                  }
+                `}</style>
+                <div className="flex flex-col gap-3 mt-6 overflow-y-auto scrollable-content mt-0">
+                  <Link href="/" className="text-2xl font-serif font-medium mb-4">
+                    Fashcycle
                   </Link>
-                ))}
-              </nav>
-            </SheetContent>
-          </Sheet>
-
-          {/* Desktop Search */}
-          <div className="hidden lg:flex relative flex-grow min-w-0 max-w-md">
-            <div className="relative w-full border bg-white rounded">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/70" />
-              <input
-                type="search"
-                placeholder="Search for brand, product type, colour..."
-                className="pl-9 rounded pr-3 py-2 w-full bg-black/10 border border-black/20 text-black placeholder:text-black/70 focus:border-black/20 focus:ring-0 focus:outline-none"
-              />
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/70" />
+                    <input
+                      type="search"
+                      placeholder="Search for brand, product type, colour..."
+                      className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-black/70 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                    />
+                  </div>
+                  <Link href={isLogin ? "/profile" : "/login"} onClick={handleLinkClick}>
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="w-full flex items-center gap-3 bg-primary text-white hover:bg-primary/90 transition-colors py-3 rounded-lg font-medium md:hidden"
+                    >
+                      <Plus className="h-5 w-5" />
+                      SELL ITEM
+                    </Button>
+                  </Link>
+                  <div className="flex flex-col gap-3 md:hidden">
+                    <Link href={isLogin ? "/wishlist" : "/login"} onClick={handleLinkClick}>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="w-full flex items-center gap-3 justify-start py-3 rounded-lg"
+                      >
+                        <Heart className="h-5 w-5" />
+                        Wishlist
+                      </Button>
+                    </Link>
+                    <Link href={isLogin ? "/cart" : "/login"} onClick={handleLinkClick}>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="w-full flex items-center gap-3 justify-start py-3 rounded-lg"
+                      >
+                        <ShoppingBag className="h-5 w-5" />
+                        Cart
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full flex items-center gap-3 justify-start py-3 rounded-lg"
+                      onClick={handleLinkClick}
+                    >
+                      <Bell className="h-5 w-5" />
+                      Notifications
+                    </Button>
+                  </div>
+                  <div className="border-t pt-4">
+                    <Link href="/" className="text-lg font-medium py-2 px-4 rounded-md hover:bg-gray-100 transition-colors block" onClick={handleLinkClick}>
+                      Home
+                    </Link>
+                    {categories.map((category) => (
+                      <Link
+                        key={category.id}
+                        href={`/${category.id}`}
+                        className="capitalize text-lg font-medium py-2 px-4 rounded-md hover:bg-gray-100 transition-colors block"
+                        onClick={handleLinkClick}
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+            <div className="hidden lg:flex items-center relative">
+              <div className="relative w-80">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/70" />
+                <input
+                  type="search"
+                  placeholder="Search for brand, product type, colour..."
+                  className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-black/70 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                />
+              </div>
             </div>
           </div>
-
-          {/* Mobile Search Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSearch}
-            className="lg:hidden text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
-          >
-            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="sr-only">Search</span>
-          </Button>
-        </div>
-
-        {/* Center Logo - Always centered */}
-        <Link href="/" className="absolute left-1/2 -translate-x-1/2 z-10">
-          <Image
-            src={screenSize === "xs" ? appleTouchIcon : logo}
-            alt="Logo"
-            width={screenSize === "xs" ? 40 : 200}
-            height={screenSize === "xs" ? 40 : 60}
-            className={`h-auto object-contain mx-auto ${
-              screenSize === "xs" ? "w-10" : "w-20 sm:w-32 lg:w-48"
-            }`}
-            priority
-          />
-        </Link>
-
-        {/* Right Section - Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 justify-end">
-          {/* SELL Button */}
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <Link href={isLogin ? "/profile" : "/login"}>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="flex items-center gap-1 sm:gap-2 rounded-full border-2 sm:border-4 text-xs sm:text-sm h-8 sm:h-10 px-2 sm:px-3"
-                  >
-                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">SELL</span>
-                    <span className="sm:hidden">+</span>
-                  </Button>
-                </TooltipTrigger>
-              </Link>
-              <TooltipContent side="top">
-                <p>Add New Listing</p>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Notifications - Hidden on very small screens */}
-            {screenSize !== "xs" && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="default"
-                        size="icon"
-                        className="rounded-full p-0 border h-8 w-8 sm:h-10 sm:w-10"
-                      >
-                        <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="center"
-                      className="w-50 z-50"
-                      sideOffset={5}
-                    >
-                      <div className="px-2 py-1.5">NOTIFICATION1</div>
-                      <DropdownMenuItem>NOTIFICATION2</DropdownMenuItem>
-                      <DropdownMenuItem>NOTIFICATION3</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>Notifications</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-
-            {/* Wishlist - Hidden on very small screens */}
-            {screenSize !== "xs" && (
-              <Tooltip>
-                <Link href={isLogin ? "/wishlist" : "/login"}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
-                    >
-                      <Heart className="h-3 w-3 sm:h-5 sm:w-5" />
-                      <span className="sr-only">Wishlist</span>
-                    </Button>
-                  </TooltipTrigger>
-                </Link>
-                <TooltipContent side="top">
-                  <p>Wishlist</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-
-            {/* Cart */}
-            <Tooltip>
-              <Link href={isLogin ? "/cart" : "/login"}>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
-                  >
-                    <ShoppingBag className="h-3 w-3 sm:h-5 sm:w-5" />
-                    <span className="sr-only">Cart</span>
-                  </Button>
-                </TooltipTrigger>
-              </Link>
-              <TooltipContent side="top">
-                <p>Cart</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          {/* User Profile/Login */}
-          {isLogin ? (
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="default"
-                  size="icon"
-                  className="rounded-full p-0 border h-8 w-8 sm:h-10 sm:w-10"
-                >
-                  <Avatar className="h-full w-full">
-                    {userImage ? (
-                      <Image
-                        src={userImage}
-                        alt="User Profile"
-                        width={40}
-                        height={40}
-                        className="rounded-full object-cover"
-                      />
-                    ) : (
-                      <AvatarFallback>
-                        <User className="h-3 w-3 sm:h-5 sm:w-5" color="black" />
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-50 z-50"
-                sideOffset={5}
-              >
-                <DropdownMenuItem asChild className="hover:bg-gray-100">
-                  <Link
-                    href="/profile"
-                    className="w-full px-4 py-2 flex items-center gap-2"
-                  >
-                    <User className="h-4 w-4" />
-                    My Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:bg-gray-100">
-                  <Link
-                    href="/dashboard"
-                    className="w-full px-4 py-2 flex items-center gap-2"
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    Dashboard
-                  </Link>
-                </DropdownMenuItem>
-                {screenSize === "xs" && (
-                  <>
-                    <DropdownMenuItem asChild className="hover:bg-gray-100">
-                      <Link
-                        href="/wishlist"
-                        className="w-full px-4 py-2 flex items-center gap-2"
-                      >
-                        <Heart className="h-4 w-4" />
-                        Wishlist
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="hover:bg-gray-100">
-                      <Link
-                        href="/notifications"
-                        className="w-full px-4 py-2 flex items-center gap-2"
-                      >
-                        <Bell className="h-4 w-4" />
-                        Notifications
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
-                <DropdownMenuSeparator className="my-1" />
-                <DropdownMenuItem
-                  onClick={toggleLogout}
-                  className="w-full px-4 py-2 hover:bg-gray-100 text-red-600 flex items-center gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Log Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link href="/login">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Link href="/" className="font-serif text-xl lg:text-2xl font-medium text-primary-foreground hover:text-primary-foreground/90 transition-colors whitespace-nowrap">
+              Fashcycle
+            </Link>
+          </div>
+          <div className="flex items-center gap-2 flex-1 lg:flex-none justify-end">
+            <div className="hidden md:flex items-center gap-2">
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
+                  <Link href={isLogin ? "/profile" : "/login"}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="hidden flex items-center gap-2 bg-white text-primary hover:bg-gray-100 transition-colors px-3 py-2 rounded-full font-medium"
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span className="hidden sm:inline">SELL</span>
+                      </Button>
+                    </TooltipTrigger>
+                  </Link>
+                  <TooltipContent side="bottom">
+                    <p>Add New Listing</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-primary-foreground h-8 w-8 sm:h-10 sm:w-10"
-                    >
-                      <div className="bg-gray-100 rounded-full flex items-center justify-center w-full h-full border border-gray-200">
-                        <User className="h-3 w-3 sm:h-5 sm:w-5 text-gray-600" />
-                      </div>
-                      <span className="sr-only">Login</span>
-                    </Button>
+                    <DropdownMenu modal={false}>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full"
+                        >
+                          <Bell className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-64 z-50" sideOffset={8}>
+                        <div className="px-3 py-2 font-medium border-b">
+                          Notifications
+                        </div>
+                        <DropdownMenuItem className="py-3">
+                          <div className="flex flex-col">
+                            <span className="font-medium">New message</span>
+                            <span className="text-sm text-gray-500">
+                              You have a new message from buyer
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="py-3">
+                          <div className="flex flex-col">
+                            <span className="font-medium">Item sold</span>
+                            <span className="text-sm text-gray-500">
+                              Your item has been sold
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p>Login</p>
+                  <TooltipContent side="bottom">
+                    <p>Notifications</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <Link href={isLogin ? "/wishlist" : "/login"}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full"
+                      >
+                        <Heart className="h-5 w-5" />
+                        <span className="sr-only">Wishlist</span>
+                      </Button>
+                    </TooltipTrigger>
+                  </Link>
+                  <TooltipContent side="bottom">
+                    <p>Wishlist</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <Link href={isLogin ? "/cart" : "/login"}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full"
+                      >
+                        <ShoppingBag className="h-5 w-5" />
+                        <span className="sr-only">Cart</span>
+                      </Button>
+                    </TooltipTrigger>
+                  </Link>
+                  <TooltipContent side="bottom">
+                    <p>Cart</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Desktop Category Navigation - Only show if menu toggle is NOT visible */}
-      {screenSize === "lg" && (
-        <nav className="border-t border-primary-foreground/10">
-          <div className="container flex items-center justify-center py-3">
-            <div className="flex items-center gap-6 lg:gap-8">
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/${category.id}`}
-                  className=" capitalize text-primary-foreground/90 hover:text-primary-foreground whitespace-nowrap transition-all duration-200 hover:scale-105 relative group"
-                >
-                  {category.name}
-                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
-                </Link>
-              ))}
             </div>
+            {isLogin ? (
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full p-0 hover:bg-primary-foreground/20"
+                  >
+                    <Avatar className="h-8 w-8">
+                      {userImage ? (
+                        <Image
+                          src={userImage}
+                          alt="User Profile"
+                          width={32}
+                          height={32}
+                          className="rounded-full object-cover"
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-white">
+                          <User className="h-4 w-4 text-gray-600" />
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 z-50" sideOffset={8}>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="w-full flex items-center gap-2 px-2 py-2">
+                      <User className="h-4 w-4" />
+                      My Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="w-full flex items-center gap-2 px-2 py-2">
+                      <LayoutDashboard className="h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={toggleLogout}
+                    className="w-full flex items-center gap-2 px-2 py-2 text-red-600 focus:text-red-600"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Log Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full hover:bg-primary-foreground/20"
+                      >
+                        <div className="bg-white rounded-full flex items-center justify-center w-8 h-8">
+                          <User className="h-4 w-4 text-gray-600" />
+                        </div>
+                        <span className="sr-only">Login</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>Login</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </Link>
+            )}
+          </div>
+        </div>
+        <nav className="hidden lg:block border-t border-primary-foreground/20">
+          <div className="flex items-center justify-center py-3">
+            <ul className="flex transition-transform duration-500 ease-in-out">
+              <li className="flex justify-center gap-8">
+                {categories.map((category, index) => (
+                  <Link
+                    key={index}
+                    href={`/${category.id}`}
+                    className="capitalize text-primary-foreground/90 hover:text-primary-foreground font-medium whitespace-nowrap transition-all duration-200 hover:scale-105 relative group px-2 py-1"
+                  >
+                    {category.name}
+                    <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+                  </Link>
+                ))}
+              </li>
+            </ul>
           </div>
         </nav>
-      )}
+      </div>
     </header>
   );
 }

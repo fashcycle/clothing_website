@@ -1,12 +1,12 @@
-"use client";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Calendar, Package } from "lucide-react";
+import { ChevronRight, Calendar, Package, CloudCog } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import { useState } from "react";
+import { OrderDetailsDialog } from "../OrderDetailsDialog"; // Adjust the import path as necessary
 
 export function RecentOrdersList({
   orders,
@@ -22,6 +22,8 @@ export function RecentOrdersList({
   slice?: string;
 }) {
   const router = useRouter();
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const formatStatus = (status: string) => {
     const map: Record<string, string> = {
@@ -34,10 +36,17 @@ export function RecentOrdersList({
     return map[status] || status;
   };
 
-  const handleOrderDetails = (e: React.MouseEvent, orderId: string) => {
+  const handleOrderDetails = (e: React.MouseEvent, order: any) => {
     e.stopPropagation();
-    router.push(`/orders/${orderId}`);
+    setSelectedOrder(order);
+    setIsDialogOpen(true);
   };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedOrder(null);
+  };
+
   if (orders.length === 0) {
     return (
       <motion.div
@@ -73,7 +82,6 @@ export function RecentOrdersList({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              onClick={(e) => handleOrderDetails(e, order.id)}
               className="group flex flex-col md:flex-row items-start md:items-center justify-between border border-gray-200 rounded-xl p-4 md:p-5 hover:bg-gradient-to-r from-primary/10 to-accent/5 shadow-md transition-all duration-300"
             >
               <div className="flex flex-col sm:flex-row w-full gap-4 sm:items-center">
@@ -85,44 +93,52 @@ export function RecentOrdersList({
                     className="object-cover"
                   />
                 </div>
-
                 <div className="flex-1 space-y-2">
                   <h4 className="text-base sm:text-lg font-semibold text-primary">
                     {product?.productName}
                   </h4>
-
                   <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {format(new Date(order.orderedAt), "dd MMM yyyy")}
+                    <div>
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        Order Placed on -{" "}
+                        {format(new Date(order.orderedAt), "dd MMM yyyy")}
+                      </div>
+                      <div className="flex items-center mt-2">
+                        <Package className="h-4 w-4 mr-1" />
+                        Scheduled for{" "}
+                        {format(new Date(item.rentFrom), "dd MMM yyyy")} to{" "}
+                        {format(new Date(item.rentTo), "dd MMM yyyy")}
+                      </div>
                     </div>
-
                     <Badge
                       variant="secondary"
                       className="bg-purple-100 text-purple-800 capitalize"
                     >
                       {item?.type}
                     </Badge>
-
                     <Badge
+                      variant="default"
                       className={`${
                         order.status === "DELIVERED"
                           ? "bg-green-100 text-green-700"
                           : order.status === "ON_RENT"
                           ? "bg-blue-100 text-blue-800"
                           : "bg-gray-100 text-gray-600"
-                      }`}
+                      } `}
                     >
                       {formatStatus(order.status)}
                     </Badge>
                   </div>
                 </div>
-
                 <div className="flex flex-col items-end justify-between sm:ml-auto text-right mt-2 sm:mt-0">
                   <div className="text-emerald-600 font-bold text-lg sm:text-xl">
                     ₹{order.totalAmount}
                   </div>
-                  <div className="text-sm font-medium text-purple-700 flex items-center justify-end mt-2 group-hover:translate-x-1 transition-transform">
+                  <div
+                    className="text-sm font-medium text-purple-700 flex items-center justify-end mt-2 group-hover:translate-x-1 transition-transform cursor-pointer"
+                    onClick={(e) => handleOrderDetails(e, order)}
+                  >
                     Details
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </div>
@@ -132,7 +148,6 @@ export function RecentOrdersList({
           );
         }
       )}
-
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-6">
           <Button
@@ -153,6 +168,13 @@ export function RecentOrdersList({
             Next
           </Button>
         </div>
+      )}
+      {selectedOrder && (
+        <OrderDetailsDialog
+          isOpen={isDialogOpen}
+          onClose={closeDialog}
+          order={selectedOrder}
+        />
       )}
     </div>
   );
