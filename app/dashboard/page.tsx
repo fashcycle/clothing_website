@@ -11,8 +11,6 @@ import {
   CreditCard,
   TrendingUp,
   Calendar,
-  Clock,
-  ChevronRight,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,46 +23,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { ProductList } from "@/components/dashboard/product-list";
 import { getOrderProducts, getUserProducts } from "../api/api";
 import { Loader } from "@/components/ui/loader";
 import { RecentOrdersList } from "@/components/dashboard/RecentOrdersList";
 
-// Mock data
-const recentOrders = [
-  {
-    id: "ORD-001",
-    product: "Designer Lehenga",
-    date: "2023-04-15",
-    status: "Delivered",
-    amount: "₹500",
-    type: "Rental",
-    image:
-      "https://images.unsplash.com/photo-1610189020382-668a5fc65ebf?q=80&w=1000",
-  },
-  {
-    id: "ORD-002",
-    product: "Wedding Sherwani",
-    date: "2023-04-10",
-    status: "On Rent",
-    amount: "₹1,200",
-    type: "Rental",
-    image:
-      "https://images.unsplash.com/photo-1599032909756-5deb82fea3b0?q=80&w=1000",
-  },
-  {
-    id: "ORD-003",
-    product: "Silk Saree",
-    date: "2023-04-05",
-    status: "Completed",
-    amount: "₹3,500",
-    type: "Purchase",
-    image:
-      "https://images.unsplash.com/photo-1610189020382-668a5fc65ebf?q=80&w=1000",
-  },
-];
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(false);
@@ -85,7 +48,7 @@ export default function DashboardPage() {
       }
     };
     fetchProducts();
-  }, [activeTab, page, activeTab]);
+  }, [activeTab, page]);
 
   const fetchRecentOrders = async (currentPage: number) => {
     setIsLoading(true);
@@ -112,22 +75,7 @@ export default function DashboardPage() {
       // Send page and limit as params to backend
       const response = await getUserProducts({ page: currentPage, limit });
       if (response.success === true) {
-        const formattedProducts = response.products.map((product: any) => ({
-          id: product.id,
-          productName: product.productName,
-          status: product.status || "Active",
-          frontLook: product.productImage.frontLook,
-          rentalCount: product.rentalCount || 0,
-          earnings: product.earnings || "₹0",
-          category: product.category,
-          originalPurchasePrice: product.originalPurchasePrice,
-          color: product.color,
-          size: product.size,
-          listingType: product.listingType,
-          createdAt: new Date(product.createdAt).toLocaleDateString("en-IN"),
-        }));
-
-        setMyListings(formattedProducts);
+        setMyListings(response.products);
         setTotalItems(response.totalItems || 0);
         setTotalPages(response.totalPages);
       }
@@ -276,7 +224,7 @@ export default function DashboardPage() {
         </div>
 
         <Tabs
-          defaultValue="overview"
+          value={activeTab}
           className="space-y-4 animate-slideIn"
           onValueChange={setActiveTab}
         >
@@ -352,27 +300,29 @@ export default function DashboardPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                     {isLoading ? (
-                  <div className="py-12 flex justify-center">
-                    <Loader text="Loading orders..." />
-                  </div>
-                ) : (
-                  <RecentOrdersList
-                    orders={recentOrders}
-                    page={page}
-                    totalPages={totalPages}
-                    setPage={setPage}
-                  />
-                )}
+                  {isLoading ? (
+                    <div className="py-12 flex justify-center">
+                      <Loader text="Loading orders..." />
+                    </div>
+                  ) : (
+                    <RecentOrdersList
+                      orders={recentOrders}
+                      page={page}
+                      slice="3"
+                      totalPages={totalPages}
+                      setPage={setPage}
+                    />
+                  )}
                 </CardContent>
-                {/* <CardFooter>
-                  <Link
-                    href="/orders"
-                    className="text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium transition-colors duration-200"
+                <CardFooter>
+                  <Button
+                    type="button"
+                    onClick={() => setActiveTab("orders")}
+                    className="bg-transparent hover:bg-transparent text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium transition-colors duration-200"
                   >
                     View all orders →
-                  </Link>
-                </CardFooter> */}
+                  </Button>
+                </CardFooter>
               </Card>
             </div>
           </TabsContent>
@@ -431,6 +381,7 @@ export default function DashboardPage() {
                       page={page}
                       totalPages={totalPages}
                       setPage={setPage}
+                      refetch={() => listProductApi(page)}
                     />
                   </div>
                 )}

@@ -278,7 +278,7 @@ export default function FeaturedProducts() {
                         variant="outline"
                         className="border-black-800 text-black-800 rounded-full px-3 py-1 capitalize"
                       >
-                        Category- {product.category?.name}
+                        {product.category?.name}
                       </Badge>
                       <Badge
                         variant="outline"
@@ -320,7 +320,7 @@ export default function FeaturedProducts() {
                               Rent (3 days):
                             </span>
                             <span className="text-sm font-medium text-gray-900">
-                              ₹{product.rentPrice3Days}
+                              ₹{Math.round(product.rentPrice3Days)}
                             </span>
                           </div>
                           <div className="flex items-center justify-between">
@@ -328,7 +328,7 @@ export default function FeaturedProducts() {
                               Rent (7 days):
                             </span>
                             <span className="text-sm font-medium text-gray-900">
-                              ₹{product.rentPrice7Days}
+                              ₹{Math.round(product.rentPrice7Days)}
                             </span>
                           </div>
                           <div className="flex items-center justify-between">
@@ -336,7 +336,7 @@ export default function FeaturedProducts() {
                               Rent (14 days):
                             </span>
                             <span className="text-sm font-medium text-gray-900">
-                              ₹{product.rentPrice14Days}
+                              ₹{Math.round(product.rentPrice14Days)}
                             </span>
                           </div>
                         </>
