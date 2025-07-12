@@ -265,6 +265,28 @@ export const getSingleProduct = async (productId: string) => {
     throw error;
   }
 };
+
+export const deleteSingleProduct = async (productId: string) => {
+  try {
+    const response = await axios.delete(
+      `${process.env.NEXT_PUBLIC_USER_SINGLE_PRODUCT}/${productId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to delete product"
+      );
+    }
+    throw error;
+  }
+};
 export const contactUsApi = async (contactData: {
   userType: string;
   email: string;
@@ -508,6 +530,51 @@ export const getAllCategories = async () => {
     if (axios.isAxiosError(error)) {
       throw new Error(
         error.response?.data.message || "Failed to fetch all categories"
+      );
+    }
+    throw error;
+  }
+};
+
+// Verify ReferrealCode
+export const verifyReferral = async (data: any) => {
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_VERIFY_REFERRAL as string,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Failed to add to cart");
+    }
+    throw error;
+  }
+};
+
+export const updateProduct = async (productId: string, productData: any) => {
+  try {
+    const response = await axios.put(
+      `${process.env.NEXT_PUBLIC_UPDATE_PRODUCT}/${productId}`,
+      productData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to update product"
       );
     }
     throw error;

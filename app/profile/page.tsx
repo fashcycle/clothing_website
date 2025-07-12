@@ -59,6 +59,7 @@ import {
   updateAddress,
   deleteAddress,
   getAllCategories,
+  verifyReferral,
 } from "@/app/api/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -98,12 +99,6 @@ interface UserAddress {
   country?: string;
 }
 
-// Move these interfaces outside of the component, at the top level with UserAddress
-interface ProductImage {
-  type: string;
-  file: File;
-  preview: string;
-}
 
 interface ProductForm {
   productName: string;
@@ -125,6 +120,7 @@ interface ProductForm {
   accessoriesImage: File | string;
   proofOfPurchase: File | string;
   listingType: string[];
+  referralCode: string;
 }
 
 export default function ProfilePage() {
@@ -196,12 +192,12 @@ export default function ProfilePage() {
     mobileNumber: "",
     addressId: "",
     size: "",
+    referralCode: "",
   });
   const handleProjectCreat = async () => {
     const errors: any = {};
     try {
       setIsSubmitting(true);
-      // await productSchema.validate(productForm, { abortEarly: false });
 
       const formData = new FormData();
       // Append all text fields
@@ -209,6 +205,7 @@ export default function ProfilePage() {
       formData.append("categoryId", productForm.category);
       formData.append("mobileNumber", productForm.mobileNumber);
       formData.append("addressId", productForm.addressId);
+      formData.append("referralCode", productForm.referralCode);
       formData.append(
         "originalPurchasePrice",
         productForm.originalPurchasePrice.toString()
@@ -276,6 +273,7 @@ export default function ProfilePage() {
           mobileNumber: "",
           addressId: "",
           size: "",
+          referralCode: "",
         });
         setFormErrors({});
         setSelectedAddressId("");
@@ -301,33 +299,6 @@ export default function ProfilePage() {
     }
   };
 
-  const productSchema = yup.object().shape({
-    productName: yup.string().required("Product name is required"),
-    category: yup.string().required("Category is required"),
-    originalPurchasePrice: yup
-      .number()
-      .min(5000, "Minimum price should be ₹5,000")
-      .required("Original price is required"),
-    productSize: yup.string().required("Product size is required"),
-    sizeFlexibility: yup.string().required("Size flexibility is required"),
-    size: yup.string().required("Size is required"),
-    color: yup.string().required("Color is required"),
-    frontLook: yup.mixed().required("Front look image is required"),
-    sideLook: yup.mixed().required("Side look image is required"),
-    backLook: yup.mixed().required("Back look image is required"),
-    closeUpLook: yup.mixed().required("Close up look image is required"),
-    optional1: yup.mixed(),
-    optional2: yup.mixed(),
-    productVideo: yup.mixed().nullable(),
-    accessoriesImage: yup.mixed(),
-    proofOfPurchase: yup.mixed(),
-    listingType: yup.array().min(1, "Select at least one listing type"),
-    mobileNumber: yup
-      .string()
-      .matches(/^[6-9]\d{9}$/, "Enter valid Indian mobile number")
-      .required("Mobile number is required"),
-    addressId: yup.string().required("Please select or add an address"),
-  });
   interface SavedAddress {
     id: string;
     address: string;
@@ -380,27 +351,7 @@ export default function ProfilePage() {
   }); // In your ProfilePage component, add this state for errors
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [activeTab, setActiveTab] = useState("productListing");
-  const handlePincodeChange = async (pincode: string) => {
-    if (pincode.length === 6) {
-      try {
-        const response = await fetch(
-          `https://api.postalpincode.in/pincode/${pincode}`
-        );
-        const [data] = await response.json();
-        if (data.Status === "Success") {
-          const [firstPost] = data.PostOffice;
-          setNewAddressForm((prev) => ({
-            ...prev,
-            city: firstPost.District,
-            state: firstPost.State,
-            country: "India",
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching pincode data:", error);
-      }
-    }
-  };
+
   const handleFileValidation = (file: File, maxSize: number) => {
     const sizeInMB = file.size / (1024 * 1024);
     return sizeInMB <= maxSize;
@@ -602,7 +553,10 @@ export default function ProfilePage() {
   const selectedCategoryObj = categories?.find(
     (cat) => String(cat.id) === String(productForm.category)
   );
-
+  // Referral code verification state
+  const [referralVerified, setReferralVerified] = useState(null);
+  const [referrerName, setReferrerName] = useState("");
+  const [referralVerifying, setReferralVerifying] = useState(false);
   return (
     <div className="container py-10">
       <div className="flex flex-col md:flex-row gap-6">
@@ -882,15 +836,15 @@ export default function ProfilePage() {
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-full"
+            className="w-full "
           >
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-3 ">
               <TabsTrigger value="productListing">Product Listing</TabsTrigger>
               <TabsTrigger value="personal">Personal Info</TabsTrigger>
               <TabsTrigger value="address">Address</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="productListing" className="mt-6">
+            <TabsContent value="productListing" className="mt-6 relative">
               <Card>
                 <CardHeader>
                   <CardTitle>Product Listings</CardTitle>
@@ -905,6 +859,89 @@ export default function ProfilePage() {
                   }}
                 >
                   <CardContent className="space-y-6">
+                    <div className="space-y-2 static lg:absolute top-10 right-10">
+                      <Label
+                        htmlFor="referralCode"
+                        className="font-large font-bold"
+                      >
+                        Referral Code *
+                      </Label>
+                      <Input
+                        id="referralCode"
+                        value={productForm.referralCode.toUpperCase()}
+                        onChange={(e) => {
+                          const uppercaseCode = e.target.value.toUpperCase();
+                          setProductForm({
+                            ...productForm,
+                            referralCode: uppercaseCode,
+                          });
+                          setReferralVerified(null);
+                          setReferrerName("");
+                          setFormErrors({ ...formErrors, referralCode: "" });
+                        }}
+                        onBlur={async (e) => {
+                          const referralCode = e.target.value
+                            .trim()
+                            .toUpperCase();
+                          if (!referralCode) return;
+                          try {
+                            setReferralVerifying(true);
+                            const res = await verifyReferral({
+                              code: referralCode,
+                            });
+                            if (
+                              res.success &&
+                              res.verified &&
+                              res.data?.referrerName
+                            ) {
+                              setReferralVerified(true);
+                              setReferrerName(res.data.referrerName);
+                              setFormErrors({
+                                ...formErrors,
+                                referralCode: "",
+                              });
+                            } else {
+                              setReferralVerified(false);
+                              setReferrerName("");
+                              setFormErrors({
+                                ...formErrors,
+                                referralCode: "Invalid referral code",
+                              });
+                            }
+                          } catch {
+                            setReferralVerified(false);
+                            setReferrerName("");
+                            setFormErrors({
+                              ...formErrors,
+                              referralCode: "Invalid referral code",
+                            });
+                          } finally {
+                            setReferralVerifying(false);
+                          }
+                        }}
+                        className={`uppercase ${
+                          formErrors.referralCode
+                            ? "border-red-500 focus:border-red-500"
+                            : ""
+                        }`}
+                        disabled={referralVerifying}
+                      />
+
+                      {referralVerifying && (
+                        <p className="text-xs text-gray-500">Verifying...</p>
+                      )}
+                      {referralVerified && referrerName && (
+                        <p className="text-green-600 text-sm font-medium">
+                          Referrer: {referrerName}
+                        </p>
+                      )}
+                      {formErrors.referralCode && (
+                        <p className="text-sm text-destructive">
+                          {formErrors.referralCode}
+                        </p>
+                      )}
+                    </div>
+
                     <div className="space-y-2">
                       <Label
                         htmlFor="productName"
@@ -1169,7 +1206,6 @@ export default function ProfilePage() {
                         </p>
                       )}
                     </div>
-
                     <div className="grid grid-cols-2 gap-4">
                       <TooltipProvider>
                         <div className="space-y-2">
@@ -1228,7 +1264,6 @@ export default function ProfilePage() {
                         </div>
                       </TooltipProvider>
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="color" className="font-large font-bold">
                         Color *
@@ -1294,7 +1329,6 @@ export default function ProfilePage() {
                         </p>
                       )}
                     </div>
-
                     <div className="space-y-2">
                       <Label className="font-large font-bold">
                         Product Images (Min 4 required) *
@@ -1483,7 +1517,6 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-
                     <div className="space-y-2">
                       <Label className="font-large font-bold">
                         Product Video (Max 20MB)
@@ -1518,7 +1551,6 @@ export default function ProfilePage() {
                         </p>
                       )}
                     </div>
-
                     <div className="space-y-2">
                       <Label className="font-large font-bold">
                         Accessories Image
@@ -1549,7 +1581,6 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-
                     <div className="space-y-2">
                       <Label className="font-large font-bold">
                         Proof of Purchase
@@ -1576,7 +1607,6 @@ export default function ProfilePage() {
                         </p>
                       )}
                     </div>
-
                     <div className="space-y-2">
                       <Label className="font-large font-bold">
                         Listing Type *

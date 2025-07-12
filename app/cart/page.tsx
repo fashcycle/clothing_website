@@ -58,6 +58,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { AddressFormDialog } from "@/components/profile/address-form-dialog";
 import axios from "axios";
 import Script from "next/script"; // agar global layout me load nahin kiya
+import CartCountdown from "@/components/CartCountdown";
 
 interface SavedAddress {
   id: string;
@@ -88,7 +89,6 @@ export default function CartPage() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>();
   const [isPaying, setIsPaying] = useState(false);
-  console.log("savedAddresses Address:", cartItems);
   const handleCheckout = async () => {
     if (cartItems.length === 0) return toast.error("Cart is empty!");
 
@@ -144,11 +144,10 @@ export default function CartPage() {
             );
             if (verifyRes.data.success === true) {
               toast.success("Payment successful! 🎉");
-              console.log("Payment successful:", verifyRes.data);
+
               // router.push("/order-success");
             }
           } catch (err) {
-            console.error(err);
             toast.error("Verify API error");
           } finally {
             setIsPaying(false);
@@ -162,9 +161,9 @@ export default function CartPage() {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
-    } catch (err) {
-      console.error(err);
-      toast.error("Payment init error");
+    } catch (err: any) {
+      const message = err?.response?.data?.message || "Payment init error";
+      toast.error(message);
       setIsPaying(false);
     }
   };
@@ -560,7 +559,7 @@ export default function CartPage() {
                               transition={{ type: "spring", stiffness: 300 }}
                               className="relative shrink-0 mx-auto sm:mx-0"
                             >
-                              <div className="w-full sm:w-36 h-36 bg-gray-50 rounded-xl overflow-hidden">
+                              <div className="w-full  sm:w-36 h-36 bg-gray-50 rounded-xl overflow-hidden">
                                 <motion.div
                                   whileHover={{ scale: 1.1 }}
                                   transition={{ duration: 0.5 }}
@@ -794,9 +793,7 @@ export default function CartPage() {
                               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                                 <div className="flex items-center gap-2">
                                   <Info className="h-4 w-4  text-red-500 hover:text-red-600" />
-                                  <p className="text-sm text-red-500 hover:text-red-600">
-                                    Your cart will expires in 24 Hours
-                                  </p>
+                                  <CartCountdown createdAt={item.createdAt} />
                                 </div>
                                 <motion.button
                                   whileHover={{
@@ -919,7 +916,7 @@ export default function CartPage() {
                     onClick={handleCheckout}
                   >
                     {isPaying ? (
-                      <Loader className="h-5 w-5 animate-spin" />
+                      <Loader text="" className="h-5 w-5 animate-spin" />
                     ) : (
                       <Shield className="h-5 w-5" />
                     )}

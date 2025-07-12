@@ -600,7 +600,7 @@ export default function EveningDressesPage() {
                                       Rent (3 days):
                                     </span>
                                     <span className="text-sm font-medium text-gray-900">
-                                      ₹{product.rentPrice3Days}
+                                      ₹{Math.round(product.rentPrice3Days)}
                                     </span>
                                   </div>
                                   <div className="flex items-center justify-between">
@@ -608,7 +608,7 @@ export default function EveningDressesPage() {
                                       Rent (7 days):
                                     </span>
                                     <span className="text-sm font-medium text-gray-900">
-                                      ₹{product.rentPrice7Days}
+                                      ₹{Math.round(product.rentPrice7Days)}
                                     </span>
                                   </div>
                                   <div className="flex items-center justify-between">
@@ -616,7 +616,7 @@ export default function EveningDressesPage() {
                                       Rent (14 days):
                                     </span>
                                     <span className="text-sm font-medium text-gray-900">
-                                      ₹{product.rentPrice14Days}
+                                      ₹{Math.round(product.rentPrice14Days)}
                                     </span>
                                   </div>
                                 </>
