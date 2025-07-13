@@ -565,7 +565,7 @@ export const updateProduct = async (productId: string, productData: any) => {
       productData,
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       }

@@ -122,19 +122,18 @@ export default function EveningDressesPage() {
   const [user, setUser] = useState<any>("");
   const params = useParams();
   const categoryParam = params?.category || "";
-  // Filter state
   const [selectedCategory, setSelectedCategory] = useState<number | "">("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
-  const [selectedListingType, setSelectedListingType] = useState<string>(""); // NEW: listing type filter
-  const [wishlistedItems, setWishlistedItems] = useState<any>([]); // Initialize as empty array
+  const [selectedListingType, setSelectedListingType] = useState<string>("");
+  const [wishlistedItems, setWishlistedItems] = useState<any>([]);
   const [isAddingToCart, setIsAddingToCart] = useState<any>(null);
 
-  // Pagination state
-  const [page, setPage] = useState(1); // Pagination: current page
-  const [limit, setLimit] = useState(12); // Pagination: items per page
-  const [totalPages, setTotalPages] = useState(1); // Pagination: total pages
-  const [totalItems, setTotalItems] = useState(0); // Pagination: total items
+  const [page, setPage] = useState(1);
+  // NOTE------- Set limit to activate pagination and comment out pagination buttons
+  const [limit, setLimit] = useState();
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
   const [categories, setCategories] = useState<Category[]>([]);
   useEffect(() => {
@@ -517,7 +516,7 @@ export default function EveningDressesPage() {
                   ))}
                 </div>
                 {/* Pagination Controls */}
-                <div className="flex justify-center mt-8 gap-2">
+                {/* <div className="flex justify-center mt-8 gap-2">
                   <Button
                     variant="outline"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -535,7 +534,7 @@ export default function EveningDressesPage() {
                   >
                     Next
                   </Button>
-                </div>
+                </div> */}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center py-24 text-center">

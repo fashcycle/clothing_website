@@ -9,7 +9,7 @@ const anarkaliSizeData = [
     hip: "35-36 in",
     length: "54-55 in",
     sleeve: "22-23 in",
-    shoulder: "13-13.5 in"
+    shoulder: "13-13.5 in",
   },
   {
     size: "S",
@@ -18,7 +18,7 @@ const anarkaliSizeData = [
     hip: "37-38 in",
     length: "55-56 in",
     sleeve: "23-24 in",
-    shoulder: "13.5-14 in"
+    shoulder: "13.5-14 in",
   },
   {
     size: "M",
@@ -27,7 +27,7 @@ const anarkaliSizeData = [
     hip: "39-40 in",
     length: "56-57 in",
     sleeve: "24-25 in",
-    shoulder: "14-14.5 in"
+    shoulder: "14-14.5 in",
   },
   {
     size: "L",
@@ -36,7 +36,7 @@ const anarkaliSizeData = [
     hip: "41-42 in",
     length: "57-58 in",
     sleeve: "25-26 in",
-    shoulder: "14.5-15 in"
+    shoulder: "14.5-15 in",
   },
   {
     size: "XL",
@@ -45,7 +45,7 @@ const anarkaliSizeData = [
     hip: "43-44 in",
     length: "58-59 in",
     sleeve: "26-27 in",
-    shoulder: "15-15.5 in"
+    shoulder: "15-15.5 in",
   },
   {
     size: "XXL",
@@ -54,13 +54,18 @@ const anarkaliSizeData = [
     hip: "45-46 in",
     length: "59-60 in",
     sleeve: "27-28 in",
-    shoulder: "15.5-16 in"
-  }
+    shoulder: "15.5-16 in",
+  },
 ];
 
-export default function AnarkaliSizeChart({ onSizeSelect }: { onSizeSelect: (size: string) => void }) {
+export default function AnarkaliSizeChart({
+  onSizeSelect,
+}: {
+  onSizeSelect: (size: string) => void;
+}) {
   const [selectedSize, setSelectedSize] = React.useState<string>("");
-  const [showMeasurementGuide, setShowMeasurementGuide] = React.useState<boolean>(false);
+  const [showMeasurementGuide, setShowMeasurementGuide] =
+    React.useState<boolean>(false);
   const handleCheckboxChange = (size: string) => {
     // If the same size is clicked again, deselect it
     if (selectedSize === size) {
@@ -124,9 +129,7 @@ export default function AnarkaliSizeChart({ onSizeSelect }: { onSizeSelect: (siz
                 <th className="p-3 border border-gray-200 text-center ">
                   Waist
                 </th>
-                <th className="p-3 border border-gray-200 text-center ">
-                  Hip
-                </th>
+                <th className="p-3 border border-gray-200 text-center ">Hip</th>
                 <th className="p-3 border border-gray-200 text-center ">
                   Length
                 </th>
@@ -152,7 +155,9 @@ export default function AnarkaliSizeChart({ onSizeSelect }: { onSizeSelect: (siz
                       className="w-4 h-4 accent-primary cursor-pointer"
                     />
                   </td>
-                  <td className="p-3 border text-left font-medium">{row.size}</td>
+                  <td className="p-3 border text-left font-medium">
+                    {row.size}
+                  </td>
                   <td className="p-3 border">{row.bust}</td>
                   <td className="p-3 border">{row.waist}</td>
                   <td className="p-3 border ">{row.hip}</td>

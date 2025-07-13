@@ -155,7 +155,6 @@ export default function ProfilePage() {
     return null;
   });
 
-
   const getLocationString = () => {
     if (userAddress) {
       return `${userLocation.city}, ${userLocation.state}`;

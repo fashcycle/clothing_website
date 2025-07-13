@@ -295,7 +295,7 @@ export default function ProductPage({ id }: { id: string }) {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto py-4 px-4">
+      <div className="max-w-7xl mx-auto py-4 px-4 md:pt-12 lg:pt-24">
         {/* Compact Breadcrumb */}
         <div className="flex items-center text-xs mb-4 gap-2 lg:mt-6">
           <Link href="/" className="hover:underline flex items-center gap-1">

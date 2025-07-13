@@ -13,23 +13,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "../ui/dialog"; // adjust path if needed
+} from "../ui/dialog";
 import { useState } from "react";
 import { ProductEditDialog } from "../ProductEditDialog";
 
-export function ProductList({
-  products,
-  page,
-  totalPages,
-  setPage,
-  refetch,
-}: any) {
+export function ProductList({ products, page, totalPages, setPage, refetch }: any) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(
-    null
-  );
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+
   const handleEdit = (e: React.MouseEvent, product: any) => {
     e.stopPropagation();
     setSelectedProduct(product);
@@ -42,6 +35,7 @@ export function ProductList({
     e.stopPropagation();
     router.push(`/products/${productId}`);
   };
+
   const handleConfirmDelete = async () => {
     if (!selectedProductId) return;
     try {
@@ -62,7 +56,6 @@ export function ProductList({
     }
   };
 
-  // Empty state when no products
   if (products.length === 0) {
     return (
       <motion.div
@@ -78,8 +71,7 @@ export function ProductList({
           No Products Listed Yet
         </h3>
         <p className="text-gray-600 text-center max-w-md mb-8 leading-relaxed">
-          You haven't added any products to your inventory yet. Start by listing
-          your first product to begin earning!
+          You haven't added any products to your inventory yet. Start by listing your first product to begin earning!
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
@@ -99,6 +91,7 @@ export function ProductList({
       </motion.div>
     );
   }
+
   return (
     <div className="space-y-6 cursor-pointer">
       {products.map((product: any, index: number) => {
@@ -108,16 +101,11 @@ export function ProductList({
           setShowDeleteModal(true);
         };
 
-        // Confirm Availability handler (dummy)
         const handleConfirmAvailability = (e: React.MouseEvent) => {
           e.stopPropagation();
           toast.success("Availability confirmed!");
         };
-        // Edit handler
-        // const handleEdit = (e: React.MouseEvent) => {
-        //   e.stopPropagation();
-        //   router.push(`/products/edit/${product.id}`);
-        // };
+
         return (
           <motion.div
             key={product.id}
@@ -171,7 +159,6 @@ export function ProductList({
                 </div>
               </div>
             </div>
-
             <div className="flex flex-col items-end space-y-2 w-full md:w-auto mt-4 md:mt-0">
               <div className="text-right w-full">
                 <div className="flex flex-col md:flex-row justify-between md:justify-end items-start md:items-center gap-4 md:gap-10 w-full">
@@ -207,33 +194,32 @@ export function ProductList({
                 ) : (
                   ""
                 )}
-                {/* Action Buttons */}
-                <div className="flex gap-2 mt-4 justify-en d">
+                <div className="flex flex-col sm:flex-row gap-2 mt-4 justify-end">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-600"
+                    className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-600 w-full sm:w-auto"
                     onClick={(e) => confirmDelete(e, product.id)}
                   >
-                    <Trash2 />
+                    <Trash2 className="mr-2 h-4 w-4" />
                     Remove
                   </Button>
-
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-emerald-600 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-600"
+                    className="border-emerald-600 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-600 w-full sm:w-auto"
                     onClick={handleConfirmAvailability}
                   >
-                    <Check />
+                    <Check className="mr-2 h-4 w-4" />
                     Confirm Availability
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
+                    className="w-full sm:w-auto"
                     onClick={(e) => handleEdit(e, product)}
                   >
-                    <Pencil />
+                    <Pencil className="mr-2 h-4 w-4" />
                     Edit
                   </Button>
                 </div>
@@ -275,15 +261,13 @@ export function ProductList({
           }
         }}
       />
-
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
           </DialogHeader>
           <p>
-            Are you sure you want to delete this product? This action cannot be
-            undone.
+            Are you sure you want to delete this product? This action cannot be undone.
           </p>
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
