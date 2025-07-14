@@ -213,7 +213,7 @@ export default function Navbar() {
                         className="hidden flex items-center gap-2 bg-white text-primary hover:bg-gray-100 transition-colors px-3 py-2 rounded-full font-medium"
                       >
                         <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline">SELL</span>
+                        <span className="hidden sm:inline">LIST</span>
                       </Button>
                     </TooltipTrigger>
                   </Link>

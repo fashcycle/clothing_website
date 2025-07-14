@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
+import NotificationListener from "@/components/NotificationListener";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -48,6 +49,8 @@ export default function RootLayout({
         <GoogleOAuthProvider
           clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string}
         >
+          <NotificationListener />
+
           <ThemeProvider
             attribute="class"
             defaultTheme="light"

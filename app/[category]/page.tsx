@@ -5,7 +5,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, ChevronRight, Eye, Heart } from "lucide-react";
+import { ChevronDown, ChevronRight, CloudCog, Eye, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -266,6 +266,7 @@ export default function EveningDressesPage() {
         setProducts(response.products);
         setTotalPages(response.totalPages || 1);
         setTotalItems(response.totalItems || 0);
+        setLimit(response.totalItems);
       } else {
         setProducts([]);
         setTotalPages(1);
@@ -346,6 +347,17 @@ export default function EveningDressesPage() {
                       type="radio"
                       name="productType"
                       className="mr-2"
+                      defaultChecked
+                      checked={selectedListingType === ""}
+                      onChange={() => setSelectedListingType("")}
+                    />
+                    <span className="text-sm">All</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="productType"
+                      className="mr-2"
                       checked={selectedListingType === "rent"}
                       onChange={() => setSelectedListingType("rent")}
                     />
@@ -366,8 +378,8 @@ export default function EveningDressesPage() {
                       type="radio"
                       name="productType"
                       className="mr-2"
-                      checked={selectedListingType === ""}
-                      onChange={() => setSelectedListingType("")}
+                      checked={selectedListingType === "both"}
+                      onChange={() => setSelectedListingType("both")}
                     />
                     <span className="text-sm">Both</span>
                   </label>
@@ -450,8 +462,6 @@ export default function EveningDressesPage() {
                   ))}
                 </div>
               </FilterSection>
-
-              {/* ...existing code for commented-out filters... */}
             </div>
           </div>
 
