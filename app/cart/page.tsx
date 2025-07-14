@@ -178,12 +178,14 @@ export default function CartPage() {
     );
   };
 
-  // Add this function to calculate price for individual items
   const calculateItemPrice = (item: any) => {
-    const originalPrice = item?.securityAmount + item?.convenienceFee || 0;
-    // const rentalPeriod = item.rentDurationInDays;
-
-    return originalPrice;
+    if (item.rentDurationInDays === 3) {
+      return item.product.rentPrice3Days + item?.convenienceFee;
+    } else if (item.rentDurationInDays === 7) {
+      return item.product.rentPrice7Days + item?.convenienceFee;
+    } else if (item.rentDurationInDays === 14) {
+      return item.product.rentPrice14Days + item?.convenienceFee;
+    }
   };
 
   useEffect(() => {
@@ -340,11 +342,10 @@ export default function CartPage() {
   );
   const subtotal = cartItems.reduce((sum: any, item: any) => {
     const itemPrice = calculateItemPrice(item);
-    return sum + itemPrice * item.quantity;
+    return sum + itemPrice;
   }, 0);
-
-  const shipping = subtotal > 999 ? 0 : 99; // Free shipping over ₹999
-  const taxAmount = Math.round(subtotal * 0.18); // 18% GST
+  const shipping = subtotal > 999 ? 0 : 99;
+  const taxAmount = Math.round(subtotal * 0.18);
   const total = subtotal + shipping + totalSecurityAmount;
   const tax = taxAmount;
   useEffect(() => {
@@ -353,7 +354,6 @@ export default function CartPage() {
     }
   }, [user]);
 
-  // Keep selectedAddress in sync with savedAddresses and selectedAddressId
   useEffect(() => {
     if (savedAddresses && savedAddresses.length > 0) {
       const found = savedAddresses.find(
@@ -542,7 +542,6 @@ export default function CartPage() {
 
                   <AnimatePresence>
                     {cartItems.map((item: any) => {
-                      console.log(item);
                       return (
                         <motion.div
                           key={item.id} // Added key property
@@ -649,13 +648,11 @@ export default function CartPage() {
                                   </span>
                                 </div>
                               </div>
-
-                              {/* Listing Type Badges */}
-                              <div>
-                                <span className="text-xs text-gray-600">
+                                <div className="text-xs text-gray-600">
                                   Rent Duration {item?.rentDurationInDays} Days
-                                </span>
-                                {/* <span className="text-xs text-gray-600">
+                                </div>
+
+                                <div className="text-xs text-gray-600">
                                   From{" "}
                                   {new Date(item?.rentFrom).toLocaleDateString(
                                     "en-IN",
@@ -674,13 +671,11 @@ export default function CartPage() {
                                       year: "numeric",
                                     }
                                   )}
-                                </span> */}
-                              </div>
+                                </div>
                               {/* Pricing Section */}
                               <div className="pt-2">
-                                {item?.product?.listingType?.includes(
-                                  "rent"
-                                ) ? (
+                                {item?.product?.listingType?.includes("rent") ||
+                                item?.product?.listingType?.includes("both") ? (
                                   <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                       <Clock className="h-4 w-4 text-emerald-600" />
@@ -776,7 +771,13 @@ export default function CartPage() {
                                 ) : (
                                   <div className="flex items-baseline gap-3">
                                     <span className="text-2xl font-bold text-emerald-600">
-                                      ₹{item.securityAmount}
+                                      ₹{" "}
+                                      {item.rentDurationInDays === 3 &&
+                                        item.product.rentPrice3Days}
+                                      {item.rentDurationInDays === 7 &&
+                                        item.product.rentPrice7Days}
+                                      {item.rentDurationInDays === 14 &&
+                                        item.product.rentPrice14Days}
                                     </span>
                                     {/* {item.product.mrp >
                                       item.product.originalPurchasePrice && (

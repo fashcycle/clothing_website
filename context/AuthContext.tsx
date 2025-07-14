@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-
+import { getFirebaseToken } from "@/lib/firebase";
+import axios from "axios";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -15,10 +16,37 @@ export const AuthProvider = ({ children }) => {
       setUser(localStorage.getItem("user-info")); // mock data
     }
   }, []);
+  const requestNotificationPermissionAndSaveToken = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        const fcmToken = await getFirebaseToken();
 
-  const login = (token) => {
+        if (fcmToken) {
+          console.log("FCM Token:", fcmToken);
+
+          // Send FCM token to your backend
+          await axios.put(
+            `${process.env.NEXT_PUBLIC_API_BASE}/users/save-fcmtoken`,
+            { fcmToken },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+        }
+      } else {
+        console.warn("Notification permission not granted.");
+      }
+    } catch (error) {
+      console.error("Error setting up notifications:", error);
+    }
+  };
+  const login = async (token) => {
     localStorage.setItem("token", token);
     setUser(localStorage.getItem("user-info"));
+    await requestNotificationPermissionAndSaveToken();
     router.push("/");
   };
 

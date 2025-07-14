@@ -5,7 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Home, ShoppingCart, CalendarDays, RotateCcw } from "lucide-react";
+import {
+  Home,
+  ShoppingCart,
+  CalendarDays,
+  RotateCcw,
+  CloudCog,
+} from "lucide-react";
 import { addDays, isBefore, format, differenceInDays } from "date-fns";
 import "react-day-picker/dist/style.css";
 
@@ -160,8 +166,9 @@ export default function ProductPage({ id }: { id: string }) {
 
       let payload: any = { productId };
       const isRent =
-        Array.isArray(product?.listingType) &&
-        product.listingType.includes("rent");
+        (Array.isArray(product?.listingType) &&
+          product.listingType.includes("rent")) ||
+        product.listingType.includes("both");
 
       if (isRent) {
         if (!rentFromDate || !rentToDate) {
@@ -194,7 +201,7 @@ export default function ProductPage({ id }: { id: string }) {
       }
     } catch (err) {
       setCartItems((prev) => prev.filter((id) => id !== productId));
-      toast.error("Failed to add to cart");
+      toast.error(err.message || "Failed to add to cart");
       console.error(err);
     } finally {
       setIsAddingToCart(null);
@@ -203,11 +210,14 @@ export default function ProductPage({ id }: { id: string }) {
 
   const renderRentalButtons = () => {
     if (!product) return null;
-    if (
-      !Array.isArray(product.listingType) ||
-      !product.listingType.includes("rent")
-    )
-      return null;
+    // Show rental buttons if listingType is 'rent', 'both', or includes them
+    const listingType = product.listingType;
+    const isRent =
+      (Array.isArray(listingType) &&
+        (listingType.includes("rent") || listingType.includes("both"))) ||
+      listingType === "rent" ||
+      listingType === "both";
+    if (!isRent) return null;
 
     const options = [
       { days: 3, price: product.rentPrice3Days },
@@ -289,7 +299,10 @@ export default function ProductPage({ id }: { id: string }) {
   }
 
   const isRentProduct =
-    Array.isArray(product.listingType) && product.listingType.includes("rent");
+    (Array.isArray(product.listingType) &&
+      product.listingType.includes("rent")) ||
+    product.listingType.includes("both");
+
   const isSellProduct =
     Array.isArray(product.listingType) && product.listingType.includes("sell");
 

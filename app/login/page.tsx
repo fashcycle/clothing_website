@@ -24,7 +24,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "sonner";
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "@/lib/firebase";
+import { auth, getFirebaseToken, provider } from "@/lib/firebase";
 import { sendPasswordResetEmail } from "firebase/auth";
 
 const loginSchema = yup.object().shape({
@@ -34,6 +34,7 @@ const loginSchema = yup.object().shape({
 
 type LoginFormData = yup.InferType<typeof loginSchema>;
 import { loginUser } from "@/app/api/api";
+import { isFCMSupported } from "@/lib/isFCMSupported";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -83,7 +84,37 @@ export default function LoginPage() {
     onError: responseGoogle,
     flow: "auth-code",
   });
+  const requestNotificationPermissionAndSaveToken = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        if (isFCMSupported()) {
+          const fcmToken = await getFirebaseToken();
 
+          if (fcmToken) {
+            // console.log("FCM Token:", fcmToken);
+
+            // Send FCM token to your backend
+            await axios.put(
+              `${process.env.NEXT_PUBLIC_API_BASE}/users/save-fcmtoken`,
+              { fcmToken },
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+          }
+        } else {
+          console.warn("This browser doesn't support Firebase Messaging.");
+        }
+      } else {
+        console.warn("Notification permission not granted.");
+      }
+    } catch (error) {
+      console.error("Error setting up notifications:", error);
+    }
+  };
   const handleEmailLogin = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
@@ -95,7 +126,7 @@ export default function LoginPage() {
       if (response.success) {
         localStorage.setItem("token", response.token);
         localStorage.setItem("user-info", JSON.stringify(response.user));
-
+        await requestNotificationPermissionAndSaveToken();
         toast.success("Login successful!");
         router.push("/");
       } else {
@@ -144,7 +175,7 @@ export default function LoginPage() {
 
         localStorage.setItem("user-info", JSON.stringify(userInfo));
         localStorage.setItem("token", response.token);
-
+        await requestNotificationPermissionAndSaveToken();
         router.push("/");
       } else {
         toast.error("Login failed");
