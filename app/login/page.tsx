@@ -24,8 +24,9 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "sonner";
 import { signInWithPopup } from "firebase/auth";
-import { auth, getFirebaseToken, provider } from "@/lib/firebase";
+import { auth, provider } from "@/lib/firebase";
 import { sendPasswordResetEmail } from "firebase/auth";
+import {getFirebaseToken} from "@/lib/firebase-messaging"
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),

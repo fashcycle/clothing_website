@@ -3,7 +3,7 @@
 import * as Toast from "@radix-ui/react-toast";
 import { useEffect, useState } from "react";
 import { onMessage } from "firebase/messaging";
-import { messaging } from "@/lib/firebase";
+import { getFirebaseToken } from "@/lib/firebase-messaging";
 
 export default function NotificationListener() {
   const [open, setOpen] = useState(false);
@@ -13,27 +13,31 @@ export default function NotificationListener() {
   });
 
   useEffect(() => {
-    if (
-      !(
-        "Notification" in window &&
-        "serviceWorker" in navigator &&
-        "PushManager" in window
-      )
-    ) {
-      console.warn("FCM not supported in this browser");
-      return;
-    }
+    const setupMessaging = async () => {
+      const messaging = await getFirebaseToken();
+      if (!messaging) return;
 
-    const unsubscribe = onMessage(messaging, (payload) => {
-      const { title, body } = payload.notification ?? {};
-      setToastData({
-        title: title ?? "Notification",
-        body: body ?? "You have a new message.",
+      const unsubscribe = onMessage(messaging, (payload) => {
+        const { title, body } = payload.notification ?? {};
+        setToastData({
+          title: title ?? "Notification",
+          body: body ?? "You have a new message.",
+        });
+        setOpen(true);
       });
-      setOpen(true);
+
+      return unsubscribe;
+    };
+
+    let unsubscribe: any;
+
+    setupMessaging().then((fn) => {
+      unsubscribe = fn;
     });
 
-    return () => unsubscribe();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   return (
@@ -46,7 +50,6 @@ export default function NotificationListener() {
       >
         <div className="flex items-start gap-3">
           <div className="bg-emerald-100 text-emerald-600 p-2 rounded-full">
-            {/* Icon (you can replace this with anything) */}
             <svg
               className="w-5 h-5"
               fill="none"
