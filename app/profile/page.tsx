@@ -661,7 +661,7 @@ export default function ProfilePage() {
                     transition={{ duration: 0.2 }}
                   >
                     <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
-                      <AvatarImage src={userImage || "/placeholder.svg"} />
+                      <AvatarImage src={userImage || "/placeholder.svg"}  className="object-cover" />
                       <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary">
                         <User className="h-14 w-14 text-white" />
                       </AvatarFallback>

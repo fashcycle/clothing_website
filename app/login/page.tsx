@@ -20,6 +20,8 @@ import {
   GoogleOAuthProvider,
   useGoogleLogin,
 } from "@react-oauth/google";
+import Logo from "@/public/HomeLogo.png";
+
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "sonner";
@@ -36,6 +38,7 @@ const loginSchema = yup.object().shape({
 type LoginFormData = yup.InferType<typeof loginSchema>;
 import { loginUser } from "@/app/api/api";
 import { isFCMSupported } from "@/lib/isFCMSupported";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -193,9 +196,18 @@ export default function LoginPage() {
       <div className="w-full max-w-md z-10">
         <div className="bg-background/95 rounded-xl shadow-2xl overflow-hidden border border-gray-800/10 backdrop-blur-sm">
           <div className="p-6">
-            <h1 className="text-2xl font-bold text-center mb-6">
+            {/* <h1 className="text-2xl font-bold text-center mb-6">
               Welcome Back
-            </h1>
+            </h1> */}
+ <div className="flex justify-center w-full">
+                <Image
+                  src={Logo}
+                  alt="HOMELOGO"
+                  width={200}
+                  height={200}
+                  className="object-contain mb-5 "
+                />
+              </div>
             <div className="w-full flex justify-center">
               {/* <GoogleLogin
                 onSuccess={handleLoginSuccess}

@@ -43,7 +43,12 @@ export default function Navbar() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-
+  const isMobile = () => {
+    // Simple check for mobile device
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  };
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -86,6 +91,11 @@ export default function Navbar() {
 
   const handleLinkClick = () => {
     setIsSheetOpen(false);
+    // if (isMobile()) {
+    //   window.location.href = "https://wa.me/";
+    // } else {
+    //   alert("Please install our app to continue!");
+    // }
   };
 
   return (
@@ -104,7 +114,10 @@ export default function Navbar() {
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-80 h-full flex flex-col p-4">
+              <SheetContent
+                side="left"
+                className="w-80 h-full flex flex-col p-4"
+              >
                 <style jsx>{`
                   .scrollable-content::-webkit-scrollbar {
                     display: none;
@@ -115,7 +128,10 @@ export default function Navbar() {
                   }
                 `}</style>
                 <div className="flex flex-col gap-3 mt-6 overflow-y-auto scrollable-content mt-0">
-                  <Link href="/" className="text-2xl font-serif font-medium mb-4">
+                  <Link
+                    href="/"
+                    className="text-2xl font-serif font-medium mb-4"
+                  >
                     Fashcycle
                   </Link>
                   <div className="relative">
@@ -126,7 +142,10 @@ export default function Navbar() {
                       className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-black/70 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                     />
                   </div>
-                  <Link href={isLogin ? "/profile" : "/login"} onClick={handleLinkClick}>
+                  <Link
+                    href={isLogin ? "/profile" : "/login"}
+                    onClick={handleLinkClick}
+                  >
                     <Button
                       variant="default"
                       size="lg"
@@ -137,7 +156,10 @@ export default function Navbar() {
                     </Button>
                   </Link>
                   <div className="flex flex-col gap-3 md:hidden">
-                    <Link href={isLogin ? "/wishlist" : "/login"} onClick={handleLinkClick}>
+                    <Link
+                      href={isLogin ? "/wishlist" : "/login"}
+                      onClick={handleLinkClick}
+                    >
                       <Button
                         variant="outline"
                         size="lg"
@@ -147,7 +169,10 @@ export default function Navbar() {
                         Wishlist
                       </Button>
                     </Link>
-                    <Link href={isLogin ? "/cart" : "/login"} onClick={handleLinkClick}>
+                    <Link
+                      href={isLogin ? "/cart" : "/login"}
+                      onClick={handleLinkClick}
+                    >
                       <Button
                         variant="outline"
                         size="lg"
@@ -168,7 +193,11 @@ export default function Navbar() {
                     </Button>
                   </div>
                   <div className="border-t pt-4">
-                    <Link href="/" className="text-lg font-medium py-2 px-4 rounded-md hover:bg-gray-100 transition-colors block" onClick={handleLinkClick}>
+                    <Link
+                      href="/"
+                      className="text-lg font-medium py-2 px-4 rounded-md hover:bg-gray-100 transition-colors block"
+                      onClick={handleLinkClick}
+                    >
                       Home
                     </Link>
                     {categories.map((category) => (
@@ -197,7 +226,10 @@ export default function Navbar() {
             </div>
           </div>
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <Link href="/" className="font-serif text-xl lg:text-2xl font-medium text-primary-foreground hover:text-primary-foreground/90 transition-colors whitespace-nowrap">
+            <Link
+              href="/"
+              className="font-serif text-xl lg:text-2xl font-medium text-primary-foreground hover:text-primary-foreground/90 transition-colors whitespace-nowrap"
+            >
               Fashcycle
             </Link>
           </div>
@@ -233,7 +265,11 @@ export default function Navbar() {
                           <Bell className="h-5 w-5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64 z-50" sideOffset={8}>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-64 z-50"
+                        sideOffset={8}
+                      >
                         <div className="px-3 py-2 font-medium border-b">
                           Notifications
                         </div>
@@ -321,15 +357,25 @@ export default function Navbar() {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 z-50" sideOffset={8}>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-48 z-50"
+                  sideOffset={8}
+                >
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="w-full flex items-center gap-2 px-2 py-2">
+                    <Link
+                      href="/profile"
+                      className="w-full flex items-center gap-2 px-2 py-2"
+                    >
                       <User className="h-4 w-4" />
                       My Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="w-full flex items-center gap-2 px-2 py-2">
+                    <Link
+                      href="/dashboard"
+                      className="w-full flex items-center gap-2 px-2 py-2"
+                    >
                       <LayoutDashboard className="h-4 w-4" />
                       Dashboard
                     </Link>
