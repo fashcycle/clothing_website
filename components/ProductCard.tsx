@@ -25,7 +25,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   toggleFavorite,
 }) => {
   return (
-    <Card className={cn("product-card border-0 rounded-none luxury-shadow")}>
+    <Card
+      className={cn(
+        "product-card border-0 rounded-none luxury-shadow flex flex-col h-full"
+      )}
+    >
       <div className="relative">
         <Link href={`/products/${product.id}`}>
           <div className="overflow-hidden">
@@ -59,8 +63,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           />
         </button>
       </div>
-      <CardContent className="p-2 md:p-4">
-        <div className="space-y-2">
+      <CardContent className="p-2 md:p-4 flex flex-col flex-grow">
+        <div className="space-y-2 flex-grow">
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 capitalize">
             {product.productName}
           </h3>
@@ -78,7 +82,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               Size- {product.size}
             </Badge>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 flex-grow">
             {product.listingType.includes("rent") && (
               <>
                 <div className="flex flex-col md:flex-row items-center justify-between">
@@ -87,7 +91,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     ₹{Math.round(product.rentPrice3Days)}
                   </span>
                 </div>
-
                 <div className="flex flex-col md:flex-row items-center justify-between">
                   <span className="text-sm text-gray-600">Rent (7 days):</span>
                   <span className="text-sm font-medium text-gray-900">
@@ -104,24 +107,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             )}
             {product.listingType.includes("sell") && (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Buy:</span>
+                <span className="text-sm text-gray-600">Buy Now :</span>
                 <span className="text-sm font-medium text-gray-900">
-                  ₹{Math.round((product?.originalPurchasePrice * 50) / 100)}
+                  ₹{Math.round(product.sellingPrice)}
                 </span>
               </div>
             )}
           </div>
-          <Link href={`/products/${product.id}`}>
-            <Button
-              disabled={isAddingToCart === product.id}
-              className="mt-2 w-full"
-              variant={cartItems.includes(product.id) ? "default" : "outline"}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              Have a Look
-            </Button>
-          </Link>
         </div>
+        <Link href={`/products/${product.id}`} className="mt-4">
+          <Button
+            disabled={isAddingToCart === product.id}
+            className="w-full"
+            variant={cartItems.includes(product.id) ? "default" : "outline"}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            Have a Look
+          </Button>
+        </Link>
       </CardContent>
     </Card>
   );

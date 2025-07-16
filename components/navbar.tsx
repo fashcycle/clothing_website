@@ -29,7 +29,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
-import { getAllCategories } from "@/app/api/api";
+import { getAllCategories, getNotifications } from "@/app/api/api";
 
 type Category = {
   name: string;
@@ -43,12 +43,25 @@ export default function Navbar() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [notifications, setNotifications] = useState();
   const isMobile = () => {
     // Simple check for mobile device
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
     );
   };
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data = await getNotifications();
+        setNotifications(data.notifications || []);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    };
+    fetchNotifications();
+  }, []);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -139,7 +152,7 @@ export default function Navbar() {
                     <input
                       type="search"
                       placeholder="Search for brand, product type, colour..."
-                      className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-black/70 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                      className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-black/70  focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                     />
                   </div>
                   <Link
@@ -182,15 +195,17 @@ export default function Navbar() {
                         Cart
                       </Button>
                     </Link>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-full flex items-center gap-3 justify-start py-3 rounded-lg"
-                      onClick={handleLinkClick}
-                    >
-                      <Bell className="h-5 w-5" />
-                      Notifications
-                    </Button>
+                    <Link href="/notifications">
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="w-full flex items-center gap-3 justify-start py-3 rounded-lg"
+                        onClick={handleLinkClick}
+                      >
+                        <Bell className="h-5 w-5" />
+                        Notifications
+                      </Button>
+                    </Link>
                   </div>
                   <div className="border-t pt-4">
                     <Link
@@ -242,7 +257,7 @@ export default function Navbar() {
                       <Button
                         variant="default"
                         size="sm"
-                        className="hidden flex items-center gap-2 bg-white text-primary hover:bg-gray-100 transition-colors px-3 py-2 rounded-full font-medium"
+                        className="hidden flex items-center gap-2 border-2 text-white hover:bg-gray-100 hover:text-black transition-colors px-4 py-1 rounded-full font-medium"
                       >
                         <Plus className="h-4 w-4" />
                         <span className="hidden sm:inline">LIST</span>
@@ -260,35 +275,46 @@ export default function Navbar() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full"
+                          className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full relative"
                         >
                           <Bell className="h-5 w-5" />
+                          {notifications?.some((n) => !n.read) && (
+                            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                          )}
                         </Button>
                       </DropdownMenuTrigger>
+
                       <DropdownMenuContent
                         align="end"
-                        className="w-64 z-50"
+                        className="w-72 z-50"
                         sideOffset={8}
                       >
-                        <div className="px-3 py-2 font-medium border-b">
+                        <div className="px-3 py-2 font-semibold border-b">
                           Notifications
                         </div>
-                        <DropdownMenuItem className="py-3">
-                          <div className="flex flex-col">
-                            <span className="font-medium">New message</span>
-                            <span className="text-sm text-gray-500">
-                              You have a new message from buyer
-                            </span>
-                          </div>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="py-3">
-                          <div className="flex flex-col">
-                            <span className="font-medium">Item sold</span>
-                            <span className="text-sm text-gray-500">
-                              Your item has been sold
-                            </span>
-                          </div>
-                        </DropdownMenuItem>
+
+                        {notifications?.length === 0 ? (
+                          <DropdownMenuItem className="py-4 text-sm text-gray-500">
+                            No notifications
+                          </DropdownMenuItem>
+                        ) : (
+                          notifications?.map((notif) => (
+                            <DropdownMenuItem
+                              key={notif.id}
+                              className="py-3 flex flex-col gap-1"
+                            >
+                              <span className="font-medium text-sm">
+                                {notif.title}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {notif.body}
+                              </span>
+                              <span className="text-xs text-gray-400 mt-1">
+                                {new Date(notif?.createdAt).toLocaleString()}
+                              </span>
+                            </DropdownMenuItem>
+                          ))
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TooltipTrigger>
