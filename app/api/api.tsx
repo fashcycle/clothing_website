@@ -580,3 +580,25 @@ export const updateProduct = async (productId: string, productData: any) => {
     throw error;
   }
 };
+
+export const getNotifications = async () => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_GET_NOTIFICATIONS as string,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to fetch notifcations"
+      );
+    }
+    throw error;
+  }
+};
