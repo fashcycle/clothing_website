@@ -286,13 +286,12 @@ export default function Navbar() {
 
                       <DropdownMenuContent
                         align="end"
-                        className="w-72 z-50"
+                        className="w-72 z-50 max-h-96 overflow-y-auto"
                         sideOffset={8}
                       >
-                        <div className="px-3 py-2 font-semibold border-b">
+                        <div className="px-3 py-2 font-semibold border-b top-0 bg-white">
                           Notifications
                         </div>
-
                         {notifications?.length === 0 ? (
                           <DropdownMenuItem className="py-4 text-sm text-gray-500">
                             No notifications

@@ -83,7 +83,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </Badge>
           </div>
           <div className="space-y-1 flex-grow">
-            {product.listingType.includes("rent") && (
+            {(product.listingType.includes("rent") ||
+              product.listingType.includes("both")) && (
               <>
                 <div className="flex flex-col md:flex-row items-center justify-between">
                   <span className="text-sm text-gray-600">Rent (3 days):</span>

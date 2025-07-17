@@ -89,6 +89,7 @@ export default function CartPage() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>();
   const [isPaying, setIsPaying] = useState(false);
+  console.log(cartItems)
   const handleCheckout = async () => {
     if (cartItems.length === 0) return toast.error("Cart is empty!");
 
@@ -316,19 +317,7 @@ export default function CartPage() {
       setIsSubmitting(false);
 
       fetchUserDetails();
-      // setShowNewAddressForm(false);
-      // setNewAddressForm({
-      //   id: "",
-      //   address: "",
-      //   landmark: "",
-      //   customAddressType: "",
-      //   addressLine1: "",
-      //   addressLine2: "",
-      //   pincode: "",
-      //   city: "",
-      //   state: "",
-      //   country: "India"
-      // });
+   
       const newErrors = { ...formErrors };
       delete newErrors.addressLine1;
       delete newErrors.pincode;
