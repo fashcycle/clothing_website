@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { addDays, isBefore, format, differenceInDays } from "date-fns";
 import "react-day-picker/dist/style.css";
-
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
@@ -46,7 +47,8 @@ export default function ProductPage({ id }: { id: string }) {
     fromDate: null,
     toDate: null,
   });
-
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const router = useRouter();
 
   // Save state to localStorage when rental details change
@@ -166,9 +168,8 @@ export default function ProductPage({ id }: { id: string }) {
 
       let payload: any = { productId };
       const isRent =
-        (Array.isArray(product?.listingType) &&
-          product.listingType.includes("rent")) ||
-        product.listingType.includes("both");
+        Array.isArray(product?.listingType) &&
+        product.listingType.includes("rent");
 
       if (isRent) {
         if (!rentFromDate || !rentToDate) {
@@ -177,11 +178,12 @@ export default function ProductPage({ id }: { id: string }) {
         }
         payload = {
           productId,
+          type: "RENT",
           rentFrom: rentFromDate.toISOString().split("T")[0],
           rentTo: rentToDate.toISOString().split("T")[0],
         };
       } else {
-        payload = { ...payload, quantity: 1 };
+        payload = { ...payload, quantity: 1, type: "BUY" };
       }
 
       const response = await addToCart(payload);
@@ -304,8 +306,13 @@ export default function ProductPage({ id }: { id: string }) {
     product.listingType.includes("both");
 
   const isSellProduct =
-    Array.isArray(product.listingType) && product.listingType.includes("sell");
-
+    (Array.isArray(product.listingType) &&
+      product.listingType.includes("sell")) ||
+    product.listingType.includes("both");
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setIsLightboxOpen(true);
+  };
   return (
     <>
       <div className="max-w-7xl mx-auto py-4 px-4 md:pt-12 lg:pt-24">
@@ -348,7 +355,15 @@ export default function ProductPage({ id }: { id: string }) {
             transition={{ duration: 0.4 }}
             className="lg:col-span-1 xl:col-span-1"
           >
-            <div className="relative w-full aspect-[3/3] rounded-lg overflow-hidden shadow-lg mb-3">
+            <div
+              className="relative w-full aspect-[3/3] rounded-lg overflow-hidden shadow-lg mb-3 cursor-pointer"
+              onClick={() => {
+                const currentIndex = productImages.findIndex(
+                  (img) => img.path === selectedImage
+                );
+                openLightbox(currentIndex);
+              }}
+            >
               {selectedImage ? (
                 <Image
                   src={selectedImage}
@@ -364,12 +379,15 @@ export default function ProductPage({ id }: { id: string }) {
             </div>
 
             <div className="grid grid-cols-4 gap-2">
-              {productImages.map((img) => (
+              {productImages.map((img, index) => (
                 <motion.div
                   key={img.key}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedImage(img.path)}
+                  onClick={() => {
+                    setSelectedImage(img.path);
+                    openLightbox(index);
+                  }}
                   className={`relative aspect-[4/5] rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
                     selectedImage === img.path
                       ? "border-emerald-600 shadow-md"
@@ -416,17 +434,53 @@ export default function ProductPage({ id }: { id: string }) {
             {/* Rental Options */}
             {isRentProduct && renderRentalButtons()}
 
-            {/* Action Buttons */}
             <div className="flex gap-3">
               {isSellProduct && (
+                <div className="flex-1">
+                  <div className="bg-gray-50 p-3 rounded-lg mb-3 flex flex-col gap-2  ">
+                    <div className="text-lg font-bold text-green-600 text-center">
+                      Make it Own at :{" "}
+                      <span className="line-through">
+                        {" "}
+                        ₹{product?.originalPurchasePrice}
+                      </span>{" "}
+                      ₹{product?.sellingPrice}
+                    </div>
+                    <div className="items-center justify-center flex">
+                      <Badge
+                        variant="outline"
+                        className="border-violet-400 bg-violet-100 text-violet-800 rounded-full px-2 py-1 text-xs capitalize "
+                      >
+                        Save ₹
+                        {product?.originalPurchasePrice - product?.sellingPrice}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex">
+              {isSellProduct && (
                 <Button
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm rounded-lg shadow-lg"
+                  variant={
+                    cartItems.includes(product.id) ? "default" : "outline"
+                  }
+                  className={`flex-1 py-4 text-sm rounded-lg shadow-lg ${
+                    cartItems.includes(product.id)
+                      ? "bg-emerald-600 hover:bg-emerald-700"
+                      : ""
+                  }`}
                   onClick={() => handleAddToCart(product.id)}
                 >
-                  BUY NOW
+                  {isAddingToCart === product.id
+                    ? "Adding..."
+                    : cartItems.includes(product.id)
+                    ? "Go to Cart"
+                    : "Make It Yours"}
                 </Button>
               )}
-
+            </div>
+            <div className="flex gap-3">
               <Button
                 onClick={() =>
                   cartItems.includes(product.id)
@@ -506,7 +560,21 @@ export default function ProductPage({ id }: { id: string }) {
           {/* Product Details Section */}
         </div>
       </div>
-
+      <Lightbox
+        open={isLightboxOpen}
+        close={() => setIsLightboxOpen(false)}
+        slides={productImages.map((img) => ({ src: img.path }))}
+        index={lightboxIndex}
+        on={{
+          view: ({ index: currentIndex }) => setLightboxIndex(currentIndex),
+        }}
+        controller={{ closeOnBackdropClick: true }}
+        styles={{
+          container: { backgroundColor: "rgba(0, 0, 0, 0.9)" },
+          root: { "--yarl__color_backdrop": "rgba(0, 0, 0, 0.8)" },
+        }}
+        carousel={{ finite: false }}
+      />
       <CalendarModal
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}

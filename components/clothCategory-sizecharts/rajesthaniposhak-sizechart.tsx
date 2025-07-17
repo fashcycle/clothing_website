@@ -4,57 +4,57 @@ import { motion } from "framer-motion";
 const rajasthaniPoshakSizeData = [
   {
     size: "XS",
-    bust: "32-33 in",
-    waist: "25-26 in",
-    hip: "35-36 in",
-    length: "52-54 in",
-    shoulder: "14 in",
-    sleeve: "22-23 in",
+    bust: '32"',
+    waist: '26"',
+    hip: '34"',
+    length: '38"',
+    shoulder: '13"',
+    sleeve: '90"',
   },
   {
     size: "S",
-    bust: "34-35 in",
-    waist: "27-28 in",
-    hip: "37-38 in",
-    length: "54-56 in",
-    shoulder: "14.5 in",
-    sleeve: "23-24 in",
+    bust: '34"',
+    waist: '28"',
+    hip: '36"',
+    length: '39"',
+    shoulder: '14"',
+    sleeve: '95"',
   },
   {
     size: "M",
-    bust: "36-37 in",
-    waist: "29-30 in",
-    hip: "39-40 in",
-    length: "56-58 in",
-    shoulder: "15 in",
-    sleeve: "24-25 in",
+    bust: '36"',
+    waist: '30"',
+    hip: '38"',
+    length: '40"',
+    shoulder: '15"',
+    sleeve: '100"',
   },
   {
     size: "L",
-    bust: "38-39 in",
-    waist: "31-32 in",
-    hip: "41-42 in",
-    length: "58-60 in",
-    shoulder: "15.5 in",
-    sleeve: "25-26 in",
+    bust: '38"',
+    waist: '32"',
+    hip: '40"',
+    length: '41"',
+    shoulder: '16"',
+    sleeve: '105"',
   },
   {
     size: "XL",
-    bust: "40-41 in",
-    waist: "33-34 in",
-    hip: "43-44 in",
-    length: "60-62 in",
-    shoulder: "16 in",
-    sleeve: "26-27 in",
+    bust: '40"',
+    waist: '34"',
+    hip: '42"',
+    length: '42"',
+    shoulder: '17"',
+    sleeve: '110"',
   },
   {
     size: "XXL",
-    bust: "42-43 in",
-    waist: "35-36 in",
-    hip: "45-46 in",
-    length: "62-64 in",
-    shoulder: "16.5 in",
-    sleeve: "27-28 in",
+    bust: '42"',
+    waist: '36"',
+    hip: '44"',
+    length: '43"',
+    shoulder: '18"',
+    sleeve: '115"',
   },
 ];
 
@@ -171,22 +171,22 @@ export default function RajasthaniPoshakSizeChart({
                   Size
                 </th>
                 <th className="p-3 border border-gray-200 text-center ">
-                  Bust
+                  Bust <br/> (Choli)
                 </th>
                 <th className="p-3 border border-gray-200 text-center ">
-                  Waist
+                  Waist <br/>(Ghaghra)
                 </th>
                 <th className="p-3 border border-gray-200 text-center ">
-                  Hip
+                  Hip<br/> (Ghaghra)
                 </th>
                 <th className="p-3 border border-gray-200 text-center ">
-                  Length
+                  Ghaghra Length
                 </th>
                 <th className="p-3 border border-gray-200 text-center ">
-                  Shoulder
+                  Choli Length
                 </th>
                 <th className="p-3 border border-gray-200 text-center ">
-                  Sleeve
+                  Odni Length
                 </th>
               </tr>
             </thead>

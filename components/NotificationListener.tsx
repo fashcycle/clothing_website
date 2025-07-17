@@ -2,31 +2,29 @@
 
 import * as Toast from "@radix-ui/react-toast";
 import { useEffect, useState } from "react";
-import { onMessage } from "firebase/messaging";
-import { getFirebaseToken } from "@/lib/firebase-messaging";
+import { getFirebaseToken, listenToMessages } from "@/lib/firebase-messaging";
 
 export default function NotificationListener() {
   const [open, setOpen] = useState(false);
   const [toastData, setToastData] = useState({
     title: "",
     body: "",
+    clickAction: "",
   });
 
   useEffect(() => {
     const setupMessaging = async () => {
-      const messaging = await getFirebaseToken();
-      if (!messaging) return;
-
-      const unsubscribe = onMessage(messaging, (payload) => {
+      await listenToMessages((payload: any) => {
         const { title, body } = payload.notification ?? {};
+        // click_action is usually in data for FCM web push
+        const actionUrl = payload.data?.click_action || "";
         setToastData({
           title: title ?? "Notification",
           body: body ?? "You have a new message.",
+          clickAction: actionUrl,
         });
         setOpen(true);
       });
-
-      return unsubscribe;
     };
 
     let unsubscribe: any;
@@ -40,12 +38,19 @@ export default function NotificationListener() {
     };
   }, []);
 
+  const handleView = () => {
+    if (toastData.clickAction) {
+      window.open(toastData.clickAction, "_blank");
+    }
+    setOpen(false);
+  };
+
   return (
     <Toast.Provider swipeDirection="right">
       <Toast.Root
         open={open}
         onOpenChange={setOpen}
-        duration={5000}
+        duration={7000}
         className="w-96 bg-white border border-gray-200 shadow-xl rounded-xl p-4 animate-in fade-in slide-in-from-bottom-6"
       >
         <div className="flex items-start gap-3">
@@ -71,8 +76,23 @@ export default function NotificationListener() {
             <Toast.Description className="text-sm text-gray-700 mt-1">
               {toastData.body}
             </Toast.Description>
+            <div className="flex gap-2 mt-3">
+              {toastData.clickAction && (
+                <button
+                  onClick={handleView}
+                  className="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm"
+                >
+                  View
+                </button>
+              )}
+              <Toast.Close asChild>
+                <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm">
+                  Dismiss
+                </button>
+              </Toast.Close>
+            </div>
           </div>
-          <Toast.Close className="text-gray-500 hover:text-gray-700">
+          <Toast.Close className="text-gray-500 hover:text-gray-700 text-2xl ml-2">
             &times;
           </Toast.Close>
         </div>
