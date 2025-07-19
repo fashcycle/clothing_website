@@ -602,3 +602,109 @@ export const getNotifications = async () => {
     throw error;
   }
 };
+
+export const forgetPassword = async (email: any) => {
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_FORGET_PASSWORD as string,
+      email,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to ForgetPassword"
+      );
+    }
+    throw error;
+  }
+};
+export const verifyOTP = async (data: any) => {
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_VERIFY_OTP as string,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "WORNG OTP");
+    }
+    throw error;
+  }
+};
+
+export const resetPassword = async (data: any) => {
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_RESET_PASSWORD as string,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to reset password"
+      );
+    }
+    throw error;
+  }
+};
+
+export const resendOTP = async (email: any) => {
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_RESEND_OTP as string,
+      email,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Failed to resend OTP");
+    }
+    throw error;
+  }
+};
+
+export const notificationAvailablity = async (data: any) => {
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_PRODUCT_AVAILABLITY as string,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to send response"
+      );
+    }
+    throw error;
+  }
+};

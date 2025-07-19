@@ -1,6 +1,4 @@
-// lib/firebase-messaging.ts
 "use client";
-
 import {
   getMessaging,
   isSupported,
@@ -15,13 +13,11 @@ const getFirebaseToken = async () => {
     console.warn("Browser does not support Firebase messaging.");
     return null;
   }
-
   try {
     const messaging = getMessaging(app);
     const currentToken = await getToken(messaging, {
       vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
     });
-
     if (currentToken) {
       return currentToken;
     } else {
@@ -34,11 +30,20 @@ const getFirebaseToken = async () => {
   }
 };
 
-const listenToMessages = async (callback: (payload: any) => void) => {
+const listenToMessages = async (callback) => {
   const supported = await isSupported();
-  if (!supported) return;
-
-  const messaging = getMessaging(app);
-  onMessage(messaging, callback);
+  if (!supported) {
+    console.warn("Browser does not support Firebase messaging.");
+    return;
+  }
+  try {
+    const messaging = getMessaging(app);
+    onMessage(messaging, (payload) => {
+      callback(payload);
+    });
+  } catch (error) {
+    console.error("Error setting up message listener: ", error);
+  }
 };
+
 export { getFirebaseToken, listenToMessages };

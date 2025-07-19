@@ -195,7 +195,7 @@ export default function Navbar() {
                         Cart
                       </Button>
                     </Link>
-                    <Link href="/notifications">
+                    <Link href={isLogin ? "/notifications" : "/login"}>
                       <Button
                         variant="outline"
                         size="lg"
@@ -268,59 +268,62 @@ export default function Navbar() {
                     <p>Add New Listing</p>
                   </TooltipContent>
                 </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <DropdownMenu modal={false}>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full relative"
-                        >
-                          <Bell className="h-5 w-5" />
-                          {notifications?.some((n) => !n.read) && (
-                            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-                          )}
-                        </Button>
-                      </DropdownMenuTrigger>
+                {isLogin && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenu modal={false}>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full relative"
+                          >
+                            <Bell className="h-5 w-5" />
+                            {notifications?.some((n) => !n.read) && (
+                              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                            )}
+                          </Button>
+                        </DropdownMenuTrigger>
 
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-72 z-50 max-h-96 overflow-y-auto"
-                        sideOffset={8}
-                      >
-                        <div className="px-3 py-2 font-semibold border-b top-0 bg-white">
-                          Notifications
-                        </div>
-                        {notifications?.length === 0 ? (
-                          <DropdownMenuItem className="py-4 text-sm text-gray-500">
-                            No notifications
-                          </DropdownMenuItem>
-                        ) : (
-                          notifications?.map((notif) => (
-                            <DropdownMenuItem
-                              key={notif.id}
-                              className="py-3 flex flex-col gap-1"
-                            >
-                              <span className="font-medium text-sm">
-                                {notif.title}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                {notif.body}
-                              </span>
-                              <span className="text-xs text-gray-400 mt-1">
-                                {new Date(notif?.createdAt).toLocaleString()}
-                              </span>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-72 z-50 max-h-96 overflow-y-auto"
+                          sideOffset={8}
+                        >
+                          <div className="px-3 py-2 font-semibold border-b top-0 bg-white">
+                            Notifications
+                          </div>
+
+                          {notifications?.length === 0 ? (
+                            <DropdownMenuItem className="py-4 text-sm text-gray-500">
+                              No notifications
                             </DropdownMenuItem>
-                          ))
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>Notifications</p>
-                  </TooltipContent>
-                </Tooltip>
+                          ) : (
+                            notifications?.map((notif) => (
+                              <DropdownMenuItem
+                                key={notif.id}
+                                className="py-3 flex flex-col gap-1"
+                              >
+                                <span className="font-medium text-sm">
+                                  {notif.title}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                  {notif.body}
+                                </span>
+                                <span className="text-xs text-gray-400 mt-1">
+                                  {new Date(notif?.createdAt).toLocaleString()}
+                                </span>
+                              </DropdownMenuItem>
+                            ))
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>Notifications</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 <Tooltip>
                   <Link href={isLogin ? "/wishlist" : "/login"}>
                     <TooltipTrigger asChild>

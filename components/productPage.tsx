@@ -50,7 +50,12 @@ export default function ProductPage({ id }: { id: string }) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const router = useRouter();
+  const [isLogin, setIsLogin] = useState(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLogin(!!token);
+  }, []);
   // Save state to localStorage when rental details change
   useEffect(() => {
     if (product?.id && selectedRentalDays && rentFromDate && rentToDate) {
@@ -163,6 +168,10 @@ export default function ProductPage({ id }: { id: string }) {
   };
 
   const handleAddToCart = async (productId: string) => {
+    if (!isLogin) {
+      toast.error("Please Login and then Continue");
+      return;
+    }
     try {
       setIsAddingToCart(productId);
 
@@ -434,52 +443,61 @@ export default function ProductPage({ id }: { id: string }) {
             {/* Rental Options */}
             {isRentProduct && renderRentalButtons()}
 
-            <div className="flex gap-3">
-              {isSellProduct && (
-                <div className="flex-1">
-                  <div className="bg-gray-50 p-3 rounded-lg mb-3 flex flex-col gap-2  ">
-                    <div className="text-lg font-bold text-green-600 text-center">
-                      Make it Own at :{" "}
-                      <span className="line-through">
-                        {" "}
-                        ₹{product?.originalPurchasePrice}
-                      </span>{" "}
-                      ₹{product?.sellingPrice}
-                    </div>
-                    <div className="items-center justify-center flex">
-                      <Badge
-                        variant="outline"
-                        className="border-violet-400 bg-violet-100 text-violet-800 rounded-full px-2 py-1 text-xs capitalize "
-                      >
-                        Save ₹
-                        {product?.originalPurchasePrice - product?.sellingPrice}
-                      </Badge>
+            <div className="flex gap-3 bg-gray-50 p-3 rounded-lg justify-center items-center gap-8">
+              <div>
+                {" "}
+                {isSellProduct && (
+                  <div className="flex-1">
+                    <div className=" mb-3 flex flex-col gap-2  ">
+                      <div className="text-lg font-bold text-green-600 text-center">
+                        Make it Own at :{" "}
+                        <span className="line-through">
+                          {" "}
+                          ₹{product?.originalPurchasePrice}
+                        </span>{" "}
+                        ₹{product?.sellingPrice}
+                      </div>
+                      <div className="items-center justify-center flex">
+                        <Badge
+                          variant="outline"
+                          className="border-violet-400 bg-violet-100 text-violet-800 rounded-full px-2 py-1 text-xs capitalize "
+                        >
+                          Save ₹
+                          {product?.originalPurchasePrice -
+                            product?.sellingPrice}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+              <div className="flex">
+                {isSellProduct && isRentProduct && (
+                  <Button
+                    variant={
+                      cartItems.includes(product.id) ? "default" : "outline"
+                    }
+                    className={`flex-1 py-4 text-sm rounded-lg shadow-lg ${
+                      cartItems.includes(product.id)
+                        ? "bg-emerald-600 hover:bg-emerald-700"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      cartItems.includes(product.id)
+                        ? router.push("/cart")
+                        : handleAddToCart(product.id)
+                    }
+                  >
+                    {isAddingToCart === product.id
+                      ? "Adding..."
+                      : cartItems.includes(product.id)
+                      ? "Go to Cart"
+                      : "Make It Yours"}
+                  </Button>
+                )}
+              </div>
             </div>
-            <div className="flex">
-              {isSellProduct && (
-                <Button
-                  variant={
-                    cartItems.includes(product.id) ? "default" : "outline"
-                  }
-                  className={`flex-1 py-4 text-sm rounded-lg shadow-lg ${
-                    cartItems.includes(product.id)
-                      ? "bg-emerald-600 hover:bg-emerald-700"
-                      : ""
-                  }`}
-                  onClick={() => handleAddToCart(product.id)}
-                >
-                  {isAddingToCart === product.id
-                    ? "Adding..."
-                    : cartItems.includes(product.id)
-                    ? "Go to Cart"
-                    : "Make It Yours"}
-                </Button>
-              )}
-            </div>
+
             <div className="flex gap-3">
               <Button
                 onClick={() =>
