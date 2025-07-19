@@ -42,13 +42,10 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-      {/* Location Popup - Only shown on home page */}
       <LocationPopup />
 
-      {/* Location Handler - Handles actual geolocation requests */}
       <LocationHandler />
 
-      {/* Hero Section */}
       <section className="relative w-full min-h-[80vh] flex items-center">
         <Image
           src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000"

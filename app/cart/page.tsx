@@ -89,7 +89,7 @@ export default function CartPage() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>();
   const [isPaying, setIsPaying] = useState(false);
-  console.log(cartItems)
+  console.log(cartItems);
   const handleCheckout = async () => {
     if (cartItems.length === 0) return toast.error("Cart is empty!");
 
@@ -181,14 +181,22 @@ export default function CartPage() {
 
   const calculateItemPrice = (item: any) => {
     if (item.rentDurationInDays === 3) {
-      return item.product.rentPrice3Days + item?.convenienceFee;
+      return item.product.rentPrice3Days;
     } else if (item.rentDurationInDays === 7) {
-      return item.product.rentPrice7Days + item?.convenienceFee;
+      return item.product.rentPrice7Days;
     } else if (item.rentDurationInDays === 14) {
-      return item.product.rentPrice14Days + item?.convenienceFee;
+      return item.product.rentPrice14Days;
     }
   };
-
+  const calculateConvenienceFee = (item: any) => {
+    if (item.rentDurationInDays === 3) {
+      return item?.convenienceFee;
+    } else if (item.rentDurationInDays === 7) {
+      return item?.convenienceFee;
+    } else if (item.rentDurationInDays === 14) {
+      return item?.convenienceFee;
+    }
+  };
   useEffect(() => {
     setIsClient(true);
     let userData: any = localStorage.getItem("user-info");
@@ -196,13 +204,11 @@ export default function CartPage() {
     fetchCartItems(), fetchWishlist();
   }, []);
 
-  // Remove initialWishlistItems mock data from the top of the file
 
   const fetchCartItems = async () => {
     try {
       const response = await getCartItems();
       if (response.success) {
-        // Initialize rentDurationInDays for each item if not present
         const itemsWithRentalPeriod = response.cart.map((item: any) => ({
           ...item,
           rentDurationInDays: item.rentDurationInDays || "3",
@@ -317,7 +323,7 @@ export default function CartPage() {
       setIsSubmitting(false);
 
       fetchUserDetails();
-   
+
       const newErrors = { ...formErrors };
       delete newErrors.addressLine1;
       delete newErrors.pincode;
@@ -329,13 +335,17 @@ export default function CartPage() {
     (sum: any, item: any) => sum + (item.securityAmount || 0),
     0
   );
+   const convenienceFee  = cartItems.reduce((sum: any, item: any) => {
+    const itemPrice = calculateConvenienceFee(item);
+    return sum + itemPrice;
+  }, 0);
   const subtotal = cartItems.reduce((sum: any, item: any) => {
     const itemPrice = calculateItemPrice(item);
     return sum + itemPrice;
   }, 0);
   const shipping = subtotal > 999 ? 0 : 99;
   const taxAmount = Math.round(subtotal * 0.18);
-  const total = subtotal + shipping + totalSecurityAmount;
+  const total = subtotal + shipping + totalSecurityAmount +convenienceFee;
   const tax = taxAmount;
   useEffect(() => {
     if (user && Array.isArray(user.addresses) && user.addresses.length > 0) {
@@ -357,7 +367,6 @@ export default function CartPage() {
   return (
     <>
       <div className="min-h-screen lg:mt-10 pt-5">
-        {/* Header with breadcrumb */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -377,9 +386,7 @@ export default function CartPage() {
           className="container mx-auto px-4 py-8"
         >
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column - Cart Items */}
             <div className="lg:col-span-2">
-              {/* Delivery Address */}
               <motion.div
                 variants={itemVariants}
                 className="p-6 border rounded-xl mb-6 bg-white shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm"
@@ -612,9 +619,7 @@ export default function CartPage() {
                                 </div>
                               </div>
 
-                              {/* Product Attributes */}
                               <div className="flex flex-wrap gap-4">
-                                {/* Color */}
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-gray-600">
                                     Color:
@@ -627,7 +632,6 @@ export default function CartPage() {
                                   />
                                 </div>
 
-                                {/* Size */}
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-gray-600">
                                     Size:
@@ -637,31 +641,30 @@ export default function CartPage() {
                                   </span>
                                 </div>
                               </div>
-                                <div className="text-xs text-gray-600">
-                                  Rent Duration {item?.rentDurationInDays} Days
-                                </div>
+                              <div className="text-xs text-gray-600">
+                                Rent Duration {item?.rentDurationInDays} Days
+                              </div>
 
-                                <div className="text-xs text-gray-600">
-                                  From{" "}
-                                  {new Date(item?.rentFrom).toLocaleDateString(
-                                    "en-IN",
-                                    {
-                                      day: "2-digit",
-                                      month: "short",
-                                      year: "numeric",
-                                    }
-                                  )}{" "}
-                                  to{" "}
-                                  {new Date(item?.rentTo).toLocaleDateString(
-                                    "en-IN",
-                                    {
-                                      day: "2-digit",
-                                      month: "short",
-                                      year: "numeric",
-                                    }
-                                  )}
-                                </div>
-                              {/* Pricing Section */}
+                              <div className="text-xs text-gray-600">
+                                From{" "}
+                                {new Date(item?.rentFrom).toLocaleDateString(
+                                  "en-IN",
+                                  {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  }
+                                )}{" "}
+                                to{" "}
+                                {new Date(item?.rentTo).toLocaleDateString(
+                                  "en-IN",
+                                  {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  }
+                                )}
+                              </div>
                               <div className="pt-2">
                                 {item?.product?.listingType?.includes("rent") ||
                                 item?.product?.listingType?.includes("both") ? (
@@ -768,15 +771,10 @@ export default function CartPage() {
                                       {item.rentDurationInDays === 14 &&
                                         item.product.rentPrice14Days}
                                     </span>
-                                    {/* {item.product.mrp >
-                                      item.product.originalPurchasePrice && (
-                                      <span className="text-sm text-gray-500 line-through">
-                                        ₹{item.product.mrp}
-                                      </span>
-                                    )} */}
-                                    <span className="text-sm text-gray-500">
+
+                                    {/* <span className="text-sm text-gray-500">
                                       + ₹{item.convenienceFee} (Convenience Fee)
-                                    </span>
+                                    </span> */}
                                   </div>
                                 )}
                               </div>
@@ -867,12 +865,19 @@ export default function CartPage() {
                         ₹{subtotal.toLocaleString()}
                       </span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Convenience Fee</span>
+                      <span className="font-medium">
+                        ₹{convenienceFee.toLocaleString()}
+                      </span>
+                    </div>
                     {/* {discount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Discount</span>
                       <span>-₹{discountAmount}</span>
                     </div>
                   )} */}
+                  
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
                       <span className={"text-green-600 font-medium"}>

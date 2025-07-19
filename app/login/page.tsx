@@ -4,14 +4,13 @@ import type React from "react";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { signIn } from "next-auth/react";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -21,14 +20,12 @@ import {
   useGoogleLogin,
 } from "@react-oauth/google";
 import Logo from "@/public/HomeLogo.png";
-
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 import { toast } from "sonner";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "@/lib/firebase";
-import { sendPasswordResetEmail } from "firebase/auth";
-import {getFirebaseToken} from "@/lib/firebase-messaging"
+
+import { getFirebaseToken } from "@/lib/firebase-messaging";
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -97,8 +94,6 @@ export default function LoginPage() {
 
           if (fcmToken) {
             // console.log("FCM Token:", fcmToken);
-
-            // Send FCM token to your backend
             await axios.put(
               `${process.env.NEXT_PUBLIC_API_BASE}/users/save-fcmtoken`,
               { fcmToken },
@@ -199,15 +194,15 @@ export default function LoginPage() {
             {/* <h1 className="text-2xl font-bold text-center mb-6">
               Welcome Back
             </h1> */}
- <div className="flex justify-center w-full">
-                <Image
-                  src={Logo}
-                  alt="HOMELOGO"
-                  width={200}
-                  height={200}
-                  className="object-contain mb-5 "
-                />
-              </div>
+            <div className="flex justify-center w-full">
+              <Image
+                src={Logo}
+                alt="HOMELOGO"
+                width={200}
+                height={200}
+                className="object-contain mb-5 "
+              />
+            </div>
             <div className="w-full flex justify-center">
               {/* <GoogleLogin
                 onSuccess={handleLoginSuccess}
