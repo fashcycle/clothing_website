@@ -27,7 +27,7 @@ export function OrderDetailsDialog({
   order,
 }: OrderDetailsDialogProps) {
   const item = order.items[0];
-
+console.log(order)
   // Simple date formatting function
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

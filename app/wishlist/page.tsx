@@ -112,10 +112,10 @@ export default function WishlistPage() {
         {wishlistedItems?.length > 0 && (
           <>
             <h1 className="text-2xl md:text-3xl font-semibold mb-2">
-              Your Wishlist ❤️
+              Your Wishlist
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              `You have {wishlistedItems?.length} item saved for later.`
+              You have {wishlistedItems?.length} item saved for later.
             </p>
           </>
         )}
@@ -126,14 +126,15 @@ export default function WishlistPage() {
         </div>
       ) : wishlistedItems?.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <Heart className="w-16 h-16 text-gray-300 mb-4 fill-pink-600 text-red-500" />
+          <Heart className="w-16 h-16 mb-4 fill-pink-600 text-red-500" />
           <h3 className="text-xl font-semibold mb-2">Your Wishlist is Empty</h3>
           <p className="text-muted-foreground text-center mb-6">
             Discover and save items you love for later
           </p>
           <Button
+          variant='outline'
             onClick={() => router.push("/")}
-            className="bg-pink-600 hover:bg-pink-700"
+           
           >
             Start Shopping
           </Button>

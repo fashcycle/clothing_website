@@ -105,9 +105,9 @@ export default function CategorySlider() {
                   <h3 className="text-white font-serif text-xl capitalize">
                     {category.name}
                   </h3>
-                  <p className="text-white/80 text-sm mt-1">
+                  {/* <p className="text-white/80 text-sm mt-1">
                     {category.productCount} items
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </Link>

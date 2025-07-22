@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { getAllCategories, getNotifications } from "@/app/api/api";
+import AppPromoDialog from "./AppPromoDialog";
 
 type Category = {
   name: string;
@@ -44,12 +45,6 @@ export default function Navbar() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [notifications, setNotifications] = useState();
-  const isMobile = () => {
-    // Simple check for mobile device
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
-  };
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -102,17 +97,21 @@ export default function Navbar() {
     };
   }, []);
 
-  const handleLinkClick = () => {
-    setIsSheetOpen(false);
-    // if (isMobile()) {
-    //   window.location.href = "https://wa.me/";
-    // } else {
-    //   alert("Please install our app to continue!");
-    // }
-  };
+ 
+  const [showDialog, setShowDialog] = useState(false);
 
+  const handleNavigate = () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = "myapp://home";
+    } else {
+      setShowDialog(true);
+    }
+  };
   return (
     <header className="w-full bg-primary text-primary-foreground fixed top-0 z-50 left-0 right-0">
+      <AppPromoDialog open={showDialog} onOpenChange={setShowDialog} />
+
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 relative">
           <div className="flex items-center gap-2 flex-1 lg:flex-none">
@@ -157,13 +156,14 @@ export default function Navbar() {
                   </div>
                   <Link
                     href={isLogin ? "/profile" : "/login"}
-                    onClick={handleLinkClick}
                   >
                     <Button
                       variant="default"
                       size="lg"
                       className="w-full flex items-center gap-3 bg-primary text-white hover:bg-primary/90 transition-colors py-3 rounded-lg font-medium md:hidden"
-                    >
+                        onClick={handleNavigate}
+                  
+                  >
                       <Plus className="h-5 w-5" />
                       SELL ITEM
                     </Button>
@@ -171,7 +171,6 @@ export default function Navbar() {
                   <div className="flex flex-col gap-3 md:hidden">
                     <Link
                       href={isLogin ? "/wishlist" : "/login"}
-                      onClick={handleLinkClick}
                     >
                       <Button
                         variant="outline"
@@ -184,7 +183,6 @@ export default function Navbar() {
                     </Link>
                     <Link
                       href={isLogin ? "/cart" : "/login"}
-                      onClick={handleLinkClick}
                     >
                       <Button
                         variant="outline"
@@ -200,7 +198,6 @@ export default function Navbar() {
                         variant="outline"
                         size="lg"
                         className="w-full flex items-center gap-3 justify-start py-3 rounded-lg"
-                        onClick={handleLinkClick}
                       >
                         <Bell className="h-5 w-5" />
                         Notifications
@@ -211,7 +208,6 @@ export default function Navbar() {
                     <Link
                       href="/"
                       className="text-lg font-medium py-2 px-4 rounded-md hover:bg-gray-100 transition-colors block"
-                      onClick={handleLinkClick}
                     >
                       Home
                     </Link>
@@ -220,7 +216,6 @@ export default function Navbar() {
                         key={category.id}
                         href={`/${category.id}`}
                         className="capitalize text-lg font-medium py-2 px-4 rounded-md hover:bg-gray-100 transition-colors block"
-                        onClick={handleLinkClick}
                       >
                         {category.name}
                       </Link>
@@ -252,18 +247,19 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-2">
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
-                  <Link href={isLogin ? "/profile" : "/login"}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="hidden flex items-center gap-2 border-2 text-white hover:bg-gray-100 hover:text-black transition-colors px-4 py-1 rounded-full font-medium"
-                      >
-                        <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline">LIST</span>
-                      </Button>
-                    </TooltipTrigger>
-                  </Link>
+                  {/* <Link href={isLogin ? "/profile" : "/login"}> */}
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="hidden flex items-center gap-2 border-2 text-white hover:bg-gray-100 hover:text-black transition-colors px-4 py-1 rounded-full font-medium"
+                      onClick={handleNavigate}
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="hidden sm:inline">LIST</span>
+                    </Button>
+                  </TooltipTrigger>
+                  {/* </Link> */}
                   <TooltipContent side="bottom">
                     <p>Add New Listing</p>
                   </TooltipContent>

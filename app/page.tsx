@@ -3,16 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  TrendingUp,
-  Truck,
-  Users,
-  CheckCircle,
-  Star,
-} from "lucide-react";
+import { ArrowRight, CheckCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import FeaturedProducts from "@/components/featured-products";
 import HowItWorks from "@/components/how-it-works";
 import Testimonials from "@/components/testimonials";
@@ -21,13 +13,20 @@ import LocationPopup from "@/components/location-popup";
 import LocationHandler from "@/components/location-handler";
 import appStore from "@/public/appStore.svg";
 import googlePlay from "@/public/googlePlay.svg";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogOverlay,
+  DialogClose,
+} from "@radix-ui/react-dialog";
+import { DialogHeader } from "@/components/ui/dialog";
+import AppPromoDialog from "@/components/AppPromoDialog";
 
 export default function Home() {
   useEffect(() => {
-    // Force a check for location permission on home page mount
     const locationPermission = localStorage.getItem("locationPermission");
     const userLocation = localStorage.getItem("userLocation");
-    // Clear location popup flag to ensure it shows if needed
     if (!userLocation || locationPermission === "never") {
       localStorage.removeItem("hasSeenLocationPopup");
     }
@@ -40,10 +39,21 @@ export default function Home() {
     setIsLogin(!!token);
   }, []);
 
+  const [showDialog, setShowDialog] = useState(false);
+
+  const handleNavigate = () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = "myapp://home";
+    } else {
+      setShowDialog(true);
+    }
+  };
+
   return (
     <div className="flex flex-col">
+       <AppPromoDialog open={showDialog} onOpenChange={setShowDialog} />
       <LocationPopup />
-
       <LocationHandler />
 
       <section className="relative w-full min-h-[80vh] flex items-center">
@@ -69,21 +79,9 @@ export default function Home() {
               <Button
                 size="lg"
                 className="bg-white text-primary hover:bg-white/90"
-                onClick={() => {
-                  const element = document.getElementById("new-arrivals");
-                  const headerOffset = 100; // Adjust this value based on your header height
-                  const elementPosition =
-                    element?.getBoundingClientRect().top ?? 0;
-                  const offsetPosition =
-                    elementPosition + window.pageYOffset - headerOffset;
-
-                  window.scrollTo({
-                    top: offsetPosition,
-                    behavior: "smooth",
-                  });
-                }}
+                onClick={handleNavigate}
               >
-                Browse Clothes
+                List your cloth
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </div>
@@ -135,10 +133,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Category Navigation */}
       <CategorySlider />
 
-      {/* Trending Listings */}
       <section
         id="new-arrivals"
         className="container px-4 md:px-6 py-12 md:py-16"
@@ -165,12 +161,10 @@ export default function Home() {
         <FeaturedProducts />
       </section>
 
-      {/* How It Works Section */}
       <section id="how-it-works">
         <HowItWorks />
       </section>
 
-      {/* Sustainability Section */}
       <section className="container px-4 md:px-6 py-12 md:py-20">
         <div className="grid md:grid-cols-2 gap-10 items-center">
           <div>
@@ -229,7 +223,7 @@ export default function Home() {
       {!isLogin && (
         <section className="container px-4 md:px-6 py-12 md:py-16">
           <div className="bg-primary text-primary-foreground p-8 md:p-12 rounded-lg relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzR2LTRoLTJ2NGgtNHYyaDR2NGgydi00aC00djJoNHY0aDJWNmg0VjRoLTR6bTAtMzBWMGgtMnY0aC00djJoNHY0aDJWNmg0VjRoLTR6TTYgMzR2LTRINHY0SDB2Mmg0djRoMnYtNGg0di0ySDZ6TTYgNFYwSDR2NEgwdjJoNHY0aDJWNmg0VjRINnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10"></div>
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzR2LTRINHY0aC00djJoNHY0aDJWNmg0VjRoLTR6TTAtMzBWMGgtMnY0aC00djJoNHY0aDJWNmg0VjRoLTR6TTYgMzR2LTRINHY0SDB2Mmg0djRoMnYtNGg0di0ySDZ6TTYgNFYwSDR2NEgwdjJoNHY0aDJWNmg0VjRINnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10"></div>
             <div className="grid gap-6 md:grid-cols-2 items-center relative z-10">
               <div>
                 <h2 className="text-3xl font-serif font-medium tracking-tight md:text-4xl">
@@ -258,7 +252,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* Testimonials */}
       <Testimonials />
     </div>
   );
