@@ -3,51 +3,33 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Heart,
   Trash2,
   Star,
   ShoppingCart,
   Plus,
-  Minus,
-  Tag,
   Truck,
   Shield,
   RotateCcw,
-  Gift,
   MapPin,
   Clock,
-  CreditCard,
   Badge,
-  CloudCog,
   Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   getCartItems,
-  removeFromWishlist,
   getWishlistedProducts,
-  addToWishlist,
   removeFromCart,
   getUserDetails,
-  updateAddress,
-  deleteAddress,
   addNewAddress,
   getUserAddresses,
 } from "@/app/api/api";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 import Image from "next/image";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
-import { AddressList } from "@/components/profile/address-list";
 import {
   Dialog,
   DialogContent,
@@ -57,7 +39,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { AddressFormDialog } from "@/components/profile/address-form-dialog";
 import axios from "axios";
-import Script from "next/script"; // agar global layout me load nahin kiya
 import CartCountdown from "@/components/CartCountdown";
 
 interface SavedAddress {
@@ -89,10 +70,37 @@ export default function CartPage() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>();
   const [isPaying, setIsPaying] = useState(false);
-  console.log(cartItems);
-  const handleCheckout = async () => {
-    if (cartItems.length === 0) return toast.error("Cart is empty!");
+  const [showCheckoutTimer, setShowCheckoutTimer] = useState(false);
+  const [checkoutTimer, setCheckoutTimer] = useState(120);
+  const [checkoutTimerActive, setCheckoutTimerActive] = useState(false);
 
+  const handleCheckout = () => {
+    if (cartItems.length === 0) return toast.error("Cart is empty!");
+    setShowCheckoutTimer(true);
+    setCheckoutTimer(120);
+    setCheckoutTimerActive(true);
+  };
+
+  useEffect(() => {
+    let timerInterval: NodeJS.Timeout;
+    if (showCheckoutTimer && checkoutTimerActive && checkoutTimer > 0) {
+      timerInterval = setInterval(() => {
+        setCheckoutTimer((prev) => {
+          if (prev <= 1) {
+            setCheckoutTimerActive(false);
+            clearInterval(timerInterval);
+            proceedCheckout();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timerInterval);
+  }, [showCheckoutTimer, checkoutTimerActive, checkoutTimer]);
+
+  const proceedCheckout = async () => {
+    setShowCheckoutTimer(false);
     const cartIDS = cartItems.map((item: any) => item.id);
     try {
       setIsPaying(true);
@@ -163,7 +171,6 @@ export default function CartPage() {
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
     } catch (err: any) {
-      // const message = err?.response?.data?.message || "Payment init error";
       const message = "Currently only 1 item can be purchased at a time";
       toast.error(message);
       setIsPaying(false);
@@ -203,7 +210,6 @@ export default function CartPage() {
     setUser(JSON.parse(userData));
     fetchCartItems(), fetchWishlist();
   }, []);
-
 
   const fetchCartItems = async () => {
     try {
@@ -335,7 +341,7 @@ export default function CartPage() {
     (sum: any, item: any) => sum + (item.securityAmount || 0),
     0
   );
-   const convenienceFee  = cartItems.reduce((sum: any, item: any) => {
+  const convenienceFee = cartItems.reduce((sum: any, item: any) => {
     const itemPrice = calculateConvenienceFee(item);
     return sum + itemPrice;
   }, 0);
@@ -345,7 +351,7 @@ export default function CartPage() {
   }, 0);
   const shipping = subtotal > 999 ? 0 : 99;
   const taxAmount = Math.round(subtotal * 0.18);
-  const total = subtotal + shipping + totalSecurityAmount +convenienceFee;
+  const total = subtotal + shipping + totalSecurityAmount + convenienceFee;
   const tax = taxAmount;
   useEffect(() => {
     if (user && Array.isArray(user.addresses) && user.addresses.length > 0) {
@@ -877,7 +883,7 @@ export default function CartPage() {
                       <span>-₹{discountAmount}</span>
                     </div>
                   )} */}
-                  
+
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
                       <span className={"text-green-600 font-medium"}>
@@ -908,16 +914,54 @@ export default function CartPage() {
 
                   <Button
                     className="w-full mt-6 py-4 text-lg"
-                    disabled={isPaying || cartItems.length === 0}
+                    disabled={isPaying || showCheckoutTimer || cartItems.length === 0}
                     onClick={handleCheckout}
                   >
-                    {isPaying ? (
+                    {isPaying || showCheckoutTimer ? (
                       <Loader text="" className="h-5 w-5 animate-spin" />
                     ) : (
                       <Shield className="h-5 w-5" />
                     )}
-                    {isPaying ? "Processing…" : "Proceed to Checkout"}
+                    {isPaying || showCheckoutTimer
+                      ? "Processing…"
+                      : "Proceed to Checkout"}
                   </Button>
+
+                  <Dialog
+                    open={showCheckoutTimer}
+                    onOpenChange={setShowCheckoutTimer}
+                  >
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="text-xl font-semibold text-center">
+                          Confirming Checkout
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="flex flex-col items-center justify-center py-6">
+                        <div className="text-4xl font-bold text-pink-600 mb-2">
+                          {Math.floor(checkoutTimer / 60)
+                            .toString()
+                            .padStart(2, "0")}
+                          :{(checkoutTimer % 60).toString().padStart(2, "0")}
+                        </div>
+                        <p className="text-gray-700 text-center mb-4">
+                          We’re confirming that your order is available for the
+                          dates you selected.
+                        </p>
+
+                        {/* <Button
+                          className="w-full mt-2"
+                          onClick={() => {
+                            setCheckoutTimerActive(false);
+                            proceedCheckout();
+                          }}
+                          disabled={isPaying}
+                        >
+                          Continue Now
+                        </Button> */}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
 
                   <div className="mt-4 space-y-2 text-xs text-gray-500">
                     <div className="flex items-center gap-2">
