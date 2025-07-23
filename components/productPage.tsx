@@ -49,6 +49,7 @@ export default function ProductPage({ id }: { id: string }) {
   });
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isBuyChecked, setIsBuyChecked] = useState(false);
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(false);
 
@@ -167,7 +168,7 @@ export default function ProductPage({ id }: { id: string }) {
     toast.success("Rental dates selected successfully!");
   };
 
-  const handleAddToCart = async (productId: string) => {
+  const handleAddToCart = async (productId: string, type: "BUY" | "RENT") => {
     if (!isLogin) {
       toast.error("Please Login and then Continue");
       return;
@@ -176,11 +177,7 @@ export default function ProductPage({ id }: { id: string }) {
       setIsAddingToCart(productId);
 
       let payload: any = { productId };
-      const isRent =
-        Array.isArray(product?.listingType) &&
-        product.listingType.includes("rent");
-
-      if (isRent) {
+      if (type === "RENT") {
         if (!rentFromDate || !rentToDate) {
           toast.error("Please select rental dates first");
           return;
@@ -200,7 +197,12 @@ export default function ProductPage({ id }: { id: string }) {
         setCartItems((prev) => [...prev, productId]);
         toast.success("Added to cart successfully");
 
-        if (isRent && selectedRentalDays && rentFromDate && rentToDate) {
+        if (
+          type === "RENT" &&
+          selectedRentalDays &&
+          rentFromDate &&
+          rentToDate
+        ) {
           setCartSelectionState({
             rentalDays: selectedRentalDays,
             fromDate: rentFromDate,
@@ -443,71 +445,56 @@ export default function ProductPage({ id }: { id: string }) {
             {/* Rental Options */}
             {isRentProduct && renderRentalButtons()}
 
-            <div className="flex gap-3 bg-gray-50 p-3 rounded-lg justify-center items-center gap-8">
-              <div>
-                {" "}
-                {isSellProduct && (
-                  <div className="flex-1">
-                    <div className=" mb-3 flex flex-col gap-2  ">
-                      <div className="text-lg font-bold text-green-600 text-center">
-                        Make it Own at :{" "}
-                        <span className="line-through">
-                          {" "}
-                          ₹{product?.originalPurchasePrice}
-                        </span>{" "}
-                        ₹{product?.sellingPrice}
-                      </div>
-                      <div className="items-center justify-center flex">
-                        <Badge
-                          variant="outline"
-                          className="border-violet-400 bg-violet-100 text-violet-800 rounded-full px-2 py-1 text-xs capitalize "
-                        >
-                          Save ₹
-                          {product?.originalPurchasePrice -
-                            product?.sellingPrice}
-                        </Badge>
-                      </div>
+            {isSellProduct && (
+              <div className="flex gap-3 bg-gray-50 p-3 rounded-lg justify-center items-center gap-8">
+                <div className="flex-1">
+                  <div className="mb-3 flex flex-col gap-2">
+                    <div className="text-lg font-bold text-green-600 text-center">
+                      Make it Own at :{" "}
+                      <span className="text-sm line-through text-green-800">{" "}
+                        ₹{product?.originalPurchasePrice}
+                      </span>{" "}
+                      ₹{product?.sellingPrice}
+                    </div>
+                    <div className="items-center justify-center flex">
+                      <Badge
+                        variant="outline"
+                        className="border-green-400 bg-green-100 text-green-800 rounded-full px-2 py-1 text-xs capitalize "
+                      >
+                        Save ₹
+                        {product?.originalPurchasePrice - product?.sellingPrice}
+                      </Badge>
                     </div>
                   </div>
-                )}
-              </div>
-              <div className="flex">
+                </div>
                 {isSellProduct && isRentProduct && (
-                  <Button
-                    variant={
-                      cartItems.includes(product.id) ? "default" : "outline"
-                    }
-                    className={`flex-1 py-4 text-sm rounded-lg shadow-lg ${
-                      cartItems.includes(product.id)
-                        ? "bg-emerald-600 hover:bg-emerald-700"
-                        : ""
+                  <button
+                    type="button"
+                    className={`flex items-center px-4 py-2 border rounded-lg shadow-lg text-sm font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                      isBuyChecked
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50"
                     }`}
-                    onClick={() =>
-                      cartItems.includes(product.id)
-                        ? router.push("/cart")
-                        : handleAddToCart(product.id)
-                    }
+                    onClick={() => setIsBuyChecked((prev) => !prev)}
                   >
-                    {isAddingToCart === product.id
-                      ? "Adding..."
-                      : cartItems.includes(product.id)
-                      ? "Go to Cart"
-                      : "Make It Yours"}
-                  </Button>
+                    Make It Yours
+                  </button>
                 )}
               </div>
-            </div>
+            )}
 
             <div className="flex gap-3">
               <Button
                 onClick={() =>
                   cartItems.includes(product.id)
                     ? router.push("/cart")
-                    : handleAddToCart(product.id)
+                    : handleAddToCart(product.id, isBuyChecked ? "BUY" : "RENT")
                 }
                 disabled={
                   isAddingToCart === product.id ||
-                  (isRentProduct && (!rentFromDate || !rentToDate))
+                  (!isBuyChecked &&
+                    isRentProduct &&
+                    (!rentFromDate || !rentToDate))
                 }
                 className={`flex-1 py-4 text-sm rounded-lg shadow-lg ${
                   cartItems.includes(product.id)
