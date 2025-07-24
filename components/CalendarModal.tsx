@@ -22,15 +22,12 @@ const CalendarModal = ({
   onConfirm: () => void;
 }) => {
   const minSelectableDate = addDays(new Date(), 2);
-
   const handleDaySelect = (day: Date) => {
     if (day) {
       onDaySelect(day);
     }
   };
-
   if (!isOpen) return null;
-
   return (
     <AnimatePresence>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
@@ -84,7 +81,7 @@ const CalendarModal = ({
                   rentFromDate && selectedRentalDays
                     ? {
                         from: rentFromDate,
-                        to: addDays(rentFromDate, selectedRentalDays ),
+                        to: addDays(rentFromDate, selectedRentalDays),
                       }
                     : undefined
                 }
@@ -95,7 +92,7 @@ const CalendarModal = ({
                     rentFromDate && selectedRentalDays
                       ? {
                           from: rentFromDate,
-                          to: addDays(rentFromDate, selectedRentalDays ),
+                          to: addDays(rentFromDate, selectedRentalDays),
                         }
                       : undefined,
                 }}
