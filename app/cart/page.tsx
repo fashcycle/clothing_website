@@ -73,7 +73,7 @@ export default function CartPage() {
   const [showCheckoutTimer, setShowCheckoutTimer] = useState(false);
   const [checkoutTimer, setCheckoutTimer] = useState(120);
   const [checkoutTimerActive, setCheckoutTimerActive] = useState(false);
-
+  console.log(cartItems);
   const handleCheckout = () => {
     if (cartItems.length === 0) return toast.error("Cart is empty!");
     setShowCheckoutTimer(true);
@@ -177,15 +177,6 @@ export default function CartPage() {
     }
   };
 
-  // Add this function after the state declarations
-  const updateItemRentalPeriod = (itemId: string, period: string) => {
-    setCartItems((prevItems: any) =>
-      prevItems.map((item: any) =>
-        item.id === itemId ? { ...item, rentDurationInDays: period } : item
-      )
-    );
-  };
-
   const calculateItemPrice = (item: any) => {
     if (item.rentDurationInDays === 3) {
       return item.product.rentPrice3Days;
@@ -193,6 +184,8 @@ export default function CartPage() {
       return item.product.rentPrice7Days;
     } else if (item.rentDurationInDays === 14) {
       return item.product.rentPrice14Days;
+    } else {
+      return item?.product?.sellingPrice;
     }
   };
   const calculateConvenienceFee = (item: any) => {
@@ -201,6 +194,8 @@ export default function CartPage() {
     } else if (item.rentDurationInDays === 7) {
       return item?.convenienceFee;
     } else if (item.rentDurationInDays === 14) {
+      return item?.convenienceFee;
+    } else {
       return item?.convenienceFee;
     }
   };
@@ -217,7 +212,7 @@ export default function CartPage() {
       if (response.success) {
         const itemsWithRentalPeriod = response.cart.map((item: any) => ({
           ...item,
-          rentDurationInDays: item.rentDurationInDays || "3",
+          rentDurationInDays: item.rentDurationInDays,
         }));
         setCartItems(itemsWithRentalPeriod);
         setIsLoading(false);
@@ -546,7 +541,7 @@ export default function CartPage() {
                     {cartItems.map((item: any) => {
                       return (
                         <motion.div
-                          key={item.id} // Added key property
+                          key={item.id} 
                           layout
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -555,7 +550,6 @@ export default function CartPage() {
                           className="p-4 sm:p-6 border rounded-xl bg-white shadow hover:shadow-md transition-all duration-300"
                         >
                           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                            {/* Product Image with animations */}
                             <motion.div
                               whileHover={{ scale: 1.05 }}
                               transition={{ type: "spring", stiffness: 300 }}
@@ -647,142 +641,49 @@ export default function CartPage() {
                                   </span>
                                 </div>
                               </div>
-                              <div className="text-xs text-gray-600">
-                                Rent Duration {item?.rentDurationInDays} Days
-                              </div>
-
-                              <div className="text-xs text-gray-600">
-                                From{" "}
-                                {new Date(item?.rentFrom).toLocaleDateString(
-                                  "en-IN",
-                                  {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  }
-                                )}{" "}
-                                to{" "}
-                                {new Date(item?.rentTo).toLocaleDateString(
-                                  "en-IN",
-                                  {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  }
-                                )}
-                              </div>
-                              <div className="pt-2">
-                                {item?.product?.listingType?.includes("rent") ||
-                                item?.product?.listingType?.includes("both") ? (
-                                  <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                      <Clock className="h-4 w-4 text-emerald-600" />
-                                      <span className="text-sm font-medium text-gray-700">
-                                        Rental Period:
-                                      </span>
-                                    </div>
-
-                                    <Tabs
-                                      defaultValue={item?.rentDurationInDays}
-                                      value={item?.rentDurationInDays}
-                                      onValueChange={(value) =>
-                                        updateItemRentalPeriod(item.id, value)
-                                      }
-                                      className="w-full"
-                                    >
-                                      <TabsList className="grid grid-cols-3 w-full max-w-xs bg-gray-100 p-1 rounded-full">
-                                        <TabsTrigger
-                                          value="3"
-                                          className="data-[state=active]:bg-white data-[state=active]:text-black text-muted-foreground font-medium py-2 rounded-full transition"
-                                        >
-                                          3 Days
-                                        </TabsTrigger>
-                                        <TabsTrigger
-                                          value="7"
-                                          className="data-[state=active]:bg-white data-[state=active]:text-black text-muted-foreground font-medium py-2 rounded-full transition"
-                                        >
-                                          7 Days
-                                        </TabsTrigger>
-                                        <TabsTrigger
-                                          value="14"
-                                          className="data-[state=active]:bg-white data-[state=active]:text-black text-muted-foreground font-medium py-2 rounded-full transition"
-                                        >
-                                          14 Days
-                                        </TabsTrigger>
-                                      </TabsList>
-                                      <TabsContent value="3" className="mt-2">
-                                        <motion.div
-                                          initial={{ opacity: 0 }}
-                                          animate={{ opacity: 1 }}
-                                          className="flex items-baseline gap-2"
-                                        >
-                                          <span className="text-2xl font-bold text-emerald-600">
-                                            ₹
-                                            {(item?.product
-                                              ?.originalPurchasePrice *
-                                              21) /
-                                              100}
-                                          </span>
-                                          <span className="text-sm text-gray-500">
-                                            for 3 days
-                                          </span>
-                                        </motion.div>
-                                      </TabsContent>
-                                      <TabsContent value="7" className="mt-2">
-                                        <motion.div
-                                          initial={{ opacity: 0 }}
-                                          animate={{ opacity: 1 }}
-                                          className="flex items-baseline gap-2"
-                                        >
-                                          <span className="text-2xl font-bold text-emerald-600">
-                                            ₹
-                                            {(item?.product
-                                              ?.originalPurchasePrice *
-                                              35) /
-                                              100}
-                                          </span>
-                                          <span className="text-sm text-gray-500">
-                                            for 7 days
-                                          </span>
-                                        </motion.div>
-                                      </TabsContent>
-                                      <TabsContent value="14" className="mt-2">
-                                        <motion.div
-                                          initial={{ opacity: 0 }}
-                                          animate={{ opacity: 1 }}
-                                          className="flex items-baseline gap-2"
-                                        >
-                                          <span className="text-2xl font-bold text-emerald-600">
-                                            ₹
-                                            {(item?.product
-                                              ?.originalPurchasePrice *
-                                              42) /
-                                              100}
-                                          </span>
-                                          <span className="text-sm text-gray-500">
-                                            for 14 days
-                                          </span>
-                                        </motion.div>
-                                      </TabsContent>
-                                    </Tabs>
+                              {item.rentDurationInDays !== null && (
+                                <>
+                                  <div className="text-xs text-gray-600">
+                                    Rent Duration {item?.rentDurationInDays}{" "}
+                                    Days
                                   </div>
-                                ) : (
-                                  <div className="flex items-baseline gap-3">
-                                    <span className="text-2xl font-bold text-emerald-600">
-                                      ₹{" "}
-                                      {item.rentDurationInDays === 3 &&
-                                        item.product.rentPrice3Days}
-                                      {item.rentDurationInDays === 7 &&
-                                        item.product.rentPrice7Days}
-                                      {item.rentDurationInDays === 14 &&
-                                        item.product.rentPrice14Days}
-                                    </span>
+                                  <div className="text-xs text-gray-600">
+                                    From{" "}
+                                    {new Date(
+                                      item?.rentFrom
+                                    ).toLocaleDateString("en-IN", {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}{" "}
+                                    to{" "}
+                                    {new Date(item?.rentTo).toLocaleDateString(
+                                      "en-IN",
+                                      {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                      }
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                              <div className="flex items-baseline gap-3">
+                                <span className="text-2xl font-bold text-emerald-600">
+                                  ₹{" "}
+                                  {item.rentDurationInDays === null &&
+                                    item.product.sellingPrice}
+                                  {item.rentDurationInDays === 3 &&
+                                    item.product.rentPrice3Days}
+                                  {item.rentDurationInDays === 7 &&
+                                    item.product.rentPrice7Days}
+                                  {item.rentDurationInDays === 14 &&
+                                    item.product.rentPrice14Days}
+                                </span>
 
-                                    {/* <span className="text-sm text-gray-500">
+                                {/* <span className="text-sm text-gray-500">
                                       + ₹{item.convenienceFee} (Convenience Fee)
                                     </span> */}
-                                  </div>
-                                )}
                               </div>
 
                               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
@@ -852,11 +753,11 @@ export default function CartPage() {
                     </div>
                   </div>
                 )}
-                {discount > 0 && (
+               
                   <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <span className="text-green-600 font-medium">Promo applied! {discount}% off</span>
+                    <span className="text-green-600 font-medium">Promo applied! {213123}% off</span>
                   </div>
-                )}
+             
               </div> */}
 
                 {/* Order Summary */}
@@ -877,13 +778,7 @@ export default function CartPage() {
                         ₹{convenienceFee.toLocaleString()}
                       </span>
                     </div>
-                    {/* {discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount</span>
-                      <span>-₹{discountAmount}</span>
-                    </div>
-                  )} */}
-
+               
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
                       <span className={"text-green-600 font-medium"}>
@@ -914,7 +809,9 @@ export default function CartPage() {
 
                   <Button
                     className="w-full mt-6 py-4 text-lg"
-                    disabled={isPaying || showCheckoutTimer || cartItems.length === 0}
+                    disabled={
+                      isPaying || showCheckoutTimer || cartItems.length === 0
+                    }
                     onClick={handleCheckout}
                   >
                     {isPaying || showCheckoutTimer ? (

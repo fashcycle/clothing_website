@@ -4,15 +4,8 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-import {
-  Home,
-  ShoppingCart,
-  CalendarDays,
-  RotateCcw,
-  CloudCog,
-} from "lucide-react";
-import { addDays, isBefore, format, differenceInDays } from "date-fns";
+import { Home, ShoppingCart } from "lucide-react";
+import { addDays, format } from "date-fns";
 import "react-day-picker/dist/style.css";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
@@ -21,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
 import { addToCart, getCartItems, getSingleProduct } from "@/app/api/api";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import CalendarModal from "@/components/CalendarModal";
 
 export default function ProductPage({ id }: { id: string }) {
@@ -37,16 +30,7 @@ export default function ProductPage({ id }: { id: string }) {
   const [rentFromDate, setRentFromDate] = useState<Date | null>(null);
   const [rentToDate, setRentToDate] = useState<Date | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [isDateSelected, setIsDateSelected] = useState(false);
-  const [cartSelectionState, setCartSelectionState] = useState<{
-    rentalDays: number | null;
-    fromDate: Date | null;
-    toDate: Date | null;
-  }>({
-    rentalDays: null,
-    fromDate: null,
-    toDate: null,
-  });
+
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isBuyChecked, setIsBuyChecked] = useState(false);
@@ -57,7 +41,6 @@ export default function ProductPage({ id }: { id: string }) {
     const token = localStorage.getItem("token");
     setIsLogin(!!token);
   }, []);
-  // Save state to localStorage when rental details change
   useEffect(() => {
     if (product?.id && selectedRentalDays && rentFromDate && rentToDate) {
       const stateKey = `rental_state_${product.id}`;
@@ -70,7 +53,6 @@ export default function ProductPage({ id }: { id: string }) {
     }
   }, [product?.id, selectedRentalDays, rentFromDate, rentToDate]);
 
-  // Load state from localStorage on component mount
   useEffect(() => {
     if (product?.id) {
       const stateKey = `rental_state_${product.id}`;
@@ -81,12 +63,6 @@ export default function ProductPage({ id }: { id: string }) {
           setSelectedRentalDays(parsed.rentalDays);
           setRentFromDate(new Date(parsed.fromDate));
           setRentToDate(new Date(parsed.toDate));
-          setIsDateSelected(true);
-          setCartSelectionState({
-            rentalDays: parsed.rentalDays,
-            fromDate: new Date(parsed.fromDate),
-            toDate: new Date(parsed.toDate),
-          });
         } catch (error) {
           console.error("Error parsing saved rental state:", error);
         }
@@ -158,13 +134,11 @@ export default function ProductPage({ id }: { id: string }) {
     setSelectedRentalDays(days);
     setRentFromDate(null);
     setRentToDate(null);
-    setIsDateSelected(false);
     setIsCalendarOpen(true);
   };
 
   const handleCalendarConfirm = () => {
     setIsCalendarOpen(false);
-    setIsDateSelected(true);
     toast.success("Rental dates selected successfully!");
   };
 
@@ -178,15 +152,17 @@ export default function ProductPage({ id }: { id: string }) {
 
       let payload: any = { productId };
       if (type === "RENT") {
-        if (!rentFromDate || !rentToDate) {
-          toast.error("Please select rental dates first");
+        if (!rentFromDate || !rentToDate || !selectedRentalDays) {
+          toast.error("Please select rental dates and duration first");
           return;
         }
+
         payload = {
           productId,
           type: "RENT",
-          rentFrom: rentFromDate.toISOString().split("T")[0],
-          rentTo: rentToDate.toISOString().split("T")[0],
+          rentDurationInDays: selectedRentalDays,
+          rentFrom: rentFromDate.toLocaleDateString().split("T")[0],
+          rentTo: rentToDate.toLocaleDateString().split("T")[0],
         };
       } else {
         payload = { ...payload, quantity: 1, type: "BUY" };
@@ -196,19 +172,6 @@ export default function ProductPage({ id }: { id: string }) {
       if (response.success) {
         setCartItems((prev) => [...prev, productId]);
         toast.success("Added to cart successfully");
-
-        if (
-          type === "RENT" &&
-          selectedRentalDays &&
-          rentFromDate &&
-          rentToDate
-        ) {
-          setCartSelectionState({
-            rentalDays: selectedRentalDays,
-            fromDate: rentFromDate,
-            toDate: rentToDate,
-          });
-        }
 
         fetchCartItems();
       }
@@ -223,7 +186,6 @@ export default function ProductPage({ id }: { id: string }) {
 
   const renderRentalButtons = () => {
     if (!product) return null;
-    // Show rental buttons if listingType is 'rent', 'both', or includes them
     const listingType = product.listingType;
     const isRent =
       (Array.isArray(listingType) &&
@@ -243,8 +205,8 @@ export default function ProductPage({ id }: { id: string }) {
         <h3 className="font-semibold text-base">Select Rental Duration</h3>
         <div className="grid grid-cols-3 gap-2">
           {options.map(({ days, price }) => {
-            const isSelected = selectedRentalDays === days;
-
+            const isActive =
+              selectedRentalDays === days && rentFromDate && rentToDate;
             return (
               <motion.div
                 key={days}
@@ -253,10 +215,10 @@ export default function ProductPage({ id }: { id: string }) {
                 className="flex-1"
               >
                 <Button
-                  variant={isSelected ? "default" : "outline"}
+                  variant={isActive ? "default" : "outline"}
                   onClick={() => handleRentalDaySelection(days)}
                   className={`w-full p-2 h-auto flex flex-col items-center justify-center relative text-xs ${
-                    isSelected
+                    isActive
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                       : "hover:bg-gray-50"
                   }`}
@@ -451,7 +413,8 @@ export default function ProductPage({ id }: { id: string }) {
                   <div className="mb-3 flex flex-col gap-2">
                     <div className="text-lg font-bold text-green-600 text-center">
                       Make it Own at :{" "}
-                      <span className="text-sm line-through text-green-800">{" "}
+                      <span className="text-sm line-through text-green-800">
+                        {" "}
                         ₹{product?.originalPurchasePrice}
                       </span>{" "}
                       ₹{product?.sellingPrice}
@@ -475,6 +438,7 @@ export default function ProductPage({ id }: { id: string }) {
                         ? "bg-emerald-600 text-white border-emerald-600"
                         : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50"
                     }`}
+                    disabled={cartItems.includes(product.id)} // <- fixed this line
                     onClick={() => setIsBuyChecked((prev) => !prev)}
                   >
                     Make It Yours
