@@ -126,7 +126,7 @@ export default function WishlistPage() {
         </div>
       ) : wishlistedItems?.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <Heart className="w-16 h-16 mb-4 fill-pink-600 text-red-500" />
+          <Heart className="w-16 h-16 mb-4 fill-green-700 text-green-800" />
           <h3 className="text-xl font-semibold mb-2">Your Wishlist is Empty</h3>
           <p className="text-muted-foreground text-center mb-6">
             Discover and save items you love for later

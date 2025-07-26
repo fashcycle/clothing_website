@@ -73,7 +73,6 @@ export default function CartPage() {
   const [showCheckoutTimer, setShowCheckoutTimer] = useState(false);
   const [checkoutTimer, setCheckoutTimer] = useState(120);
   const [checkoutTimerActive, setCheckoutTimerActive] = useState(false);
-  console.log(cartItems);
   const handleCheckout = () => {
     if (cartItems.length === 0) return toast.error("Cart is empty!");
     setShowCheckoutTimer(true);
@@ -305,7 +304,7 @@ export default function CartPage() {
   };
   useEffect(() => {
     fetchAddresses();
-  }, []);
+  }, [savedAddresses]);
   const handleAddAddressApi = async (newAddress: any) => {
     setIsSubmitting(true);
 
@@ -397,15 +396,13 @@ export default function CartPage() {
                     <div className="p-2 bg-pink-100 rounded-lg">
                       <MapPin className="w-5 h-5 text-pink-600" />
                     </div>
-
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h2 className="font-semibold text-lg text-gray-800">
                           Deliver to:
                         </h2>
                       </div>
-
-                      {user?.addresses?.length > 0 && (
+                      {user?.addresses?.length > 0 ? (
                         <div className="border rounded-lg p-4 w-full mt-8">
                           <div className="flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -423,7 +420,6 @@ export default function CartPage() {
                             {selectedAddress?.addressLine2 &&
                               selectedAddress?.addressLine2}
                           </p>
-
                           <p className="text-sm text-muted-foreground">
                             {selectedAddress?.pincode
                               ? [
@@ -443,18 +439,32 @@ export default function CartPage() {
                                   .join(", ")}
                           </p>
                         </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          No address selected. Please add an address.
+                        </p>
                       )}
                     </div>
                   </div>
-
                   <Button
                     variant="outline"
                     className="shrink-0"
                     onClick={() => {
-                      setShowAddressModal(true);
+                      if (savedAddresses.length > 0) {
+                        setShowAddressModal(true);
+                      } else {
+                        setShowNewAddressForm(true);
+                      }
                     }}
                   >
-                    Change Address
+                    {savedAddresses.length > 0 ? (
+                      "Change Address"
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4 " />
+                        Add New Address
+                      </>
+                    )}
                   </Button>
                 </div>
               </motion.div>
@@ -541,7 +551,7 @@ export default function CartPage() {
                     {cartItems.map((item: any) => {
                       return (
                         <motion.div
-                          key={item.id} 
+                          key={item.id}
                           layout
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -715,10 +725,7 @@ export default function CartPage() {
             </div>
 
             <div className="lg:col-span-1">
-              <motion.div
-                variants={itemVariants}
-                className="sticky top-8 space-y-6"
-              >
+              <motion.div variants={itemVariants} className="sticky space-y-6">
                 {/* Promo Code */}
                 {/* <div className="p-6 border rounded-xl bg-white shadow-lg">
                 <h3 className="font-semibold mb-4 text-gray-800">Apply Coupon</h3>
@@ -778,7 +785,7 @@ export default function CartPage() {
                         ₹{convenienceFee.toLocaleString()}
                       </span>
                     </div>
-               
+
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
                       <span className={"text-green-600 font-medium"}>

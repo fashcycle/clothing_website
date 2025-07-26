@@ -15,8 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
-// Define validation schemas
 const forgotPasswordSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
 });
@@ -144,7 +144,18 @@ export default function ForgotPasswordPage() {
       });
     }, 1000);
   };
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  // Toggle confirm password visibility
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
   return (
     <div className="min-h-screen flex items-center justify-center p-4 pattern-bg">
       <div className="w-full max-w-md">
@@ -216,11 +227,6 @@ export default function ForgotPasswordPage() {
                     placeholder="Enter OTP"
                     disabled={true}
                   />
-                  {errorsOTP.otp && (
-                    <p className="text-sm text-destructive">
-                      {errorsOTP.otp.message}
-                    </p>
-                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="otp">OTP</Label>
@@ -264,28 +270,56 @@ export default function ForgotPasswordPage() {
               <p className="text-muted-foreground text-center mb-6">
                 Enter your new password.
               </p>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
                 <Input
                   {...registerPassword("password")}
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="New Password"
                 />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">
+                    {showPassword ? "Hide password" : "Show password"}
+                  </span>
+                </button>
                 {errorsPassword.password && (
                   <p className="text-sm text-destructive">
                     {errorsPassword.password.message}
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
                 <Input
                   {...registerPassword("confirmPassword")}
                   id="confirmPassword"
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm Password"
                 />
+                <button
+                  type="button"
+                  onClick={toggleConfirmPasswordVisibility}
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">
+                    {showConfirmPassword ? "Hide password" : "Show password"}
+                  </span>
+                </button>
                 {errorsPassword.confirmPassword && (
                   <p className="text-sm text-destructive">
                     {errorsPassword.confirmPassword.message}

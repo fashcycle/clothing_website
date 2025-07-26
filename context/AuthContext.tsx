@@ -23,9 +23,6 @@ export const AuthProvider = ({ children }) => {
         const fcmToken = await getFirebaseToken();
 
         if (fcmToken) {
-          console.log("FCM Token:", fcmToken);
-
-          // Send FCM token to your backend
           await axios.put(
             `${process.env.NEXT_PUBLIC_API_BASE}/users/save-fcmtoken`,
             { fcmToken },

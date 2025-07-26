@@ -15,9 +15,6 @@ import {
   Camera,
   CheckCircle,
   Plus,
-  LogOut,
-  Upload,
-  Trash,
   ChevronLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -146,7 +143,6 @@ export default function ProfilePage() {
     }
     return null;
   });
-  // Get user's address from local storage or default values
   const [userAddress, setUserAddress] = useState<UserAddress | null>(() => {
     if (typeof window !== "undefined") {
       const storedAddress = localStorage.getItem("userAddress");
@@ -198,7 +194,6 @@ export default function ProfilePage() {
       setIsSubmitting(true);
 
       const formData = new FormData();
-      // Append all text fields
       formData.append("productName", productForm.productName);
       formData.append("categoryId", productForm.category);
       formData.append("mobileNumber", productForm.mobileNumber);
@@ -213,7 +208,6 @@ export default function ProfilePage() {
       // formData.append("size", productForm.size);
       formData.append("color", productForm.color);
 
-      // Append required images
       if (productForm.frontLook)
         formData.append("frontLook", productForm.frontLook);
       if (productForm.sideLook)
@@ -223,32 +217,26 @@ export default function ProfilePage() {
       if (productForm.closeUpLook)
         formData.append("closeUpLook", productForm.closeUpLook);
 
-      // Append optional images
       if (productForm.optional1)
         formData.append("optional1", productForm.optional1);
       if (productForm.optional2)
         formData.append("optional2", productForm.optional2);
 
-      // Append video if exists
       if (productForm.productVideo)
         formData.append("productVideo", productForm.productVideo);
 
-      // Append accessories image if exists
       if (productForm.accessoriesImage)
         formData.append("accessoriesImage", productForm.accessoriesImage);
 
-      // Append proof of purchase if exists
       if (productForm.proofOfPurchase)
         formData.append("proofOfPurchase", productForm.proofOfPurchase);
 
-      // Append listing types as JSON string
       const listingTypeValue =
         productForm.listingType.length === 2
           ? "both"
           : productForm.listingType[0];
       formData.append("listingType", listingTypeValue);
       delete errors.productVideo;
-      // Make API call here with formData
       const response = await createProduct(formData);
       if (response.success === true) {
         setProductForm({
@@ -349,6 +337,13 @@ export default function ProfilePage() {
   }); // In your ProfilePage component, add this state for errors
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [activeTab, setActiveTab] = useState("productListing");
+  const allowedImageTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/webp",
+    "image/gif",
+  ];
 
   const handleFileValidation = (file: File, maxSize: number) => {
     const sizeInMB = file.size / (1024 * 1024);
@@ -495,7 +490,12 @@ export default function ProfilePage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedImage(file); // Add this line to set the selected image
+      if (!allowedImageTypes.includes(file.type)) {
+        toast.error("Only JPG, PNG, or WEBP images are allowed.");
+
+        return;
+      }
+      setSelectedImage(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
@@ -525,6 +525,7 @@ export default function ProfilePage() {
           localStorage.setItem("user-info", JSON.stringify(userDetails?.user));
           setUserData(userDetails.user);
         }
+        toast.success(result.message);
         setUserImage(userDetails?.user?.image);
         setIsImageDialogOpen(false);
         setSelectedImage(null);
@@ -551,7 +552,6 @@ export default function ProfilePage() {
   const selectedCategoryObj = categories?.find(
     (cat) => String(cat.id) === String(productForm.category)
   );
-  // Referral code verification state
   const [referralVerified, setReferralVerified] = useState(null);
   const [referrerName, setReferrerName] = useState("");
   const [referralVerifying, setReferralVerifying] = useState(false);
@@ -661,7 +661,10 @@ export default function ProfilePage() {
                     transition={{ duration: 0.2 }}
                   >
                     <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
-                      <AvatarImage src={userImage || "/placeholder.svg"}  className="object-cover" />
+                      <AvatarImage
+                        src={userImage || "/placeholder.svg"}
+                        className="object-cover"
+                      />
                       <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary">
                         <User className="h-14 w-14 text-white" />
                       </AvatarFallback>
@@ -1025,74 +1028,7 @@ export default function ProfilePage() {
                         </p>
                       )}
                     </div>
-                    {/* {productForm.category === "lehenga" && (
-                      <LehengaSizeChart
-                        onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size });
-                          const newErrors = { ...formErrors };
-                          delete newErrors.productSize;
-                          setFormErrors(newErrors);
-                        }}
-                      />
-                    )}
-                    {productForm.category === "gown" && (
-                      <GownSizeChart
-                        onSizeSelect={(size: any) => {
-                          setProductForm({ ...productForm, productSize: size });
-                          setFormErrors({ ...formErrors, productSize: "" });
-                        }}
-                      />
-                    )}
-                    {productForm.category === "sharara-set" && (
-                      <ShararaSizeChart
-                        onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size });
-                          setFormErrors({ ...formErrors, productSize: "" });
-                        }}
-                      />
-                    )}
-                    {productForm.category === "anarkali" && (
-                      <AnarkaliSizeChart
-                        onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size });
-                          setFormErrors({ ...formErrors, productSize: "" });
-                        }}
-                      />
-                    )}
-                    {productForm.category === "saree" && (
-                      <SareeSizeChart
-                        onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size });
-                          setFormErrors({ ...formErrors, productSize: "" });
-                        }}
-                      />
-                    )}
-                    {productForm.category === "suit" && (
-                      <SuitSizeChart
-                        onSizeSelect={(size) => {
-                          setProductForm({ ...productForm, productSize: size });
-                          setFormErrors({ ...formErrors, productSize: "" });
-                        }}
-                      />
-                    )}
-                    {productForm.category === "poshak" && (
-                      <RajasthaniPoshakSizeChart
-                        onSizeSelect={(size: any) => {
-                          setProductForm({ ...productForm, productSize: size });
-                          setFormErrors({ ...formErrors, productSize: "" });
-                        }}
-                      />
-                    )}
-                    {productForm.category === "other" && (
-                      <OtherSizeChart
-                        onSizeSelect={(size: any) => {
-                          setProductForm({ ...productForm, productSize: size });
-                          const newErrors = { ...formErrors };
-                          delete newErrors.productSize;
-                          setFormErrors(newErrors);
-                        }}
-                      />
-                    )} */}
+
                     {selectedCategoryObj?.slug === "lehenga" && (
                       <LehengaSizeChart
                         onSizeSelect={(size) => {
@@ -1680,14 +1616,14 @@ export default function ProfilePage() {
                               setSelectedAddressId(value);
                               setProductForm({
                                 ...productForm,
-                                addressId: value, // Store only the address ID
+                                addressId: value,
                               });
                             }}
                           >
                             {savedAddresses?.map((address) => (
                               <div
                                 key={address?.id}
-                                className="flex items-start space-x-3 border-2 border-primary p-6 rounded-lg 
+                                className="flex items-start space-x-3 border border-primary p-6 rounded-lg 
                                 hover:border-primary hover:shadow-lg transition-all duration-300 
                                 hover:scale-[1.02] cursor-pointer bg-white
                                 shadow-sm hover:bg-primary/5"

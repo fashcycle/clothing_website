@@ -14,11 +14,9 @@ export default function NotificationListener() {
     data: "",
     messageId: "",
   });
-  console.log("toastData", toastData);
   useEffect(() => {
     const setupMessaging = async () => {
       await listenToMessages((payload: any) => {
-        // console.log("Payload received in component:", payload);
         const { title, body } = payload.notification || {};
         setToastData({
           title: title || "Notification",

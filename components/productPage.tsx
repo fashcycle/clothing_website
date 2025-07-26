@@ -30,13 +30,13 @@ export default function ProductPage({ id }: { id: string }) {
   const [rentFromDate, setRentFromDate] = useState<Date | null>(null);
   const [rentToDate, setRentToDate] = useState<Date | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isBuyChecked, setIsBuyChecked] = useState(false);
+
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(false);
-
+  console.log("product", product);
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLogin(!!token);
@@ -69,7 +69,15 @@ export default function ProductPage({ id }: { id: string }) {
       }
     }
   }, [product?.id]);
-
+  useEffect(() => {
+    if (
+      Array.isArray(product?.listingType) &&
+      product?.listingType.length === 1 &&
+      product?.listingType[0] === "sell"
+    ) {
+      setIsBuyChecked(true);
+    }
+  }, [product?.listingType]);
   const fetchProduct = async () => {
     try {
       const response = await getSingleProduct(id);
@@ -286,6 +294,9 @@ export default function ProductPage({ id }: { id: string }) {
     setLightboxIndex(index);
     setIsLightboxOpen(true);
   };
+  console.log("asdasdasdasd", product);
+  console.log("product?.listingType", product?.listingType);
+
   return (
     <>
       <div className="max-w-7xl mx-auto py-4 px-4 md:pt-12 lg:pt-24">
