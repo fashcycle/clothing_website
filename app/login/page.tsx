@@ -254,7 +254,7 @@ export default function LoginPage() {
                         {...register("email")}
                         id="email"
                         type="email"
-                        placeholder="name@example.com"
+                        placeholder="Enter Email"
                         className="pl-10"
                       />
                     </div>

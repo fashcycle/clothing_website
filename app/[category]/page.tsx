@@ -111,14 +111,10 @@ const colors = [
 ];
 export default function EveningDressesPage() {
   const [showMore, setShowMore] = useState(false);
-  const [postageAvailable, setPostageAvailable] = useState(false);
-  const [resaleAvailable, setResaleAvailable] = useState(false);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<any>(null);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isClient, setIsClient] = useState(false);
   const [cartItems, setCartItems] = useState<any>([]);
-
   const [user, setUser] = useState<any>("");
   const params = useParams();
   const categoryParam = params?.category || "";
@@ -139,7 +135,6 @@ export default function EveningDressesPage() {
   useEffect(() => {
     let userData: any = localStorage.getItem("user-info");
     setUser(JSON.parse(userData));
-    setIsClient(true);
     fetchCartItems(), fetchWishlist();
   }, []);
   const fetchCartItems = async () => {
@@ -222,7 +217,6 @@ export default function EveningDressesPage() {
   useEffect(() => {
     let userData: any = localStorage.getItem("user-info");
     setUser(JSON.parse(userData));
-    setIsClient(true);
     scrollToTop();
   }, []);
 
@@ -241,7 +235,7 @@ export default function EveningDressesPage() {
       query.size = selectedSize;
     }
     if (selectedColor) {
-      query.color = selectedColor;
+    query.color = selectedColor.toLowerCase();
     }
     if (selectedListingType) {
       query.listingType = selectedListingType;
@@ -386,19 +380,7 @@ export default function EveningDressesPage() {
                 </div>
               </FilterSection>
 
-              {/* <FilterSection title="Brand">
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="brand"
-                      className="mr-2"
-                      defaultChecked
-                    />
-                    <span className="text-sm">ALL</span>
-                  </label>
-                </div>
-              </FilterSection> */}
+              
 
               <FilterSection title="Size">
                 <div className="space-y-2">

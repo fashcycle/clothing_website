@@ -82,7 +82,7 @@ export function SignupForm() {
           <Input
             {...register("name")}
             id="name"
-            placeholder="John Doe"
+            placeholder="Full Name"
             className="pl-10"
           />
         </div>
@@ -99,7 +99,7 @@ export function SignupForm() {
             {...register("email")}
             id="email"
             type="email"
-            placeholder="name@example.com"
+            placeholder="Enter Email"
             className="pl-10"
           />
         </div>

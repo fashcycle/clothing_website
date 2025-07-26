@@ -31,6 +31,7 @@ export function RecentOrdersList({
       ORDER_PLACED: "Placed",
       DELIVERED: "Delivered",
       ON_RENT: "On Rent",
+      WAITING_CONFIRMATION: "Waiting Confirmation",
       RETURNED: "Returned",
     };
     return map[status] || status;
@@ -75,7 +76,6 @@ export function RecentOrdersList({
         (order: any, index: number) => {
           const item = order.items[0];
           const product = item?.product;
-
           return (
             <motion.div
               key={order.id}
@@ -104,12 +104,16 @@ export function RecentOrdersList({
                         Order Placed on -{" "}
                         {format(new Date(order.orderedAt), "dd MMM yyyy")}
                       </div>
-                      <div className="flex items-center mt-2">
-                        <Package className="h-4 w-4 mr-1" />
-                        Scheduled for{" "}
-                        {format(new Date(item.rentFrom), "dd MMM yyyy")} to{" "}
-                        {format(new Date(item.rentTo), "dd MMM yyyy")}
-                      </div>
+                      {item?.type === "RENT" && (
+                        <div className="flex items-center mt-2">
+                          <Package className="h-4 w-4 mr-1" />
+                          Scheduled for{" "}
+                          {format(
+                            new Date(item?.rentFrom),
+                            "dd MMM yyyy"
+                          )} to {format(new Date(item?.rentTo), "dd MMM yyyy")}
+                        </div>
+                      )}
                     </div>
                     <Badge
                       variant="secondary"
@@ -118,7 +122,7 @@ export function RecentOrdersList({
                       {item?.type}
                     </Badge>
                     <Badge
-                      variant="default"
+                      variant="secondary"
                       className={`${
                         order.status === "DELIVERED"
                           ? "bg-green-100 text-green-700"
