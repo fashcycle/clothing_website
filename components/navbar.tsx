@@ -97,7 +97,6 @@ export default function Navbar() {
     };
   }, []);
 
- 
   const [showDialog, setShowDialog] = useState(false);
 
   const handleNavigate = () => {
@@ -154,24 +153,19 @@ export default function Navbar() {
                       className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-black/70  focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                     />
                   </div>
-                  <Link
-                    href={isLogin ? "/profile" : "/login"}
-                  >
+                  <Link href={isLogin ? "/profile" : "/login"}>
                     <Button
                       variant="default"
                       size="lg"
                       className="w-full flex items-center gap-3 bg-primary text-white hover:bg-primary/90 transition-colors py-3 rounded-lg font-medium md:hidden"
-                        onClick={handleNavigate}
-                  
-                  >
+                      onClick={handleNavigate}
+                    >
                       <Plus className="h-5 w-5" />
                       SELL ITEM
                     </Button>
                   </Link>
                   <div className="flex flex-col gap-3 md:hidden">
-                    <Link
-                      href={isLogin ? "/wishlist" : "/login"}
-                    >
+                    <Link href={isLogin ? "/wishlist" : "/login"}>
                       <Button
                         variant="outline"
                         size="lg"
@@ -181,9 +175,7 @@ export default function Navbar() {
                         Wishlist
                       </Button>
                     </Link>
-                    <Link
-                      href={isLogin ? "/cart" : "/login"}
-                    >
+                    <Link href={isLogin ? "/cart" : "/login"}>
                       <Button
                         variant="outline"
                         size="lg"
@@ -225,12 +217,12 @@ export default function Navbar() {
               </SheetContent>
             </Sheet>
             <div className="hidden lg:flex items-center relative">
-              <div className="relative w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/70" />
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 text-black/70" />
                 <input
                   type="search"
                   placeholder="Search for brand, product type, colour..."
-                  className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-black/70 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-sm placeholder:text-black/70 focus:border-primary focus:ring-1  focus:outline-none transition-all"
                 />
               </div>
             </div>

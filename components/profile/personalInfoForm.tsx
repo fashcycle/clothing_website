@@ -68,7 +68,7 @@ export function PersonalInfoForm({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Name*</Label>
               <Input
                 id="name"
                 {...register("name")}
@@ -81,7 +81,7 @@ export function PersonalInfoForm({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">Phone Number*</Label>
               <Input
                 id="phone"
                 type="tel"

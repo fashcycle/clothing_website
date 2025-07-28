@@ -239,9 +239,9 @@ export function ProductEditDialog({
         open={showSizeChart}
         onOpenChange={(open) => setShowSizeChart(open)}
       >
-        <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-4xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Select Size</DialogTitle>
+            <DialogTitle className="">Select Size</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto">{children}</div>
         </DialogContent>
