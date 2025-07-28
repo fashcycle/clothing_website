@@ -224,6 +224,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     id="otp"
                     type="text"
+                    
                     placeholder="Enter OTP"
                     disabled={true}
                   />
@@ -234,6 +235,8 @@ export default function ForgotPasswordPage() {
                     {...registerOTP("otp")}
                     id="otp"
                     type="text"
+                    maxLength={6}
+                    minLength={6}
                     placeholder="Enter OTP"
                   />
                   {errorsOTP.otp && (
@@ -262,16 +265,16 @@ export default function ForgotPasswordPage() {
           {step === 3 && (
             <form
               onSubmit={handleSubmitPassword(onSubmitPassword)}
-              className="space-y-4"
+              className=""
             >
-              <h1 className="text-2xl font-bold text-center mb-6">
+              <h1 className="text-2xl font-bold text-center mb-4">
                 Reset Password
               </h1>
-              <p className="text-muted-foreground text-center mb-6">
+              <p className="text-muted-foreground text-center mb-4">
                 Enter your new password.
               </p>
               <Label htmlFor="password">Password</Label>
-              <div className="relative">
+              <div className="relative my-3">
                 <Input
                   {...registerPassword("password")}
                   id="password"
@@ -299,7 +302,7 @@ export default function ForgotPasswordPage() {
                 )}
               </div>
               <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
+              <div className="relative my-3">
                 <Input
                   {...registerPassword("confirmPassword")}
                   id="confirmPassword"
@@ -326,7 +329,7 @@ export default function ForgotPasswordPage() {
                   </p>
                 )}
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full my-3" disabled={isLoading}>
                 {isLoading ? "Resetting..." : "Reset Password"}
               </Button>
             </form>

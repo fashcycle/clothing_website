@@ -314,6 +314,7 @@ export default function DashboardPage() {
                     />
                   )}
                 </CardContent>
+                {recentOrders.length >0 && (
                 <CardFooter>
                   <Button
                     type="button"
@@ -322,7 +323,7 @@ export default function DashboardPage() {
                   >
                     View all orders →
                   </Button>
-                </CardFooter>
+                </CardFooter>)}
               </Card>
             </div>
           </TabsContent>

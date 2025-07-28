@@ -304,7 +304,7 @@ export default function CartPage() {
   };
   useEffect(() => {
     fetchAddresses();
-  }, [savedAddresses]);
+  }, []);
   const handleAddAddressApi = async (newAddress: any) => {
     setIsSubmitting(true);
 
@@ -385,7 +385,11 @@ export default function CartPage() {
           animate="visible"
           className="container mx-auto px-4 py-8"
         >
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div
+            className={`${
+              cartItems.length > 0 ? "grid lg:grid-cols-3 gap-8" : "w-full"
+            }`}
+          >
             <div className="lg:col-span-2">
               <motion.div
                 variants={itemVariants}
@@ -607,26 +611,26 @@ export default function CartPage() {
                             </motion.button> */}
                             </motion.div>
 
-                            {/* Product Details */}
                             <div className="flex-grow space-y-3">
-                              {/* Product Title and Rating */}
                               <div>
                                 <Link href={`/products/${item.product.id}`}>
                                   <h3 className="font-medium text-lg line-clamp-2">
                                     {item.product.productName}
                                   </h3>
                                 </Link>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <div className="flex items-center gap-1">
-                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="text-sm font-medium">
-                                      {item.product.rating}
+                                {item.product.reviews > 0 && (
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <div className="flex items-center gap-1">
+                                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                      <span className="text-sm font-medium">
+                                        {item.product.rating}
+                                      </span>
+                                    </div>
+                                    <span className="text-xs text-gray-500">
+                                      ({item.product.reviews} reviews)
                                     </span>
                                   </div>
-                                  <span className="text-xs text-gray-500">
-                                    ({item.product.reviews} reviews)
-                                  </span>
-                                </div>
+                                )}
                               </div>
 
                               <div className="flex flex-wrap gap-4">
@@ -766,94 +770,97 @@ export default function CartPage() {
                   </div>
              
               </div> */}
+                {cartItems.length > 0 && (
+                  <>
+                    <div className="p-6 border rounded-xl bg-white shadow-lg">
+                      <h3 className="font-semibold mb-4 text-xl text-gray-800">
+                        Order Summary
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Subtotal</span>
+                          <span className="font-medium">
+                            ₹{subtotal.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Convenience Fee</span>
+                          <span className="font-medium">
+                            ₹{convenienceFee.toLocaleString()}
+                          </span>
+                        </div>
 
-                {/* Order Summary */}
-                <div className="p-6 border rounded-xl bg-white shadow-lg">
-                  <h3 className="font-semibold mb-4 text-xl text-gray-800">
-                    Order Summary
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Subtotal</span>
-                      <span className="font-medium">
-                        ₹{subtotal.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Convenience Fee</span>
-                      <span className="font-medium">
-                        ₹{convenienceFee.toLocaleString()}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Shipping</span>
-                      <span className={"text-green-600 font-medium"}>
-                        {subtotal > 999 ? "FREE" : "₹99"}
-                      </span>
-                    </div>
-                    {/* <div className="flex justify-between">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Shipping</span>
+                          <span className={"text-green-600 font-medium"}>
+                            {subtotal > 999 ? "FREE" : "₹99"}
+                          </span>
+                        </div>
+                        {/* <div className="flex justify-between">
                       <span className="text-gray-600">Tax (GST 18%)</span>
                       <span className="font-medium">
                         ₹{tax.toLocaleString()}
                       </span>
                     </div> */}
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Security Amount</span>
-                      <span className="font-medium">
-                        ₹{totalSecurityAmount.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="border-t pt-3">
-                      <div className="flex justify-between text-lg font-bold">
-                        <span>Total</span>
-                        <span className="text-pink-600">
-                          ₹{total.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    className="w-full mt-6 py-4 text-lg"
-                    disabled={
-                      isPaying || showCheckoutTimer || cartItems.length === 0
-                    }
-                    onClick={handleCheckout}
-                  >
-                    {isPaying || showCheckoutTimer ? (
-                      <Loader text="" className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Shield className="h-5 w-5" />
-                    )}
-                    {isPaying || showCheckoutTimer
-                      ? "Processing…"
-                      : "Proceed to Checkout"}
-                  </Button>
-
-                  <Dialog
-                    open={showCheckoutTimer}
-                    onOpenChange={setShowCheckoutTimer}
-                  >
-                    <DialogContent className="max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="text-xl font-semibold text-center">
-                          Confirming Checkout
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="flex flex-col items-center justify-center py-6">
-                        <div className="text-4xl font-bold text-pink-600 mb-2">
-                          {Math.floor(checkoutTimer / 60)
-                            .toString()
-                            .padStart(2, "0")}
-                          :{(checkoutTimer % 60).toString().padStart(2, "0")}
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Security Amount</span>
+                          <span className="font-medium">
+                            ₹{totalSecurityAmount.toLocaleString()}
+                          </span>
                         </div>
-                        <p className="text-gray-700 text-center mb-4">
-                          We’re confirming that your order is available for the
-                          dates you selected.
-                        </p>
+                        <div className="border-t pt-3">
+                          <div className="flex justify-between text-lg font-bold">
+                            <span>Total</span>
+                            <span className="text-pink-600">
+                              ₹{total.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
-                        {/* <Button
+                      <Button
+                        className="w-full mt-6 py-4 text-lg"
+                        disabled={
+                          isPaying ||
+                          showCheckoutTimer ||
+                          cartItems.length === 0
+                        }
+                        onClick={handleCheckout}
+                      >
+                        {isPaying || showCheckoutTimer ? (
+                          <Loader text="" className="h-5 w-5 animate-spin" />
+                        ) : (
+                          <Shield className="h-5 w-5" />
+                        )}
+                        {isPaying || showCheckoutTimer
+                          ? "Processing…"
+                          : "Proceed to Checkout"}
+                      </Button>
+
+                      <Dialog
+                        open={showCheckoutTimer}
+                        onOpenChange={setShowCheckoutTimer}
+                      >
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="text-xl font-semibold text-center">
+                              Confirming Checkout
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="flex flex-col items-center justify-center py-6">
+                            <div className="text-4xl font-bold text-pink-600 mb-2">
+                              {Math.floor(checkoutTimer / 60)
+                                .toString()
+                                .padStart(2, "0")}
+                              :
+                              {(checkoutTimer % 60).toString().padStart(2, "0")}
+                            </div>
+                            <p className="text-gray-700 text-center mb-4">
+                              We’re confirming that your order is available for
+                              the dates you selected.
+                            </p>
+
+                            {/* <Button
                           className="w-full mt-2"
                           onClick={() => {
                             setCheckoutTimerActive(false);
@@ -863,39 +870,46 @@ export default function CartPage() {
                         >
                           Continue Now
                         </Button> */}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      <div className="mt-4 space-y-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          <span>Secure checkout with SSL encryption</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RotateCcw className="w-4 h-4" />
+                          <span>Easy returns & exchanges</span>
+                        </div>
                       </div>
-                    </DialogContent>
-                  </Dialog>
+                    </div>
 
-                  <div className="mt-4 space-y-2 text-xs text-gray-500">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
-                      <span>Secure checkout with SSL encryption</span>
+                    <div className="p-4 border rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50">
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div className="text-center">
+                          <Truck className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                          <div className="text-xs font-medium">
+                            Free Delivery
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <Shield className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                          <div className="text-xs font-medium">
+                            Secure Payment
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <RotateCcw className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+                          <div className="text-xs font-medium">
+                            Easy Returns
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <RotateCcw className="w-4 h-4" />
-                      <span>Easy returns & exchanges</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Trust Badges */}
-                <div className="p-4 border rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div className="text-center">
-                      <Truck className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                      <div className="text-xs font-medium">Free Delivery</div>
-                    </div>
-                    <div className="text-center">
-                      <Shield className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                      <div className="text-xs font-medium">Secure Payment</div>
-                    </div>
-                    <div className="text-center">
-                      <RotateCcw className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-                      <div className="text-xs font-medium">Easy Returns</div>
-                    </div>
-                  </div>
-                </div>
+                  </>
+                )}
               </motion.div>
             </div>
           </div>
@@ -924,14 +938,14 @@ export default function CartPage() {
                   setShowAddressModal(false);
                 }}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between relative">
                   <span className="font-medium">
                     {address.customAddressType}
                   </span>
                   {selectedAddressId === address.id && (
                     <Badge
                       variant="secondary"
-                      className="bg-green-100 text-green-700 rounded-full"
+                      className="absolute bg-green-100 text-green-700 rounded-full right-0 top-0"
                     >
                       Selected
                     </Badge>
