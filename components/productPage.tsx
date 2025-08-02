@@ -8,6 +8,7 @@ import { Home, ShoppingCart } from "lucide-react";
 import { addDays, format } from "date-fns";
 import "react-day-picker/dist/style.css";
 import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { addToCart, getCartItems, getSingleProduct } from "@/app/api/api";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import CalendarModal from "@/components/CalendarModal";
+import "react-medium-image-zoom/dist/styles.css";
 
 export default function ProductPage({ id }: { id: string }) {
   const [product, setProduct] = useState<any>(null);
@@ -36,7 +38,6 @@ export default function ProductPage({ id }: { id: string }) {
 
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(false);
-  console.log("product", product);
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLogin(!!token);
@@ -294,13 +295,10 @@ export default function ProductPage({ id }: { id: string }) {
     setLightboxIndex(index);
     setIsLightboxOpen(true);
   };
-  console.log("asdasdasdasd", product);
-  console.log("product?.listingType", product?.listingType);
 
   return (
     <>
       <div className="max-w-7xl mx-auto py-4 px-4 md:pt-12 lg:pt-24">
-        {/* Compact Breadcrumb */}
         <div className="flex items-center text-xs mb-4 gap-2 lg:mt-6">
           <Link href="/" className="hover:underline flex items-center gap-1">
             <Home className="h-3 w-3" /> Home
@@ -330,17 +328,46 @@ export default function ProductPage({ id }: { id: string }) {
           <span className="text-gray-500 truncate">{product.productName}</span>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
-          {/* Image Section */}
+        <div className="grid grid-cols-12 gap-6">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            className="lg:col-span-1 xl:col-span-1"
+            className="hidden md:flex md:col-span-1 flex-col gap-2"
+          >
+            {productImages?.map((img, index) => (
+              <motion.div
+                key={img.key}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setSelectedImage(img.path);
+                  // openLightbox(index);
+                }}
+                className={`relative aspect-[4/5] rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                  selectedImage === img.path
+                    ? "border-emerald-600 shadow-md"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <Image
+                  src={img.path}
+                  alt="thumbnail"
+                  fill
+                  className="object-cover"
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4 }}
+            className="col-span-12 md:col-span-5"
           >
             <div
-              className="relative w-full aspect-[3/3] rounded-lg overflow-hidden shadow-lg mb-3 cursor-pointer"
+              className="relative w-full aspect-[4/5] rounded-lg overflow-hidden shadow-lg mb-3 cursor-pointer"
               onClick={() => {
                 const currentIndex = productImages.findIndex(
                   (img) => img.path === selectedImage
@@ -361,8 +388,7 @@ export default function ProductPage({ id }: { id: string }) {
                 </div>
               )}
             </div>
-
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-2 md:hidden">
               {productImages.map((img, index) => (
                 <motion.div
                   key={img.key}
@@ -370,7 +396,7 @@ export default function ProductPage({ id }: { id: string }) {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setSelectedImage(img.path);
-                    openLightbox(index);
+                    // openLightbox(index);
                   }}
                   className={`relative aspect-[4/5] rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
                     selectedImage === img.path
@@ -389,12 +415,11 @@ export default function ProductPage({ id }: { id: string }) {
             </div>
           </motion.div>
 
-          {/* Product Info Section */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            className="lg:col-span-1 xl:col-span-1 space-y-4"
+            className="col-span-12 md:col-span-5 space-y-4"
           >
             <div className="text-center">
               <h1 className="text-2xl font-bold mb-2">{product.productName}</h1>
@@ -449,7 +474,7 @@ export default function ProductPage({ id }: { id: string }) {
                         ? "bg-emerald-600 text-white border-emerald-600"
                         : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50"
                     }`}
-                    disabled={cartItems.includes(product.id)} // <- fixed this line
+                    disabled={cartItems.includes(product.id)}
                     onClick={() => setIsBuyChecked((prev) => !prev)}
                   >
                     Make It Yours
@@ -497,7 +522,7 @@ export default function ProductPage({ id }: { id: string }) {
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.2 }}
-              className="lg:col-span-2 xl:col-span-1 space-y-4"
+              className="space-y-4"
             >
               <div className="space-y-2 border-t border-gray-200 pt-4">
                 <h3 className="font-semibold text-base mb-3">
@@ -536,8 +561,6 @@ export default function ProductPage({ id }: { id: string }) {
               </div>
             </motion.div>
           </motion.div>
-
-          {/* Product Details Section */}
         </div>
       </div>
       <Lightbox
@@ -553,7 +576,10 @@ export default function ProductPage({ id }: { id: string }) {
           container: { backgroundColor: "rgba(0, 0, 0, 0.9)" },
           root: { "--yarl__color_backdrop": "rgba(0, 0, 0, 0.8)" },
         }}
+          plugins={[Zoom]} // Zoom enabled
         carousel={{ finite: false }}
+          zoom={{ maxZoomPixelRatio: 2 }}
+
       />
       <CalendarModal
         isOpen={isCalendarOpen}

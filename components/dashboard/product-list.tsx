@@ -17,9 +17,17 @@ import {
 import { useState } from "react";
 import { ProductEditDialog } from "../ProductEditDialog";
 
-export function ProductList({ products, page, totalPages, setPage, refetch }: any) {
+export function ProductList({
+  products,
+  page,
+  totalPages,
+  setPage,
+  refetch,
+}: any) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
@@ -71,7 +79,8 @@ export function ProductList({ products, page, totalPages, setPage, refetch }: an
           No Products Listed Yet
         </h3>
         <p className="text-gray-600 text-center max-w-md mb-8 leading-relaxed">
-          You haven't added any products to your inventory yet. Start by listing your first product to begin earning!
+          You haven't added any products to your inventory yet. Start by listing
+          your first product to begin earning!
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
@@ -167,8 +176,10 @@ export function ProductList({ products, page, totalPages, setPage, refetch }: an
                       product.status === "Active" ? "default" : "outline"
                     }
                     className={
-                      product.status === "Active"
-                        ? "bg-green-100 text-green-700"
+                      product.status === "APPROVED"
+                        ? "bg-green-100 text-green-700 border-green-200"
+                        : product.status === "REJECTED"
+                        ? "bg-red-100 text-red-700 border-red-200"
                         : "text-gray-500"
                     }
                   >
@@ -267,7 +278,8 @@ export function ProductList({ products, page, totalPages, setPage, refetch }: an
             <DialogTitle>Confirm Delete</DialogTitle>
           </DialogHeader>
           <p>
-            Are you sure you want to delete this product? This action cannot be undone.
+            Are you sure you want to delete this product? This action cannot be
+            undone.
           </p>
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowDeleteModal(false)}>

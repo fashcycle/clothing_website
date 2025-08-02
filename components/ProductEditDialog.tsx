@@ -659,14 +659,14 @@ export function ProductEditDialog({
                     setShowAddressModal(false);
                   }}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="relative flex items-center justify-between">
                     <span className="font-medium text-sm sm:text-base">
                       {address.customAddressType}
                     </span>
                     {selectedAddressId === address.id && (
                       <Badge
                         variant="secondary"
-                        className="bg-green-100 text-green-700 rounded-full text-xs"
+                        className="absolute right-0 top-1 bg-green-100 text-green-700 rounded-full text-xs"
                       >
                         Selected
                       </Badge>

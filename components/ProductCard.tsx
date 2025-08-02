@@ -31,7 +31,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       )}
     >
       <div className="relative">
-        <Link href={`/products/${product.id}`}>
+        <Link
+          href={`/products/${product.id}`}
+          onClick={() => window.scrollTo(0, 0)}
+        >
           <div className="overflow-hidden">
             <Image
               src={product.productImage.frontLook || "/placeholder.svg"}

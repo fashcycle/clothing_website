@@ -74,7 +74,10 @@ export default function CartPage() {
   const [checkoutTimer, setCheckoutTimer] = useState(120);
   const [checkoutTimerActive, setCheckoutTimerActive] = useState(false);
   const handleCheckout = () => {
+    if (!selectedAddressId)
+      return toast.error("Please select or add delivery address!");
     if (cartItems.length === 0) return toast.error("Cart is empty!");
+
     setShowCheckoutTimer(true);
     setCheckoutTimer(120);
     setCheckoutTimerActive(true);
@@ -639,10 +642,7 @@ export default function CartPage() {
                                     Color:
                                   </span>
                                   <div
-                                    className="w-5 h-5 rounded-full border-2 border-gray-300"
-                                    style={{
-                                      backgroundColor: item.product.color,
-                                    }}
+                                    className={`inline-block w-4 h-4 rounded-full border bg-${item.product.color.toLowerCase()}-500`}
                                   />
                                 </div>
 
@@ -686,7 +686,7 @@ export default function CartPage() {
                                 <span className="text-2xl font-bold text-emerald-600">
                                   ₹{" "}
                                   {item.rentDurationInDays === null &&
-                                    item.product.sellingPrice}
+                                    (item.product.sellingPrice ?? 0)}
                                   {item.rentDurationInDays === 3 &&
                                     item.product.rentPrice3Days}
                                   {item.rentDurationInDays === 7 &&
@@ -996,7 +996,9 @@ export default function CartPage() {
         isSubmitting={isSubmitting}
         onOpenChange={setShowNewAddressForm}
         onSave={(newAddress) => {
-          handleAddAddressApi(newAddress);
+          handleAddAddressApi(newAddress).then(() => {
+            fetchAddresses(); // 👈 Refetch after address added
+          });
         }}
       />
     </>
