@@ -45,17 +45,22 @@ export default function Navbar() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [notifications, setNotifications] = useState();
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const data = await getNotifications();
-        setNotifications(data.notifications || []);
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    };
-    fetchNotifications();
-  }, []);
+useEffect(() => {
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const data = await getNotifications();
+      setNotifications(data.notifications || []);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  };
+
+  fetchNotifications();
+}, []);
+
 
   useEffect(() => {
     const fetchCategories = async () => {

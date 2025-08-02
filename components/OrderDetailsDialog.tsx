@@ -27,8 +27,6 @@ export function OrderDetailsDialog({
   order,
 }: OrderDetailsDialogProps) {
   const item = order.items[0];
-console.log(order)
-  // Simple date formatting function
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', {
@@ -61,7 +59,7 @@ console.log(order)
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 mb-1">Order ID</p>
-                <p className="text-sm text-gray-600 font-mono break-all">{order.id}</p>
+                <p className="text-sm text-gray-600 font-bold no break-all">{order.orderNumber}</p>
               </div>
             </div>
           </div>

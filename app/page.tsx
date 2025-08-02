@@ -52,7 +52,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-       <AppPromoDialog open={showDialog} onOpenChange={setShowDialog} />
+      <AppPromoDialog open={showDialog} onOpenChange={setShowDialog} />
       <LocationPopup />
       <LocationHandler />
 
