@@ -107,7 +107,7 @@ useEffect(() => {
   const handleNavigate = () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
-      window.location.href = "myapp://home";
+      window.location.href = "https://play.google.com/store/apps/details?id=com.fashcycle&hl=en_IN";
     } else {
       setShowDialog(true);
     }

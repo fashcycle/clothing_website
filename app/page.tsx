@@ -44,7 +44,8 @@ export default function Home() {
   const handleNavigate = () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
-      window.location.href = "myapp://home";
+      window.location.href =
+        "https://play.google.com/store/apps/details?id=com.fashcycle&hl=en_IN";
     } else {
       setShowDialog(true);
     }
@@ -87,7 +88,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <Link
-                href="https://apps.apple.com/app/idXXXXXXXXX"
+                href="https://apps.apple.com/in/app/fashcycle/id6748541060"
                 target="_blank"
               >
                 <Image
@@ -100,7 +101,7 @@ export default function Home() {
               </Link>
 
               <Link
-                href="https://play.google.com/store/apps/details?id=com.yourapp"
+                href="https://play.google.com/store/apps/details?id=com.fashcycle&hl=en_IN"
                 target="_blank"
               >
                 <Image
