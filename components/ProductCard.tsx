@@ -89,19 +89,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             {(product.listingType.includes("rent") ||
               product.listingType.includes("both")) && (
               <>
-                <div className="flex flex-col md:flex-row items-center justify-between">
+                <div className="flex flex-row items-center justify-between">
                   <span className="text-sm text-gray-600">Rent (3 days):</span>
                   <span className="text-sm font-medium text-gray-900">
                     ₹{Math.round(product.rentPrice3Days)}
                   </span>
                 </div>
-                <div className="flex flex-col md:flex-row items-center justify-between">
+                <div className="flex flex-row items-center justify-between">
                   <span className="text-sm text-gray-600">Rent (7 days):</span>
                   <span className="text-sm font-medium text-gray-900">
                     ₹{Math.round(product.rentPrice7Days)}
                   </span>
                 </div>
-                <div className="flex flex-col md:flex-row items-center justify-between">
+                <div className="flex flex-row items-center justify-between">
                   <span className="text-sm text-gray-600">Rent (14 days):</span>
                   <span className="text-sm font-medium text-gray-900">
                     ₹{Math.round(product.rentPrice14Days)}
