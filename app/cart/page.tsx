@@ -366,6 +366,23 @@ export default function CartPage() {
       setSelectedAddress(undefined);
     }
   }, [savedAddresses, selectedAddressId]);
+  const colorOptions = [
+    { name: "Red", color: "bg-red-500" },
+    { name: "Pink", color: "bg-pink-500" },
+    { name: "Maroon", color: "bg-red-900" },
+    { name: "Orange", color: "bg-orange-500" },
+    { name: "Yellow", color: "bg-yellow-500" },
+    { name: "Green", color: "bg-green-500" },
+    { name: "Blue", color: "bg-blue-500" },
+    { name: "Navy", color: "bg-blue-900" },
+    { name: "Purple", color: "bg-purple-500" },
+    { name: "Black", color: "bg-black" },
+    { name: "White", color: "bg-white border border-gray-200" },
+    { name: "Grey", color: "bg-gray-500" },
+    { name: "Brown", color: "bg-amber-800" },
+    { name: "Gold", color: "bg-yellow-600" },
+    { name: "Silver", color: "bg-gray-300" },
+  ];
 
   return (
     <>
@@ -556,6 +573,17 @@ export default function CartPage() {
 
                   <AnimatePresence>
                     {cartItems.map((item: any) => {
+                      const productColorName = item.product.color; // Example: "Pink"
+
+                      const matchedColor = colorOptions.find(
+                        (colorOption) =>
+                          colorOption.name.toLowerCase() ===
+                          productColorName.toLowerCase()
+                      );
+
+                      const colorClass = matchedColor
+                        ? matchedColor.color
+                        : "bg-gray-200"; // fallback
                       return (
                         <motion.div
                           key={item.id}
@@ -642,7 +670,7 @@ export default function CartPage() {
                                     Color:
                                   </span>
                                   <div
-                                    className={`inline-block w-4 h-4 rounded-full border bg-${item.product.color.toLowerCase()}-500`}
+                                    className={`inline-block w-4 h-4 rounded-full ${colorClass}`}
                                   />
                                 </div>
 
