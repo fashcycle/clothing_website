@@ -59,7 +59,7 @@ export default function RootLayout({
           >
             <div className="flex flex-col min-h-screen">
               <Navbar />
-              <main className="pt-12 flex-grow overflow-container">
+              <main className="pt-12 flex-grow overflow-container z-49">
                 {children}
               </main>
               {!hideFooter && <Footer />}

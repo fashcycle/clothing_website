@@ -27,9 +27,9 @@ export default function Home() {
   useEffect(() => {
     const locationPermission = localStorage.getItem("locationPermission");
     const userLocation = localStorage.getItem("userLocation");
-    if (!userLocation || locationPermission === "never") {
-      localStorage.removeItem("hasSeenLocationPopup");
-    }
+    // if (!userLocation || locationPermission === "never") {
+    //   localStorage.removeItem("hasSeenLocationPopup");
+    // }
   }, []);
 
   const [isLogin, setIsLogin] = useState(false);
