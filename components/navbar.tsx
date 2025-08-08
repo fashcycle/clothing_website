@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Bell,
+  Loader2,
 } from "lucide-react";
 import {
   Tooltip,
@@ -29,8 +30,13 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
-import { getAllCategories, getNotifications } from "@/app/api/api";
+import {
+  filteredProductList,
+  getAllCategories,
+  getNotifications,
+} from "@/app/api/api";
 import AppPromoDialog from "./AppPromoDialog";
+import debounce from "lodash.debounce"; // install with: npm install lodash.debounce
 
 type Category = {
   name: string;
@@ -45,22 +51,21 @@ export default function Navbar() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [notifications, setNotifications] = useState();
-useEffect(() => {
-  const fetchNotifications = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-    try {
-      const data = await getNotifications();
-      setNotifications(data.notifications || []);
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-    }
-  };
+      try {
+        const data = await getNotifications();
+        setNotifications(data.notifications || []);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    };
 
-  fetchNotifications();
-}, []);
-
+    fetchNotifications();
+  }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -107,15 +112,62 @@ useEffect(() => {
   const handleNavigate = () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
-      window.location.href = "https://play.google.com/store/apps/details?id=com.fashcycle&hl=en_IN";
+      window.location.href =
+        "https://play.google.com/store/apps/details?id=com.fashcycle&hl=en_IN";
     } else {
       setShowDialog(true);
     }
   };
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  // Debounced search function
+  const handleSearch = useCallback(
+    debounce(async (term) => {
+      if (!term.trim()) {
+        setSearchResults([]);
+        setShowResults(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const result = await filteredProductList({ search: term, limit: 5 });
+        setSearchResults(result.products || []);
+        setShowResults(true);
+      } catch (err) {
+        console.error("Search failed:", err);
+        setSearchResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    handleSearch(searchTerm);
+    return () => handleSearch.cancel();
+  }, [searchTerm, handleSearch]);
+
+  const handleInputChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleResultClick = (product) => {
+    console.log("Selected product:", product);
+    router.push(`/products/${product.id}`);
+
+    setShowResults(false);
+    setSearchTerm(product.productName);
+    // Add your product selection logic here
+  };
+
   return (
     <header className="w-full bg-primary text-primary-foreground fixed top-0 z-50 left-0 right-0">
       <AppPromoDialog open={showDialog} onOpenChange={setShowDialog} />
-
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 relative">
           <div className="flex items-center gap-2 flex-1 lg:flex-none">
@@ -150,13 +202,108 @@ useEffect(() => {
                   >
                     Fashcycle
                   </Link>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/70" />
-                    <input
-                      type="search"
-                      placeholder="Search for brand, product type, colour..."
-                      className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-black/70  focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
-                    />
+                  <div className="relative w-full">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 text-black/70 z-10" />
+                      <input
+                        type="search"
+                        className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-sm placeholder:text-black/70 focus:border-primary focus:ring-1 focus:outline-none transition-all relative z-10"
+                        value={searchTerm}
+                        onChange={handleInputChange}
+                        placeholder="Search for products by name or color..."
+                        onFocus={() => searchTerm && setShowResults(true)}
+                        onBlur={() => {
+                          setTimeout(() => setShowResults(false), 200);
+                        }}
+                      />
+                      {loading && (
+                        <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 animate-spin z-10" />
+                      )}
+
+                      {showResults && (
+                        <div
+                          className="absolute  left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-2xl max-h-96 overflow-y-auto"
+                          style={{ zIndex: 9999 }}
+                        >
+                          {searchResults.length === 0 && !loading ? (
+                            <div className="p-4 text-center text-gray-500">
+                              No products found for "{searchTerm}"
+                            </div>
+                          ) : (
+                            <div className="py-2">
+                              {searchResults.map((product) => (
+                                <div
+                                  key={product.id}
+                                  onClick={() => handleResultClick(product)}
+                                  className="flex items-center p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                                  onMouseDown={(e) => e.preventDefault()} // Prevent input blur
+                                >
+                                  {/* Product Image */}
+                                  <div className="flex-shrink-0 w-16 h-16">
+                                    <img
+                                      src={
+                                        product.productImage?.frontLook ||
+                                        "/api/placeholder/80/80"
+                                      }
+                                      alt={product.productName}
+                                      className="w-full h-full object-cover rounded-lg border border-gray-200"
+                                      onError={(e) => {
+                                        e.target.src = "/api/placeholder/80/80";
+                                      }}
+                                    />
+                                  </div>
+
+                                  {/* Product Details */}
+                                  <div className="flex-1 ml-3 min-w-0">
+                                    <h3 className="font-medium text-gray-900 truncate text-sm">
+                                      {product.productName}
+                                    </h3>
+
+                                    <div className="flex flex-wrap gap-2 mt-1">
+                                      {/* Color */}
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                                        <div
+                                          className="w-3 h-3 rounded-full mr-1 border border-gray-300"
+                                          style={{
+                                            backgroundColor:
+                                              product.color === "grey"
+                                                ? "#6B7280"
+                                                : product.color,
+                                          }}
+                                        ></div>
+                                        {product.color}
+                                      </span>
+
+                                      {/* Size */}
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                        Size {product.size}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Arrow indicator */}
+                                  <div className="flex-shrink-0 ml-2">
+                                    <svg
+                                      className="w-5 h-5 text-gray-400"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 5l7 7-7 7"
+                                      />
+                                    </svg>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <Link href={isLogin ? "/profile" : "/login"}>
                     <Button
@@ -221,14 +368,96 @@ useEffect(() => {
                 </div>
               </SheetContent>
             </Sheet>
-            <div className="hidden lg:flex items-center relative">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 text-black/70" />
+
+            <div className="hidden lg:flex items-center relative z-50">
+              <div className="relative w-96">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 text-black/70 z-10" />
                 <input
                   type="search"
-                  placeholder="Search for brand, product type, colour..."
-                  className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-sm placeholder:text-black/70 focus:border-primary focus:ring-1  focus:outline-none transition-all"
+                  className="w-full pl-5 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-sm placeholder:text-black/70 focus:border-primary focus:ring-1 focus:outline-none transition-all relative z-10"
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  placeholder="Search for products by name or color..."
+                  onFocus={() => searchTerm && setShowResults(true)}
+                  onBlur={() => {
+                    setTimeout(() => setShowResults(false), 200);
+                  }}
                 />
+                {loading && (
+                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 animate-spin z-10" />
+                )}
+                {showResults && (
+                  <div className="fixed top-16 left-4  md:w-[40%] lg:w-[25%] bg-white border border-gray-200 rounded-lg shadow-2xl max-h-96 overflow-y-auto z-50">
+                    {searchResults.length === 0 && !loading ? (
+                      <div className="p-4 text-center text-gray-500">
+                        No products found for "{searchTerm}"
+                      </div>
+                    ) : (
+                      <div className="py-2">
+                        {searchResults.map((product) => (
+                          <div
+                            key={product.id}
+                            onClick={() => handleResultClick(product)}
+                            className="flex items-center p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                            onMouseDown={(e) => e.preventDefault()}
+                          >
+                            <div className="flex-shrink-0 w-16 h-16">
+                              <img
+                                src={
+                                  product.productImage?.frontLook ||
+                                  "/api/placeholder/80/80"
+                                }
+                                alt={product.productName}
+                                className="w-full h-full object-cover rounded-lg border border-gray-200"
+                                onError={(e) => {
+                                  e.currentTarget.src =
+                                    "/api/placeholder/80/80";
+                                }}
+                              />
+                            </div>
+                            <div className="flex-1 ml-3 min-w-0">
+                              <h3 className="font-medium text-gray-900 truncate text-sm">
+                                {product.productName}
+                              </h3>
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                <span className="capitalize inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                                  <div
+                                    className="w-3 h-3 rounded-full mr-1 border border-gray-300"
+                                    style={{
+                                      backgroundColor:
+                                        product.color === "grey"
+                                          ? "#6B7280"
+                                          : product.color,
+                                    }}
+                                  ></div>
+                                  {product.color}
+                                </span>
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                  Size {product.size}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0 ml-2">
+                              <svg
+                                className="w-5 h-5 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5l7 7-7 7"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
