@@ -74,6 +74,34 @@ export default function CartPage() {
   const [showCheckoutTimer, setShowCheckoutTimer] = useState(false);
   const [checkoutTimer, setCheckoutTimer] = useState(120);
   const [checkoutTimerActive, setCheckoutTimerActive] = useState(false);
+  const [razorpayKey, setRazorpayKey] = useState<string>("");
+
+  useEffect(() => {
+    const fetchKeys = async () => {
+      try {
+        const keysRes = await getRazorpayKeys();
+        const envObj = keysRes.extraKeys.find(
+          (k: any) => k.key === "ENVIRONMENT"
+        );
+        const prodKeyObj = keysRes.extraKeys.find(
+          (k: any) => k.key === "PROD_RAZORPAY_KEY_ID"
+        );
+        const devKeyObj = keysRes.extraKeys.find(
+          (k: any) => k.key === "DEV_RAZORPAY_KEY_ID"
+        );
+
+        const env = envObj?.value;
+        const key = env === "PROD" ? prodKeyObj?.value : devKeyObj?.value;
+
+        setRazorpayKey(key || "");
+      } catch (err) {
+        toast.error("Failed to fetch Razorpay keys");
+      }
+    };
+
+    fetchKeys();
+  }, []);
+
   const handleCheckout = () => {
     if (!selectedAddressId)
       return toast.error("Please select or add delivery address!");
@@ -82,7 +110,6 @@ export default function CartPage() {
     setShowCheckoutTimer(true);
     // setCheckoutTimer(120);
 
-    
     setCheckoutTimer(1);
     setCheckoutTimerActive(true);
   };
@@ -106,8 +133,14 @@ export default function CartPage() {
   }, [showCheckoutTimer, checkoutTimerActive, checkoutTimer]);
 
   const proceedCheckout = async () => {
+    if (!razorpayKey) {
+      toast.error("Razorpay key not available");
+      return;
+    }
+
     setShowCheckoutTimer(false);
     const cartIDS = cartItems.map((item: any) => item.id);
+
     try {
       setIsPaying(true);
       const { data } = await axios.post(
@@ -120,34 +153,11 @@ export default function CartPage() {
           },
         }
       );
+
       const razorpay_order_id = data.order.razorpayOrderId;
 
-      let key = "";
-      try {
-        const keysRes = await getRazorpayKeys();
-        const envObj = keysRes.extraKeys.find(
-          (k: any) => k.key === "ENVIRONMENT"
-        );
-        const prodKeyObj = keysRes.extraKeys.find(
-          (k: any) => k.key === "PROD_RAZORPAY_KEY_ID"
-        );
-        const devKeyObj = keysRes.extraKeys.find(
-          (k: any) => k.key === "DEV_RAZORPAY_KEY_ID"
-        );
-        const env = envObj?.value;
-        if (env === "PROD") {
-          key = prodKeyObj?.value;
-        } else {
-          key = devKeyObj?.value;
-        }
-      } catch (err) {
-        toast.error("Failed to fetch Razorpay keys");
-        setIsPaying(false);
-        return;
-      }
-      console.log("Razorpay key:", key);
       const options = {
-        key,
+        key: razorpayKey,
         amount: total * 100,
         currency: "INR",
         name: "FashCycle",
@@ -162,11 +172,9 @@ export default function CartPage() {
           address: `${selectedAddress?.addressLine1}, ${selectedAddress?.city}`,
         },
         theme: { color: "#0160D8" },
-
         handler: async (response: any) => {
           const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
             response;
-
           try {
             const verifyRes = await axios.post(
               `${process.env.NEXT_PUBLIC_API_BASE}/orders/verify-payment`,
@@ -184,7 +192,6 @@ export default function CartPage() {
             );
             if (verifyRes.data.success === true) {
               toast.success("Payment successful! 🎉");
-              // router.push("/order-success");
             }
           } catch (err) {
             toast.error("Verify API error");
@@ -192,7 +199,6 @@ export default function CartPage() {
             setIsPaying(false);
           }
         },
-
         modal: {
           ondismiss: () => setIsPaying(false),
         },
@@ -200,9 +206,8 @@ export default function CartPage() {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
-    } catch (err: any) {
-      const message = "Currently only 1 item can be purchased at a time";
-      toast.error(message);
+    } catch (err) {
+      toast.error("Order create API failed");
       setIsPaying(false);
     }
   };
