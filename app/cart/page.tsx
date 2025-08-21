@@ -81,6 +81,8 @@ export default function CartPage() {
 
     setShowCheckoutTimer(true);
     // setCheckoutTimer(120);
+
+    
     setCheckoutTimer(1);
     setCheckoutTimerActive(true);
   };
