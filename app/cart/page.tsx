@@ -80,8 +80,8 @@ export default function CartPage() {
     if (cartItems.length === 0) return toast.error("Cart is empty!");
 
     setShowCheckoutTimer(true);
-    setCheckoutTimer(120);
-    // setCheckoutTimer(1);
+    // setCheckoutTimer(120);
+    setCheckoutTimer(1);
     setCheckoutTimerActive(true);
   };
 
