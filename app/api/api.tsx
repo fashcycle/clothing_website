@@ -708,3 +708,25 @@ export const notificationAvailablity = async (data: any) => {
     throw error;
   }
 };
+
+export const getRazorpayKeys = async () => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_RAZORPAY_KEY as string,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to fetch razorpay keys"
+      );
+    }
+    throw error;
+  }
+};

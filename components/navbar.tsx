@@ -67,6 +67,7 @@ export default function Navbar() {
     fetchNotifications();
   }, []);
 
+  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
