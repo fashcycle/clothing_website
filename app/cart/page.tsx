@@ -74,7 +74,6 @@ export default function CartPage() {
   const [showCheckoutTimer, setShowCheckoutTimer] = useState(false);
   const [checkoutTimer, setCheckoutTimer] = useState(120);
   const [checkoutTimerActive, setCheckoutTimerActive] = useState(false);
-  
   const [razorpayKey, setRazorpayKey] = useState<string>("");
 
   useEffect(() => {
