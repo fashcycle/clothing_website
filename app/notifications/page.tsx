@@ -11,40 +11,41 @@ import {
   Clock,
   AlertCircle,
 } from "lucide-react";
+import { getNotifications } from "../api/api";
 
-const getNotifications = async () => {
-  return {
-    notifications: [
-      {
-        id: "3f5dc01d-5878-4e19-85eb-ea772f5ee753",
-        title: "Product added to cart (rent)",
-        body: 'Shubham test added your product "Test123" to their cart to rent.',
-        type: "CART_RENT_ALERT",
-        read: false,
-        createdAt: "2025-07-15T18:58:27.877Z",
-        userId: "406c2d30-d540-47a6-937f-ba4f7f6300bd",
-      },
-      {
-        id: "4f5dc01d-5878-4e19-85eb-ea772f5ee754",
-        title: "Product purchased",
-        body: 'Your product "Gaming Laptop" has been purchased by John Doe.',
-        type: "PURCHASE_ALERT",
-        read: true,
-        createdAt: "2025-07-15T16:30:15.123Z",
-        userId: "406c2d30-d540-47a6-937f-ba4f7f6300bd",
-      },
-      {
-        id: "5f5dc01d-5878-4e19-85eb-ea772f5ee755",
-        title: "New message",
-        body: "You have received a new message from Sarah about your listing.",
-        type: "MESSAGE_ALERT",
-        read: false,
-        createdAt: "2025-07-15T14:22:45.456Z",
-        userId: "406c2d30-d540-47a6-937f-ba4f7f6300bd",
-      },
-    ],
-  };
-};
+// const getNotifications = async () => {
+//   return {
+//     notifications: [
+//       {
+//         id: "3f5dc01d-5878-4e19-85eb-ea772f5ee753",
+//         title: "Product added to cart (rent)",
+//         body: 'Shubham test added your product "Test123" to their cart to rent.',
+//         type: "CART_RENT_ALERT",
+//         read: false,
+//         createdAt: "2025-07-15T18:58:27.877Z",
+//         userId: "406c2d30-d540-47a6-937f-ba4f7f6300bd",
+//       },
+//       {
+//         id: "4f5dc01d-5878-4e19-85eb-ea772f5ee754",
+//         title: "Product purchased",
+//         body: 'Your product "Gaming Laptop" has been purchased by John Doe.',
+//         type: "PURCHASE_ALERT",
+//         read: true,
+//         createdAt: "2025-07-15T16:30:15.123Z",
+//         userId: "406c2d30-d540-47a6-937f-ba4f7f6300bd",
+//       },
+//       {
+//         id: "5f5dc01d-5878-4e19-85eb-ea772f5ee755",
+//         title: "New message",
+//         body: "You have received a new message from Sarah about your listing.",
+//         type: "MESSAGE_ALERT",
+//         read: false,
+//         createdAt: "2025-07-15T14:22:45.456Z",
+//         userId: "406c2d30-d540-47a6-937f-ba4f7f6300bd",
+//       },
+//     ],
+//   };
+// };
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
@@ -53,8 +54,8 @@ export default function Notifications() {
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      // const token = localStorage.getItem("token");
-      // if (!token) return; 
+      const token = localStorage.getItem("token");
+      if (!token) return;
       try {
         const data = await getNotifications();
         setNotifications(data.notifications || []);
@@ -141,7 +142,7 @@ export default function Notifications() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 p-4 lg:pt-24">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

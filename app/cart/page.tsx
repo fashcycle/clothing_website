@@ -23,6 +23,7 @@ import {
   getUserDetails,
   addNewAddress,
   getUserAddresses,
+  getRazorpayKeys,
 } from "@/app/api/api";
 
 import Image from "next/image";
@@ -80,6 +81,7 @@ export default function CartPage() {
 
     setShowCheckoutTimer(true);
     setCheckoutTimer(120);
+    // setCheckoutTimer(1);
     setCheckoutTimerActive(true);
   };
 
@@ -117,8 +119,33 @@ export default function CartPage() {
         }
       );
       const razorpay_order_id = data.order.razorpayOrderId;
+
+      let key = "";
+      try {
+        const keysRes = await getRazorpayKeys();
+        const envObj = keysRes.extraKeys.find(
+          (k: any) => k.key === "ENVIRONMENT"
+        );
+        const prodKeyObj = keysRes.extraKeys.find(
+          (k: any) => k.key === "PROD_RAZORPAY_KEY_ID"
+        );
+        const devKeyObj = keysRes.extraKeys.find(
+          (k: any) => k.key === "DEV_RAZORPAY_KEY_ID"
+        );
+        const env = envObj?.value;
+        if (env === "PROD") {
+          key = prodKeyObj?.value;
+        } else {
+          key = devKeyObj?.value;
+        }
+      } catch (err) {
+        toast.error("Failed to fetch Razorpay keys");
+        setIsPaying(false);
+        return;
+      }
+      console.log("Razorpay key:", key);
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key,
         amount: total * 100,
         currency: "INR",
         name: "FashCycle",
@@ -155,7 +182,6 @@ export default function CartPage() {
             );
             if (verifyRes.data.success === true) {
               toast.success("Payment successful! 🎉");
-
               // router.push("/order-success");
             }
           } catch (err) {
@@ -346,7 +372,8 @@ export default function CartPage() {
     const itemPrice = calculateItemPrice(item);
     return sum + itemPrice;
   }, 0);
-  const shipping = subtotal > 999 ? 0 : 99;
+  // const shipping = subtotal > 999 ? 0 : 99;
+  const shipping = 0;
   const taxAmount = Math.round(subtotal * 0.18);
   const total = subtotal + shipping + totalSecurityAmount + convenienceFee;
   const tax = taxAmount;
