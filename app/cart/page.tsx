@@ -92,7 +92,7 @@ export default function CartPage() {
 
         const env = envObj?.value;
         const key = env === "PROD" ? prodKeyObj?.value : devKeyObj?.value;
-
+        console.log("Razorpay Key:", key);
         setRazorpayKey(key || "");
       } catch (err) {
         toast.error("Failed to fetch Razorpay keys");
@@ -855,7 +855,7 @@ export default function CartPage() {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Shipping</span>
                           <span className={"text-green-600 font-medium"}>
-                            {subtotal > 999 ? "FREE" : "₹99"}
+                            FREE
                           </span>
                         </div>
                         {/* <div className="flex justify-between">
