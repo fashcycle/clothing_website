@@ -158,7 +158,6 @@ export default function Navbar() {
   };
 
   const handleResultClick = (product) => {
-    console.log("Selected product:", product);
     router.push(`/products/${product.id}`);
 
     setShowResults(false);

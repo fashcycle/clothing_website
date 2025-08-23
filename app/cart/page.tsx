@@ -80,20 +80,11 @@ export default function CartPage() {
     const fetchKeys = async () => {
       try {
         const keysRes = await getRazorpayKeys();
-        const envObj = keysRes.extraKeys.find(
-          (k: any) => k.key === "ENVIRONMENT"
-        );
-        const prodKeyObj = keysRes.extraKeys.find(
-          (k: any) => k.key === "PROD_RAZORPAY_KEY_ID"
-        );
-        const devKeyObj = keysRes.extraKeys.find(
-          (k: any) => k.key === "DEV_RAZORPAY_KEY_ID"
+        const razorpayKeyObj = keysRes.extraKeys.find(
+          (k: any) => k.key === "RAZORPAY_KEY_ID"
         );
 
-        const env = envObj?.value;
-        const key = env === "PROD" ? prodKeyObj?.value : devKeyObj?.value;
-        console.log("Razorpay Key:", key);
-        setRazorpayKey(key || "");
+        setRazorpayKey(razorpayKeyObj?.value || "");
       } catch (err) {
         toast.error("Failed to fetch Razorpay keys");
       }
@@ -192,6 +183,7 @@ export default function CartPage() {
             );
             if (verifyRes.data.success === true) {
               toast.success("Payment successful! 🎉");
+              fetchCartItems();
             }
           } catch (err) {
             toast.error("Verify API error");
