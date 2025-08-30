@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductList } from "@/components/dashboard/product-list";
-import { getOrderProducts, getUserProducts } from "../api/api";
+import { getEarnings, getOrderProducts, getUserProducts } from "../api/api";
 import { Loader } from "@/components/ui/loader";
 import { RecentOrdersList } from "@/components/dashboard/RecentOrdersList";
 
@@ -37,10 +37,12 @@ export default function DashboardPage() {
   const [limit, setLimit] = useState(10); // Can be fixed or selectable
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalEarnings, setTotalEarnings] = useState(0);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (activeTab === "listings") {
+      if (activeTab === "listings" || activeTab === "overview") {
+        await fetchEarnings();
         await listProductApi(page); // Pass the current page as param
       }
       if (activeTab === "orders" || activeTab === "overview") {
@@ -57,7 +59,7 @@ export default function DashboardPage() {
 
       if (response.success === true) {
         setRecentOrders(response.orders);
-        setTotalItems(response.totalItems || 0);
+        // setTotalItems(response.totalItems || 0);
         setTotalPages(response.totalPages);
       } else {
         console.error("API Error:", response.message);
@@ -85,7 +87,16 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   };
-
+  const fetchEarnings = async () => {
+    try {
+      const response = await getEarnings();
+      if (response.success === true) {
+        setTotalEarnings(response.data.totalEarned || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching earnings:", error);
+    }
+  };
   return (
     <div
       style={{
@@ -169,8 +180,7 @@ export default function DashboardPage() {
           border: none;
           color: white;
         }
-
-        .glass-card {
+        Confirm Availablity .glass-card {
           background: rgba(255, 255, 255, 0.25);
           backdrop-filter: blur(10px);
           border: 1px solid rgba(255, 255, 255, 0.18);
@@ -228,28 +238,55 @@ export default function DashboardPage() {
           className="space-y-4 animate-slideIn"
           onValueChange={setActiveTab}
         >
-          <TabsList className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
+          <TabsList
+            className="h-full bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg 
+             flex flex-wrap md:flex-nowrap gap-2 p-2 rounded-xl 
+             overflow-x-auto scrollbar-hide"
+          >
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
+              className="flex-1 min-w-[120px] text-center px-4 py-2 rounded-lg 
+               data-[state=active]:bg-gradient-to-r 
+               data-[state=active]:from-purple-600 
+               data-[state=active]:to-blue-600 
+               data-[state=active]:text-white 
+               transition-all duration-300"
             >
               Overview
             </TabsTrigger>
+
             <TabsTrigger
               value="orders"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
+              className="flex-1 min-w-[120px] text-center px-4 py-2 rounded-lg 
+               data-[state=active]:bg-gradient-to-r 
+               data-[state=active]:from-purple-600 
+               data-[state=active]:to-blue-600 
+               data-[state=active]:text-white 
+               transition-all duration-300"
             >
               Active Orders
             </TabsTrigger>
+
             <TabsTrigger
               value="listings"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
+              className="flex-1 min-w-[120px] text-center px-4 py-2 rounded-lg 
+               data-[state=active]:bg-gradient-to-r 
+               data-[state=active]:from-purple-600 
+               data-[state=active]:to-blue-600 
+               data-[state=active]:text-white 
+               transition-all duration-300"
             >
               My Listings
             </TabsTrigger>
+
             <TabsTrigger
               value="analytics"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
+              className="flex-1 min-w-[120px] text-center px-4 py-2 rounded-lg 
+               data-[state=active]:bg-gradient-to-r 
+               data-[state=active]:from-purple-600 
+               data-[state=active]:to-blue-600 
+               data-[state=active]:text-white 
+               transition-all duration-300"
             >
               Analytics
             </TabsTrigger>
@@ -265,7 +302,9 @@ export default function DashboardPage() {
                   <CreditCard className="h-5 w-5 text-blue-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-blue-900">₹ 0</div>
+                  <div className="text-3xl font-bold text-blue-900">
+                    ₹{totalEarnings}
+                  </div>
                   <p className="text-xs text-blue-600">+0% from last month</p>
                 </CardContent>
               </Card>
@@ -314,16 +353,17 @@ export default function DashboardPage() {
                     />
                   )}
                 </CardContent>
-                {recentOrders.length >0 && (
-                <CardFooter>
-                  <Button
-                    type="button"
-                    onClick={() => setActiveTab("orders")}
-                    className="bg-transparent hover:bg-transparent text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium transition-colors duration-200"
-                  >
-                    View all orders →
-                  </Button>
-                </CardFooter>)}
+                {recentOrders.length > 0 && (
+                  <CardFooter>
+                    <Button
+                      type="button"
+                      onClick={() => setActiveTab("orders")}
+                      className="bg-transparent hover:bg-transparent text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium transition-colors duration-200"
+                    >
+                      View all orders →
+                    </Button>
+                  </CardFooter>
+                )}
               </Card>
             </div>
           </TabsContent>

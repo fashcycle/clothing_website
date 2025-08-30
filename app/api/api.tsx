@@ -313,7 +313,7 @@ export const contactUsApi = async (contactData: {
     throw error;
   }
 };
-// Add to wishlist
+
 export const addToWishlist = async (data: any) => {
   try {
     const response = await axios.post(
@@ -337,7 +337,6 @@ export const addToWishlist = async (data: any) => {
   }
 };
 
-// Get wishlisted products
 export const getWishlistedProducts = async () => {
   try {
     const response = await axios.get(
@@ -360,7 +359,6 @@ export const getWishlistedProducts = async () => {
   }
 };
 
-// Remove from wishlist
 export const removeFromWishlist = async (data: any) => {
   try {
     const response = await axios.delete(
@@ -383,7 +381,7 @@ export const removeFromWishlist = async (data: any) => {
     throw error;
   }
 };
-// Add to cart
+
 export const addToCart = async (data: any) => {
   try {
     const response = await axios.post(
@@ -405,7 +403,6 @@ export const addToCart = async (data: any) => {
   }
 };
 
-// Get cart items
 export const getCartItems = async () => {
   try {
     const response = await axios.get(
@@ -428,7 +425,6 @@ export const getCartItems = async () => {
   }
 };
 
-// Remove from cart
 export const removeFromCart = async (data: any) => {
   try {
     const response = await axios.delete(
@@ -536,7 +532,6 @@ export const getAllCategories = async () => {
   }
 };
 
-// Verify ReferrealCode
 export const verifyReferral = async (data: any) => {
   try {
     const response = await axios.post(
@@ -686,11 +681,17 @@ export const resendOTP = async (email: any) => {
   }
 };
 
-export const notificationAvailablity = async (data: any) => {
+export const notificationAvailablity = async (
+  productId: string,
+  action: "CONFIRM" | "REJECT"
+) => {
   try {
     const response = await axios.post(
-      process.env.NEXT_PUBLIC_PRODUCT_AVAILABLITY as string,
-      data,
+      `${process.env.NEXT_PUBLIC_PRODUCT_AVAILABLITY}/${productId}`,
+      {
+        action,
+        respondedVia: "NOTIFICATION",
+      },
       {
         headers: {
           "Content-Type": "application/json",
@@ -698,11 +699,12 @@ export const notificationAvailablity = async (data: any) => {
         },
       }
     );
+
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data.message || "Failed to send response"
+        error.response?.data?.message || "Failed to send response"
       );
     }
     throw error;
@@ -725,6 +727,28 @@ export const getRazorpayKeys = async () => {
     if (axios.isAxiosError(error)) {
       throw new Error(
         error.response?.data.message || "Failed to fetch razorpay keys"
+      );
+    }
+    throw error;
+  }
+};
+
+export const getEarnings = async () => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_EARNINGS as string,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to fetch Earnings"
       );
     }
     throw error;

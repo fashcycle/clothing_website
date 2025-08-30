@@ -470,7 +470,7 @@ export default function ProfilePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <CardTitle className="text-2xl font-bold">
+                  <CardTitle className="text-2xl font-bold text-center">
                     {userData?.name}
                   </CardTitle>
                 </motion.div>

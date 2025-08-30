@@ -129,8 +129,6 @@ export default function ProductListingTab({
     },
     validationSchema,
     onSubmit: async (values) => {
-      console.log("Form errors:", formik);
-
       setIsSubmitting(true);
       try {
         const formData = new FormData();
@@ -826,8 +824,8 @@ export default function ProductListingTab({
                           className="grid gap-2"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-medium text-base">
-                              {address.address}
+                            <span className="text-muted-foreground">
+                              {address.customAddressType || address.addressType}
                             </span>
                             <Badge
                               variant="outline"

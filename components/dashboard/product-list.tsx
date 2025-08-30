@@ -215,15 +215,17 @@ export function ProductList({
                     <Trash2 className="mr-2 h-4 w-4" />
                     Remove
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-emerald-600 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-600 w-full sm:w-auto"
-                    onClick={handleConfirmAvailability}
-                  >
-                    <Check className="mr-2 h-4 w-4" />
-                    Confirm Availability
-                  </Button>
+                  {product.isAvailability === false && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-emerald-600 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-600 w-full sm:w-auto"
+                      onClick={handleConfirmAvailability}
+                    >
+                      <Check className="mr-2 h-4 w-4" />
+                      Confirm Availability
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"

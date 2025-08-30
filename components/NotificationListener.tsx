@@ -5,9 +5,13 @@ import { getFirebaseToken, listenToMessages } from "@/lib/firebase-messaging";
 import logo from "@/public/fashCycleLogoFavicon.png";
 import Image from "next/image";
 import { Button } from "./ui/button";
+import { notificationAvailablity } from "@/app/api/api";
+import { toast } from "sonner";
 
 export default function NotificationListener() {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const [toastData, setToastData] = useState({
     title: "",
     body: "",
@@ -40,6 +44,21 @@ export default function NotificationListener() {
     };
   }, []);
 
+  const handleAvailablity = async (action: "CONFIRM" | "REJECT") => {
+    const productId = toastData?.data?.productId;
+    if (!productId) return;
+
+    try {
+      setLoading(true);
+      const res = await notificationAvailablity(productId, action);
+      toast.success(res.message);
+    } catch (err) {
+      console.error("API Error:", err);
+      toast.error(err.message || "Failed to update availability.");
+    } finally {
+      setLoading(false);
+    }
+  };
   // const handleView = () => {
   //   if (toastData.clickAction) {
   //     window.open(toastData.clickAction, "_blank");
@@ -68,10 +87,20 @@ export default function NotificationListener() {
             </Toast.Description>
             <div className="flex gap-2 mt-3">
               <Toast.Close asChild>
-                <Button variant="ghost">Is Available?</Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => handleAvailablity("CONFIRM")}
+                >
+                  Is Available?
+                </Button>
               </Toast.Close>
               <Toast.Close asChild>
-                <Button variant="ghost">Dismiss</Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => handleAvailablity("REJECT")}
+                >
+                  Not Available!
+                </Button>
               </Toast.Close>
             </div>
           </div>

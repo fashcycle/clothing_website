@@ -109,7 +109,53 @@ export default function AnarkaliSizeChart({
             exit={{ opacity: 0, height: 0 }}
             className="bg-gray-50 rounded-lg p-4 mb-6"
           >
-            {/* Measurement guide content remains unchanged */}
+            <h3 className="text-sm font-medium mb-2">
+              How to Take Your Measurements
+            </h3>
+            <ul className="text-xs text-gray-600 space-y-2">
+              <li className="flex items-start gap-2">
+                <span className="font-semibold min-w-16">Bust:</span>
+                <span>
+                  Measure around the fullest part of your bust, keeping the tape
+                  parallel to the floor.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-semibold min-w-16">Waist:</span>
+                <span>
+                  Measure around your natural waistline, where your body bends.
+                  Keep the tape snug but not tight.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-semibold min-w-16">Hip:</span>
+                <span>
+                  Measure around the fullest part of your hips, about 7-9 inches
+                  below your waist.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-semibold min-w-16">Length:</span>
+                <span>
+                  Measure from the highest point of your shoulder to where you
+                  want the gown to end.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-semibold min-w-16">Sleeve:</span>
+                <span>
+                  {" "}
+                  Measure from the top of your shoulder down to your wrist.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-semibold min-w-16">Shoulder:</span>
+                <span>
+                  Measure from the edge of one shoulder to the edge of the
+                  other, across your upper back.
+                </span>
+              </li>
+            </ul>
           </motion.div>
         )}
 

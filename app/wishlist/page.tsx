@@ -133,7 +133,7 @@ export default function WishlistPage() {
           </p>
           <Button
           variant='outline'
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/browse")}
            
           >
             Start Shopping

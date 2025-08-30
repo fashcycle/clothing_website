@@ -99,9 +99,8 @@ export default function CartPage() {
     if (cartItems.length === 0) return toast.error("Cart is empty!");
 
     setShowCheckoutTimer(true);
-    // setCheckoutTimer(120);
-
-    setCheckoutTimer(1);
+    setCheckoutTimer(120);
+    // setCheckoutTimer(1);
     setCheckoutTimerActive(true);
   };
 
@@ -441,82 +440,109 @@ export default function CartPage() {
                 variants={itemVariants}
                 className="p-6 border rounded-xl mb-6 bg-white shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm"
               >
-                <div className="flex justify-between items-start flex-wrap gap-4">
-                  <div className="flex items-start gap-4 flex-1 min-w-[300px]">
-                    <div className="p-2 bg-pink-100 rounded-lg">
+                <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
+                  {/* Address Info */}
+                  <div className="flex items-start gap-4 flex-1 min-w-[250px] w-full">
+                    <div className="p-2 bg-pink-100 rounded-lg shrink-0">
                       <MapPin className="w-5 h-5 text-pink-600" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h2 className="font-semibold text-lg text-gray-800">
+                        <h2 className="font-semibold text-base sm:text-lg text-gray-800">
                           Deliver to:
                         </h2>
                       </div>
-                      {user?.addresses?.length > 0 ? (
-                        <div className="border rounded-lg p-4 w-full mt-8">
-                          <div className="flex items-center justify-between flex-wrap gap-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium">
-                                {selectedAddress?.customAddressType ||
-                                  selectedAddress?.address}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {selectedAddress?.landmark}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {selectedAddress?.addressLine1}{" "}
-                            {selectedAddress?.addressLine2 &&
-                              selectedAddress?.addressLine2}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {selectedAddress?.pincode
-                              ? [
-                                  selectedAddress.pincode.city,
-                                  selectedAddress.pincode.state,
-                                  selectedAddress.pincode.country,
-                                  selectedAddress.pincode.pincode,
-                                ]
-                                  .filter(Boolean)
-                                  .join(", ")
-                              : [
-                                  selectedAddress?.city,
-                                  selectedAddress?.state,
-                                  selectedAddress?.country,
-                                ]
-                                  .filter(Boolean)
-                                  .join(", ")}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          No address selected. Please add an address.
-                        </p>
-                      )}
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="shrink-0"
-                    onClick={() => {
-                      if (savedAddresses.length > 0) {
-                        setShowAddressModal(true);
-                      } else {
-                        setShowNewAddressForm(true);
-                      }
-                    }}
-                  >
-                    {savedAddresses.length > 0 ? (
-                      "Change Address"
-                    ) : (
-                      <>
-                        <Plus className="w-4 h-4 " />
-                        Add New Address
-                      </>
-                    )}
-                  </Button>
+
+                  <div className="hidden md:block">
+                    <Button
+                      variant="outline"
+                      className="w-full sm:w-auto shrink-0"
+                      onClick={() => {
+                        if (savedAddresses.length > 0) {
+                          setShowAddressModal(true);
+                        } else {
+                          setShowNewAddressForm(true);
+                        }
+                      }}
+                    >
+                      {savedAddresses.length > 0 ? (
+                        "Change Address"
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add New Address
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
+
+                {user?.addresses?.length > 0 ? (
+                  <div className="border rounded-lg p-4 w-full mt-4 sm:mt-6">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm text-muted-foreground capitalize">
+                          {selectedAddress?.customAddressType ||
+                            selectedAddress?.addressType}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedAddress?.landmark}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedAddress?.addressLine1}{" "}
+                      {selectedAddress?.addressLine2 &&
+                        selectedAddress?.addressLine2}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedAddress?.pincode
+                        ? [
+                            selectedAddress.pincode.city,
+                            selectedAddress.pincode.state,
+                            selectedAddress.pincode.country,
+                            selectedAddress.pincode.pincode,
+                          ]
+                            .filter(Boolean)
+                            .join(", ")
+                        : [
+                            selectedAddress?.city,
+                            selectedAddress?.state,
+                            selectedAddress?.country,
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No address selected. Please add an address.
+                  </p>
+                )}
+                     <div className="w-full sm:w-auto flex justify-start sm:justify-end mt-5 lg:hidden">
+                    <Button
+                      variant="outline"
+                      className="w-full sm:w-auto shrink-0"
+                      onClick={() => {
+                        if (savedAddresses.length > 0) {
+                          setShowAddressModal(true);
+                        } else {
+                          setShowNewAddressForm(true);
+                        }
+                      }}
+                    >
+                      {savedAddresses.length > 0 ? (
+                        "Change Address"
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add New Address
+                        </>
+                      )}
+                    </Button>
+                  </div>
               </motion.div>
 
               {/* Offers Section */}
@@ -555,7 +581,6 @@ export default function CartPage() {
               </motion.button>
             </motion.div> */}
 
-              {/* Cart Items */}
               {cartItems.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -740,13 +765,13 @@ export default function CartPage() {
                                 <span className="text-2xl font-bold text-emerald-600">
                                   ₹{" "}
                                   {item.rentDurationInDays === null &&
-                                    (item.product.sellingPrice ?? 0)}
+                                    Math.round(item.product.sellingPrice ?? 0)}
                                   {item.rentDurationInDays === 3 &&
-                                    item.product.rentPrice3Days}
+                                    Math.round(item.product.rentPrice3Days)}
                                   {item.rentDurationInDays === 7 &&
-                                    item.product.rentPrice7Days}
+                                    Math.round(item.product.rentPrice7Days)}
                                   {item.rentDurationInDays === 14 &&
-                                    item.product.rentPrice14Days}
+                                    Math.round(item.product.rentPrice14Days)}
                                 </span>
 
                                 {/* <span className="text-sm text-gray-500">
@@ -834,13 +859,13 @@ export default function CartPage() {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Subtotal</span>
                           <span className="font-medium">
-                            ₹{subtotal.toLocaleString()}
+                            ₹{Math.round(subtotal)}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Convenience Fee</span>
                           <span className="font-medium">
-                            ₹{convenienceFee.toLocaleString()}
+                            ₹{Math.round(convenienceFee)}
                           </span>
                         </div>
 
@@ -859,14 +884,14 @@ export default function CartPage() {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Security Amount</span>
                           <span className="font-medium">
-                            ₹{totalSecurityAmount.toLocaleString()}
+                            ₹{Math.round(totalSecurityAmount)}
                           </span>
                         </div>
                         <div className="border-t pt-3">
                           <div className="flex justify-between text-lg font-bold">
                             <span>Total</span>
                             <span className="text-pink-600">
-                              ₹{total.toLocaleString()}
+                              ₹{Math.round(total)}
                             </span>
                           </div>
                         </div>
@@ -993,8 +1018,8 @@ export default function CartPage() {
                 }}
               >
                 <div className="flex items-center justify-between relative">
-                  <span className="font-medium">
-                    {address.customAddressType}
+                  <span className="text-sm text-gray-600">
+                    {address.customAddressType || address.addressType}
                   </span>
                   {selectedAddressId === address.id && (
                     <Badge
