@@ -29,17 +29,16 @@ export default function ContactUs() {
     try {
       setIsSubmitting(true);
       const response = await contactUsApi({
-        userType: data?.userType, // Using userType as name since we don't have a name field
+        userType: data?.userType,
         email: data?.email,
         message: data?.message,
       });
-
       if (response.success) {
-        toast.success("Message sent successfully!");
-        reset(); // Reset form after successful submission
+        toast.success(response.message);
+        reset();
       }
     } catch (error) {
-      toast.error("Failed to send message. Please try again.");
+      toast.error(error.message || "Failed to send message. Please try again.");
       console.error("Contact form submission error:", error);
     } finally {
       setIsSubmitting(false);
@@ -47,7 +46,7 @@ export default function ContactUs() {
   };
 
   return (
-    <div className="container w-fit min-w-[100vh]  mx-auto px-4 py-12 lg:pt-24">
+    <div className="container w-fit md:min-w-[100vh]  mx-auto px-4 py-12 lg:pt-24">
       <Card className="shadow-lg rounded-xl overflow-hidden">
         <CardContent className="p-0 md:flex">
           {/* Left: Form Section */}

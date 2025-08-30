@@ -33,10 +33,12 @@ import { useRouter } from "next/navigation";
 import {
   filteredProductList,
   getAllCategories,
+  getCartItems,
   getNotifications,
 } from "@/app/api/api";
 import AppPromoDialog from "./AppPromoDialog";
 import debounce from "lodash.debounce"; // install with: npm install lodash.debounce
+import { Badge } from "./ui/badge";
 
 type Category = {
   name: string;
@@ -51,6 +53,24 @@ export default function Navbar() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [notifications, setNotifications] = useState();
+  const [cartItemsLength, setCartItemsLength] = useState();
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response = await getCartItems();
+        if (response.success) {
+          const itemsWithRentalPeriod = response.cart.map((item: any) => ({
+            ...item,
+            rentDurationInDays: item.rentDurationInDays,
+          }));
+          setCartItemsLength(itemsWithRentalPeriod.length);
+        }
+      } catch (error) {
+        console.error("Error fetching cart items:", error);
+      }
+    };
+    fetchCartItems();
+  }, []);
   useEffect(() => {
     const fetchNotifications = async () => {
       const token = localStorage.getItem("token");
@@ -67,7 +87,6 @@ export default function Navbar() {
     fetchNotifications();
   }, []);
 
-  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -111,10 +130,14 @@ export default function Navbar() {
   const [showDialog, setShowDialog] = useState(false);
 
   const handleNavigate = () => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIphone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isAndroid) {
       window.location.href =
         "https://play.google.com/store/apps/details?id=com.fashcycle&hl=en_IN";
+    } else if (isIphone) {
+      window.location.href =
+        "https://apps.apple.com/in/app/fashcycle/id6748541060";
     } else {
       setShowDialog(true);
     }
@@ -124,7 +147,6 @@ export default function Navbar() {
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-  // Debounced search function
   const handleSearch = useCallback(
     debounce(async (term) => {
       if (!term.trim()) {
@@ -204,10 +226,13 @@ export default function Navbar() {
                   </Link>
                   <div className="relative w-full">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 text-black/70 z-10" />
+                      <Search
+                        className="absolute left-2 top-1/2 -translate-y-1/2 h-4 text-black/70 "
+                        style={{ zIndex: "9999" }}
+                      />
                       <input
                         type="search"
-                        className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-sm placeholder:text-black/70 focus:border-primary focus:ring-1 focus:outline-none transition-all relative z-10"
+                        className="w-full pl-8 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-xs placeholder:text-black/70 focus:border-primary focus:ring-1 focus:outline-none transition-all relative z-10"
                         value={searchTerm}
                         onChange={handleInputChange}
                         placeholder="Search for products by name or color..."
@@ -216,10 +241,6 @@ export default function Navbar() {
                           setTimeout(() => setShowResults(false), 200);
                         }}
                       />
-                      {loading && (
-                        <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 animate-spin z-10" />
-                      )}
-
                       {showResults && (
                         <div
                           className="absolute  left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-2xl max-h-96 overflow-y-auto"
@@ -231,12 +252,15 @@ export default function Navbar() {
                             </div>
                           ) : (
                             <div className="py-2">
-                              {searchResults.map((product) => (
+                              {searchResults?.map((product) => (
                                 <div
                                   key={product.id}
-                                  onClick={() => handleResultClick(product)}
+                                  onClick={() => {
+                                    handleResultClick(product),
+                                      setIsSheetOpen(false);
+                                  }}
                                   className="flex items-center p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100 last:border-b-0"
-                                  onMouseDown={(e) => e.preventDefault()} // Prevent input blur
+                                  onMouseDown={(e) => e.preventDefault()}
                                 >
                                   {/* Product Image */}
                                   <div className="flex-shrink-0 w-16 h-16">
@@ -305,7 +329,10 @@ export default function Navbar() {
                       )}
                     </div>
                   </div>
-                  <Link href={isLogin ? "/profile" : "/login"}>
+                  <Link
+                    href={isLogin ? "/profile" : "/login"}
+                    onClick={() => setIsSheetOpen(false)}
+                  >
                     <Button
                       variant="default"
                       size="lg"
@@ -313,11 +340,14 @@ export default function Navbar() {
                       onClick={handleNavigate}
                     >
                       <Plus className="h-5 w-5" />
-                      SELL ITEM
+                      LIST
                     </Button>
                   </Link>
                   <div className="flex flex-col gap-3 md:hidden">
-                    <Link href={isLogin ? "/wishlist" : "/login"}>
+                    <Link
+                      href={isLogin ? "/wishlist" : "/login"}
+                      onClick={() => setIsSheetOpen(false)}
+                    >
                       <Button
                         variant="outline"
                         size="lg"
@@ -327,7 +357,10 @@ export default function Navbar() {
                         Wishlist
                       </Button>
                     </Link>
-                    <Link href={isLogin ? "/cart" : "/login"}>
+                    <Link
+                      href={isLogin ? "/cart" : "/login"}
+                      onClick={() => setIsSheetOpen(false)}
+                    >
                       <Button
                         variant="outline"
                         size="lg"
@@ -335,9 +368,15 @@ export default function Navbar() {
                       >
                         <ShoppingBag className="h-5 w-5" />
                         Cart
+                        <Badge className="" variant="outline">
+                          {cartItemsLength}
+                        </Badge>
                       </Button>
                     </Link>
-                    <Link href={isLogin ? "/notifications" : "/login"}>
+                    <Link
+                      href={isLogin ? "/notifications" : "/login"}
+                      onClick={() => setIsSheetOpen(false)}
+                    >
                       <Button
                         variant="outline"
                         size="lg"
@@ -352,6 +391,7 @@ export default function Navbar() {
                     <Link
                       href="/"
                       className="text-lg font-medium py-2 px-4 rounded-md hover:bg-gray-100 transition-colors block"
+                      onClick={() => setIsSheetOpen(false)}
                     >
                       Home
                     </Link>
@@ -360,6 +400,7 @@ export default function Navbar() {
                         key={category.id}
                         href={`/${category.id}`}
                         className="capitalize text-lg font-medium py-2 px-4 rounded-md hover:bg-gray-100 transition-colors block"
+                        onClick={() => setIsSheetOpen(false)}
                       >
                         {category.name}
                       </Link>
@@ -371,10 +412,13 @@ export default function Navbar() {
 
             <div className="hidden lg:flex items-center relative z-50">
               <div className="relative w-96">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 text-black/70 z-10" />
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-4 text-black/70"
+                  style={{ zIndex: "9999" }}
+                />
                 <input
                   type="search"
-                  className="w-full pl-5 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-sm placeholder:text-black/70 focus:border-primary focus:ring-1 focus:outline-none transition-all relative z-10"
+                  className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 text-black placeholder:text-sm placeholder:text-black/70 focus:border-primary focus:ring-1 focus:outline-none transition-all relative z-10"
                   value={searchTerm}
                   onChange={handleInputChange}
                   placeholder="Search for products by name or color..."
@@ -383,9 +427,6 @@ export default function Navbar() {
                     setTimeout(() => setShowResults(false), 200);
                   }}
                 />
-                {loading && (
-                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 animate-spin z-10" />
-                )}
                 {showResults && (
                   <div className="fixed top-16 left-4  md:w-[40%] lg:w-[25%] bg-white border border-gray-200 rounded-lg shadow-2xl max-h-96 overflow-y-auto z-50">
                     {searchResults.length === 0 && !loading ? (
@@ -564,7 +605,10 @@ export default function Navbar() {
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
-                  <Link href={isLogin ? "/cart" : "/login"}>
+                  <Link
+                    href={isLogin ? "/cart" : "/login"}
+                    className="relative"
+                  >
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
@@ -572,6 +616,9 @@ export default function Navbar() {
                         className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full"
                       >
                         <ShoppingBag className="h-5 w-5" />
+                        {/* <span className="text-xs font-light">
+                          {cartItemsLength}
+                        </span> */}
                         <span className="sr-only">Cart</span>
                       </Button>
                     </TooltipTrigger>

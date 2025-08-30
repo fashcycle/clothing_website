@@ -42,10 +42,14 @@ export default function Home() {
   const [showDialog, setShowDialog] = useState(false);
 
   const handleNavigate = () => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIphone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isAndroid) {
       window.location.href =
         "https://play.google.com/store/apps/details?id=com.fashcycle&hl=en_IN";
+    } else if (isIphone) {
+      window.location.href =
+        "https://apps.apple.com/in/app/fashcycle/id6748541060";
     } else {
       setShowDialog(true);
     }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { X } from "lucide-react";
 import { addDays, format } from "date-fns";
 import { DayPicker } from "react-day-picker";
@@ -21,6 +21,15 @@ const CalendarModal = ({
   onDaySelect: (day: Date | undefined) => void;
   onConfirm: () => void;
 }) => {
+    const [selectedDay, setSelectedDay] = useState<Date>();
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+   const handleDayClick = (day: Date) => {
+    setSelectedDay(day);
+    // If the clicked day is from a different month, switch to that month
+    if (day.getMonth() !== currentMonth.getMonth()) {
+      setCurrentMonth(day);
+    }
+  };
   const minSelectableDate = addDays(new Date(), 2);
   const handleDaySelect = (day: Date) => {
     if (day) {
@@ -77,6 +86,7 @@ const CalendarModal = ({
             <div className="border rounded-lg p-2 mb-3">
               <DayPicker
                 mode="range"
+                showOutsideDays
                 selected={
                   rentFromDate && selectedRentalDays
                     ? {

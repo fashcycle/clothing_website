@@ -94,15 +94,15 @@ export function AddressList({
               </p>
             </motion.div>
           ) : (
-            addresses.map((address) => (
+            addresses?.map((address) => (
               <div
                 key={address.id}
-                className="border rounded-lg p-4 space-y-2 hover:border-primary transition-colors"
+                className="border rounded-lg p-4 space-y-1 hover:border-primary transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">
-                      {address.customAddressType || address.address}
+                    <span className="text-sm text-muted-foreground">
+                      {address.customAddressType || address.addressType}
                     </span>
                     <Badge variant="outline">
                       {typeof address.pincode === "string"

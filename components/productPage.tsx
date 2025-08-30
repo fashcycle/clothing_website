@@ -18,8 +18,10 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import CalendarModal from "@/components/CalendarModal";
 import "react-medium-image-zoom/dist/styles.css";
-
-export default function ProductPage({ id }: { id: string }) {
+interface ProductPageProps {
+  id: string;
+}
+export default function ProductPage({ id }: ProductPageProps) {
   const [product, setProduct] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -204,9 +206,9 @@ export default function ProductPage({ id }: { id: string }) {
     if (!isRent) return null;
 
     const options = [
-      { days: 3, price: product.rentPrice3Days },
-      { days: 7, price: product.rentPrice7Days },
-      { days: 14, price: product.rentPrice14Days },
+      { days: 3, price: Math.round(product.rentPrice3Days) },
+      { days: 7, price: Math.round(product.rentPrice7Days) },
+      { days: 14, price: Math.round(product.rentPrice14Days) },
     ];
 
     return (
@@ -216,6 +218,10 @@ export default function ProductPage({ id }: { id: string }) {
           {options.map(({ days, price }) => {
             const isActive =
               selectedRentalDays === days && rentFromDate && rentToDate;
+            const isInCart = cartItems.includes(product.id);
+            const selectedDuration = cartItems.includes(product.id)
+              ? selectedRentalDays
+              : null;
             return (
               <motion.div
                 key={days}
@@ -225,12 +231,14 @@ export default function ProductPage({ id }: { id: string }) {
               >
                 <Button
                   variant={isActive ? "default" : "outline"}
+                  // onClick={() => !isInCart && handleRentalDaySelection(days)}
                   onClick={() => handleRentalDaySelection(days)}
                   className={`w-full p-2 h-auto flex flex-col items-center justify-center relative text-xs ${
-                    isActive
+                    isActive || selectedDuration === days
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                       : "hover:bg-gray-50"
                   }`}
+                  // disabled={isInCart}
                 >
                   {days === 7 && (
                     <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold absolute text-[10px] top-[-12px]">
@@ -298,16 +306,19 @@ export default function ProductPage({ id }: { id: string }) {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto py-4 px-4 md:pt-12 lg:pt-24">
-        <div className="flex items-center text-xs mb-4 gap-2 lg:mt-6">
-          <Link href="/" className="hover:underline flex items-center gap-1">
-            <Home className="h-3 w-3" /> Home
+      <div className="max-w-7xl mx-auto pt-8  px-4 md:pt-8 lg:pt-20">
+        <div className="flex flex-wrap items-center text-xs sm:text-sm mb-4 gap-2 lg:mt-6">
+          <Link
+            href="/"
+            className="hover:underline flex items-center gap-1 shrink-0"
+          >
+            <Home className="h-3 w-3 sm:h-4 sm:w-4" /> Home
           </Link>
-          <span>/</span>
-          <Link href="/browse" className="hover:underline">
+          <span className="shrink-0">/</span>
+          <Link href="/browse" className="hover:underline shrink-0">
             All Categories
           </Link>
-          <span>/</span>
+          <span className="shrink-0">/</span>
           <Link
             href={
               product?.category &&
@@ -316,7 +327,7 @@ export default function ProductPage({ id }: { id: string }) {
                 ? `/${product.category.id}`
                 : "/dashboard"
             }
-            className="hover:underline capitalize"
+            className="hover:underline capitalize shrink-0"
           >
             {product?.category && typeof product.category === "object"
               ? product.category.name
@@ -324,8 +335,10 @@ export default function ProductPage({ id }: { id: string }) {
               ? product.category
               : "Category"}
           </Link>
-          <span>/</span>
-          <span className="text-gray-500 truncate">{product.productName}</span>
+          <span className="shrink-0">/</span>
+          <span className="text-gray-500 truncate capitalize max-w-[150px] sm:max-w-[250px] md:max-w-[400px]">
+            {product.productName}
+          </span>
         </div>
 
         <div className="grid grid-cols-12 gap-6">
@@ -422,7 +435,9 @@ export default function ProductPage({ id }: { id: string }) {
             className="col-span-12 md:col-span-5 space-y-4"
           >
             <div className="text-center">
-              <h1 className="text-2xl font-bold mb-2">{product.productName}</h1>
+              <h1 className="text-2xl font-bold mb-2 capitalize">
+                {product.productName}
+              </h1>
             </div>
 
             <div className="flex flex-wrap gap-2 justify-center">
@@ -451,9 +466,9 @@ export default function ProductPage({ id }: { id: string }) {
                       Make it Own at :{" "}
                       <span className="text-sm line-through text-green-800">
                         {" "}
-                        ₹{product?.originalPurchasePrice}
+                        ₹{Math.round(product?.originalPurchasePrice)}
                       </span>{" "}
-                      ₹{product?.sellingPrice}
+                      ₹{Math.round(product?.sellingPrice)}
                     </div>
                     <div className="items-center justify-center flex">
                       <Badge
@@ -461,7 +476,7 @@ export default function ProductPage({ id }: { id: string }) {
                         className="border-green-400 bg-green-100 text-green-800 rounded-full px-2 py-1 text-xs capitalize "
                       >
                         Save ₹
-                        {product?.originalPurchasePrice - product?.sellingPrice}
+                        {Math.round(product?.originalPurchasePrice - product?.sellingPrice)}
                       </Badge>
                     </div>
                   </div>
@@ -475,7 +490,12 @@ export default function ProductPage({ id }: { id: string }) {
                         : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50"
                     }`}
                     disabled={cartItems.includes(product.id)}
-                    onClick={() => setIsBuyChecked((prev) => !prev)}
+                    onClick={() =>
+                      !cartItems.includes(product.id) &&
+                      setIsBuyChecked((prev) => !prev)
+                    }
+
+                    // onClick={() => setIsBuyChecked((prev) => !prev)}
                   >
                     Make It Yours
                   </button>
@@ -534,7 +554,7 @@ export default function ProductPage({ id }: { id: string }) {
                   { label: "SIZE FLEXIBILITY", value: product.sizeFlexibility },
                   {
                     label: "ORIGINAL PRICE",
-                    value: `₹${product.originalPurchasePrice}`,
+                    value: `₹${Math.round(product.originalPurchasePrice)}`,
                   },
                   { label: "SIZE", value: product?.size },
                 ].map(({ label, value }) => (
@@ -576,10 +596,9 @@ export default function ProductPage({ id }: { id: string }) {
           container: { backgroundColor: "rgba(0, 0, 0, 0.9)" },
           root: { "--yarl__color_backdrop": "rgba(0, 0, 0, 0.8)" },
         }}
-          plugins={[Zoom]} // Zoom enabled
+        plugins={[Zoom]} // Zoom enabled
         carousel={{ finite: false }}
-          zoom={{ maxZoomPixelRatio: 2 }}
-
+        zoom={{ maxZoomPixelRatio: 2 }}
       />
       <CalendarModal
         isOpen={isCalendarOpen}

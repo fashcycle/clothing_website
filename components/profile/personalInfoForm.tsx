@@ -95,13 +95,13 @@ export function PersonalInfoForm({
               )}
             </div>
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="dob">Date of Birth</Label>
             <Input id="dob" type="date" {...register("dob")} />
             {errors.dob && (
               <p className="text-sm text-destructive">{errors.dob.message}</p>
             )}
-          </div>
+          </div> */}
         </CardContent>
         <CardFooter className="flex justify-end gap-2">
           <Button type="submit">Save Changes</Button>
