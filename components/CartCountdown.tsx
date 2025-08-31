@@ -8,7 +8,7 @@ type CartCountdownProps = {
 
 const CartCountdown: React.FC<CartCountdownProps> = ({ createdAt }) => {
   const [timeLeft, setTimeLeft] = useState("");
-
+console.log("dgfiaufhlasf")
   useEffect(() => {
     const expiryTime = new Date(createdAt).getTime() + 24 * 60 * 60 * 1000;
 

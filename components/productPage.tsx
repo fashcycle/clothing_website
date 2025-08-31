@@ -213,8 +213,10 @@ export default function ProductPage({ id }: ProductPageProps) {
 
     return (
       <div className="space-y-3 mb-4">
-        <h3 className="font-semibold text-base">Select Rental Duration</h3>
-        <div className="grid grid-cols-3 gap-2">
+ <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
+    <span className="w-1 h-5 bg-gradient-to-b from-rose-500 to-pink-500 rounded-full"></span>
+    Select Rental Duration
+  </h3>        <div className="grid grid-cols-3 gap-2">
           {options.map(({ days, price }) => {
             const isActive =
               selectedRentalDays === days && rentFromDate && rentToDate;
@@ -223,42 +225,45 @@ export default function ProductPage({ id }: ProductPageProps) {
               ? selectedRentalDays
               : null;
             return (
-              <motion.div
-                key={days}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1"
-              >
-                <Button
-                  variant={isActive ? "default" : "outline"}
-                  // onClick={() => !isInCart && handleRentalDaySelection(days)}
-                  onClick={() => handleRentalDaySelection(days)}
-                  className={`w-full p-2 h-auto flex flex-col items-center justify-center relative text-xs ${
-                    isActive || selectedDuration === days
-                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                      : "hover:bg-gray-50"
-                  }`}
-                  // disabled={isInCart}
-                >
-                  {days === 7 && (
-                    <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold absolute text-[10px] top-[-12px]">
-                      Recommended
-                    </Badge>
-                  )}
-                  <div className="font-semibold text-sm">{days} Days</div>
-                  <div className="text-xs opacity-75 flex-col items-center ">
-                    <p> Perfect for </p>
-                    <p>
-                      {days === 3
-                        ? "Events"
-                        : days === 7
-                        ? "Occasions"
-                        : "Extended"}
-                    </p>
-                  </div>
-                  <div className="font-bold text-sm mt-1">₹{price}</div>
-                </Button>
-              </motion.div>
+            <motion.button
+  key={days}
+  type="button"
+  onClick={() => handleRentalDaySelection(days)}
+  aria-pressed={!!isActive}   // ✅ force boolean
+  whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.98 }}
+  className={`
+ 
+    ${isActive 
+      ? "border-emerald-400 bg-gradient-to-r from-emerald-50 to-teal-50 shadow-emerald-100 shadow-md" 
+      : "border-gray-200 bg-white hover:border-emerald-200 hover:bg-emerald-25"
+    }
+  `}
+>
+  <Button
+    variant={isActive ? "default" : "outline"}
+    onClick={() => handleRentalDaySelection(days)}
+    className={`w-full p-2 h-auto flex flex-col items-center justify-center relative text-xs ${
+      isActive || selectedDuration === days
+        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+        : "hover:bg-gray-50"
+    }`}
+  >
+    {days === 7 && (
+      <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold absolute text-[10px] -top-3">
+        Recommended
+      </Badge>
+    )}
+    <div className="font-semibold text-sm">{days} Days</div>
+    <div className="text-xs opacity-75 text-center">
+      <p>Perfect for</p>
+      <p>
+        {days === 3 ? "Events" : days === 7 ? "Occasions" : "Extended"}
+      </p>
+    </div>
+    <div className="font-bold text-sm mt-1">₹{price}</div>
+  </Button>
+</motion.button>
             );
           })}
         </div>
@@ -516,11 +521,17 @@ export default function ProductPage({ id }: ProductPageProps) {
                     isRentProduct &&
                     (!rentFromDate || !rentToDate))
                 }
-                className={`flex-1 py-4 text-sm rounded-lg shadow-lg ${
-                  cartItems.includes(product.id)
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : ""
-                }`}
+                  className={`flex-1 py-4 text-sm rounded-lg shadow-lg transition-colors duration-300
+    ${
+      cartItems.includes(product.id)
+        ? "bg-emerald-600 hover:bg-emerald-800 text-white"
+        : "border border-emerald-600 text-emerald-600 hover:bg-emerald-800 hover:text-white"
+    }`}
+                // className={`flex-1 py-4 text-sm rounded-lg shadow-lg ${
+                //   cartItems.includes(product.id)
+                //     ? "bg-emerald-600 hover:bg-emerald-700"
+                //     : ""
+                // }`}
                 variant={cartItems.includes(product.id) ? "default" : "outline"}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
@@ -538,48 +549,53 @@ export default function ProductPage({ id }: ProductPageProps) {
                 ✓ All purchases are verified and guaranteed authentic
               </p>
             </div>
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="space-y-4"
-            >
-              <div className="space-y-2 border-t border-gray-200 pt-4">
-                <h3 className="font-semibold text-base mb-3">
-                  Product Details
-                </h3>
+          <motion.div
+  initial={{ opacity: 0, x: 30 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ duration: 0.4, delay: 0.2 }}
+  className="space-y-4"
+>
+  {/* Product Details */}
+  <div className="space-y-2 border-t border-gray-200 pt-4">
+    <h3 className="font-semibold text-sm tracking-wide text-gray-800 mb-2">
+      Product Details
+    </h3>
 
-                {[
-                  { label: "COLOUR", value: product.color },
-                  { label: "SIZE FLEXIBILITY", value: product.sizeFlexibility },
-                  {
-                    label: "ORIGINAL PRICE",
-                    value: `₹${Math.round(product.originalPurchasePrice)}`,
-                  },
-                  { label: "SIZE", value: product?.size },
-                ].map(({ label, value }) => (
-                  <div
-                    key={label}
-                    className="flex justify-between items-center py-2 border-b border-gray-100"
-                  >
-                    <span className="text-gray-600 font-medium text-sm">
-                      {label}
-                    </span>
-                    <span className="font-semibold capitalize text-sm">
-                      {value}
-                    </span>
-                  </div>
-                ))}
-              </div>
+    {[
+      { label: "Colour", value: product.color },
+      { label: "Size Flexibility", value: product.sizeFlexibility },
+      {
+        label: "Original Price",
+        value: `₹${Math.round(product.originalPurchasePrice)}`,
+      },
+      { label: "Size", value: product?.size },
+    ].map(({ label, value }) => (
+      <div
+        key={label}
+        className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-b-0"
+      >
+        <span className="text-gray-600 font-medium text-xs tracking-wide">
+          {label}
+        </span>
+        <span className="font-semibold capitalize text-xs text-gray-800">
+          {value}
+        </span>
+      </div>
+    ))}
+  </div>
 
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h2 className="font-semibold mb-2 text-sm">About this item</h2>
-                <p className="text-gray-700 text-sm">
-                  {product.description ||
-                    `Quality ${product.productName} in ${product.color}. Size ${product.size}.`}
-                </p>
-              </div>
-            </motion.div>
+  {/* About this item */}
+  <div className="bg-gray-50/70 p-3 rounded-lg border border-gray-100 shadow-sm">
+    <h2 className="font-semibold mb-1.5 text-xs uppercase text-gray-700 tracking-wide">
+      About this item
+    </h2>
+    <p className="text-gray-600 text-xs leading-relaxed">
+      {product.description ||
+        `Quality ${product.productName} in ${product.color}. Size ${product.size}.`}
+    </p>
+  </div>
+</motion.div>
+
           </motion.div>
         </div>
       </div>

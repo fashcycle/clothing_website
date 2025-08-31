@@ -542,7 +542,7 @@ export default function Navbar() {
                             className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full relative"
                           >
                             <Bell className="h-5 w-5" />
-                            {notifications?.some((n) => !n.read) && (
+                            {notifications?.some((n:any) => !n.read) && (
                               <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
                             )}
                           </Button>
@@ -604,31 +604,35 @@ export default function Navbar() {
                     <p>Wishlist</p>
                   </TooltipContent>
                 </Tooltip>
-                <Tooltip>
-                  <Link
-                    href={isLogin ? "/cart" : "/login"}
-                    className="relative"
-                  >
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full"
-                      >
-                        <ShoppingBag className="h-5 w-5" />
-                        {/* <span className="text-xs font-light">
-                          {cartItemsLength}
-                        </span> */}
-                        <span className="sr-only">Cart</span>
-                      </Button>
-                    </TooltipTrigger>
-                  </Link>
-                  <TooltipContent side="bottom">
-                    <p>Cart</p>
-                  </TooltipContent>
-                </Tooltip>
+             
               </TooltipProvider>
             </div>
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <Link href={isLogin ? "/cart" : "/login"} className="relative">
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full relative"
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                      {cartItemsLength && cartItemsLength > 0 && (
+                        <span className="absolute -top-px -right-px bg-red-500 text-white text-[10px] font-semibold w-4 h-4 flex items-center justify-center rounded-full">
+                          {cartItemsLength}
+                        </span>
+                      )}
+
+                      <span className="sr-only">Cart</span>
+                    </Button>
+                  </TooltipTrigger>
+                </Link>
+                <TooltipContent side="bottom">
+                  <p>Cart</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             {isLogin ? (
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
