@@ -26,6 +26,7 @@ import {
   addNewAddress,
   getUserAddresses,
   getRazorpayKeys,
+  getCartRespond,
 } from "@/app/api/api";
 
 import Image from "next/image";
@@ -82,6 +83,7 @@ export default function CartPage() {
   const [checkoutTimer, setCheckoutTimer] = useState(120);
   const [checkoutTimerActive, setCheckoutTimerActive] = useState(false);
   const [razorpayKey, setRazorpayKey] = useState<string>("");
+  const [orderData, setOrderData] = useState<any>(null)
 
   useEffect(() => {
     const fetchKeys = async () => {
@@ -100,36 +102,90 @@ export default function CartPage() {
     fetchKeys();
   }, []);
 
-  const handleCheckout = () => {
-    if (!selectedAddressId)
-      return toast.error("Please select or add delivery address!");
-    if (cartItems.length === 0) return toast.error("Cart is empty!");
 
-    setShowCheckoutTimer(true);
-    setCheckoutTimer(120);
-    // setCheckoutTimer(1);
-    setCheckoutTimerActive(true);
+
+ const handleCheckout = async () => {
+  if (!selectedAddressId)
+    return toast.error("Please select or add delivery address!");
+  if (cartItems.length === 0) return toast.error("Cart is empty!");
+
+  setShowCheckoutTimer(true);
+  setCheckoutTimer(120); // countdown
+  setCheckoutTimerActive(true);
+
+  const cartIDS = cartItems.map((item: any) => item.id);
+  setOrderData({ productId: cartIDS }); 
+};
+  // ⏳ Countdown timer effect
+  useEffect(() => {
+    if (!showCheckoutTimer || !checkoutTimerActive) return;
+
+    const timerInterval = setInterval(() => {
+      setCheckoutTimer((prev) => {
+        if (prev <= 1) {
+          setCheckoutTimerActive(false);
+          clearInterval(timerInterval);
+          proceedCheckout();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerInterval);
+  }, [showCheckoutTimer, checkoutTimerActive]);
+
+  // 🔄 Cart status check effect
+  useEffect(() => {
+    if (!showCheckoutTimer || !checkoutTimerActive || !orderData?.productId) return;
+
+    const cartCheckInterval = setInterval(() => {
+      checkCartStatus(orderData?.productId);
+    }, 5000);
+
+    return () => clearInterval(cartCheckInterval);
+  }, [showCheckoutTimer, checkoutTimerActive, orderData?.productId]);
+
+  // ✅ Function to check cart status
+  const checkCartStatus = async (productId: string) => {
+    console.log("hitttt")
+    try {
+      const res = await getCartRespond(productId);
+      console.log("Cart validation response:", res?.order?.status, res);
+
+      if (res?.order?.status === "CONFIRM") {
+        // ✅ Order confirmed → proceed directly
+        clearTimers();
+        proceedCheckout();
+        return;
+      }
+
+      if (res?.order?.status === "REJECT") {
+        // ❌ Order rejected → stop checkout
+        toast.error("The product is not available on your selected booking dates.");
+        clearTimers();
+        return;
+      }
+
+      // 🔄 For any other status → keep countdown running
+      if (!res.success) {
+        toast.error("Cart/order is no longer valid!");
+        clearTimers();
+      }
+    } catch (err) {
+      toast.error("Error validating cart. Closing checkout.");
+      clearTimers();
+    }
   };
 
-  useEffect(() => {
-    let timerInterval: NodeJS.Timeout;
-    if (showCheckoutTimer && checkoutTimerActive && checkoutTimer > 0) {
-      timerInterval = setInterval(() => {
-        setCheckoutTimer((prev) => {
-          if (prev <= 1) {
-            setCheckoutTimerActive(false);
-            clearInterval(timerInterval);
-            proceedCheckout();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timerInterval);
-  }, [showCheckoutTimer, checkoutTimerActive, checkoutTimer]);
+  // Utility to stop timers + reset state
+  const clearTimers = () => {
+    setCheckoutTimerActive(false);
+    setShowCheckoutTimer(false);
+  };
 
   const proceedCheckout = async () => {
+
     if (!razorpayKey) {
       toast.error("Razorpay key not available");
       return;
@@ -140,18 +196,8 @@ export default function CartPage() {
 
     try {
       setIsPaying(true);
-      const { data } = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE}/orders/create`,
-        { selectedItems: cartIDS, shippingAddressId: selectedAddressId },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      const razorpay_order_id = data.order.razorpayOrderId;
+      console.log(orderData?.order?.razorpayOrderId, "orderData?.order?.razorpayOrderId")
+      const razorpay_order_id = orderData?.order?.razorpayOrderId;
 
       const options = {
         key: razorpayKey,
@@ -206,6 +252,7 @@ export default function CartPage() {
       rzp.open();
     } catch (err) {
       toast.error("Order create API failed");
+      console.log(err, "errerrerr")
       setIsPaying(false);
     }
   };
@@ -812,6 +859,9 @@ export default function CartPage() {
                                   ₹{" "}
                                   {item.rentDurationInDays === null &&
                                     Math.round(item.product.sellingPrice ?? 0)}
+
+                                  {item.rentDurationInDays === 1 &&
+                                    Math.round(item.product.rentPrice1Day)}
                                   {item.rentDurationInDays === 3 &&
                                     Math.round(item.product.rentPrice3Days)}
                                   {item.rentDurationInDays === 7 &&
@@ -926,7 +976,7 @@ export default function CartPage() {
                                   side="top"
                                   className="max-w-[160px] relative bg-gray-900 text-white text-xs px-3 py-2 rounded-md shadow-lg break-words"
                                 >
-                                  This fee covers payment gateway & processing charges.
+                                  Convenience fee covers payment gateway & processing charges.
                                   {/* Tooltip Arrow */}
                                   <div className="absolute -bottom-1 left-4 w-2 h-2 bg-gray-900 rotate-45"></div>
                                 </TooltipContent>

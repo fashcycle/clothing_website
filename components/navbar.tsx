@@ -53,7 +53,7 @@ export default function Navbar() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [notifications, setNotifications] = useState();
-  const [cartItemsLength, setCartItemsLength] = useState();
+  const [cartItemsLength, setCartItemsLength] = useState(0);
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
@@ -128,7 +128,6 @@ export default function Navbar() {
   }, []);
 
   const [showDialog, setShowDialog] = useState(false);
-
   const handleNavigate = () => {
     const isAndroid = /Android/i.test(navigator.userAgent);
     const isIphone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -368,9 +367,12 @@ export default function Navbar() {
                       >
                         <ShoppingBag className="h-5 w-5" />
                         Cart
-                        <Badge className="" variant="outline">
-                          {cartItemsLength}
-                        </Badge>
+                       
+                        {cartItemsLength > 0 && (
+  <span className="absolute -top-px -right-px bg-red-500 text-white text-[10px] font-semibold w-4 h-4 flex items-center justify-center rounded-full">
+    {cartItemsLength}
+  </span>
+)}
                       </Button>
                     </Link>
                     <Link
@@ -617,12 +619,12 @@ export default function Navbar() {
                       className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full relative"
                     >
                       <ShoppingBag className="h-5 w-5" />
-                      {cartItemsLength && cartItemsLength > 0 && (
-                        <span className="absolute -top-px -right-px bg-red-500 text-white text-[10px] font-semibold w-4 h-4 flex items-center justify-center rounded-full">
-                          {cartItemsLength}
-                        </span>
-                      )}
-
+                     
+{cartItemsLength > 0 && (
+  <span className="absolute -top-px -right-px bg-red-500 text-white text-[10px] font-semibold w-4 h-4 flex items-center justify-center rounded-full">
+    {cartItemsLength}
+  </span>
+)}
                       <span className="sr-only">Cart</span>
                     </Button>
                   </TooltipTrigger>
