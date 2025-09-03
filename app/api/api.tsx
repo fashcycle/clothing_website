@@ -200,7 +200,7 @@ export const createProduct = async (productData: any) => {
     throw error;
   }
 };
-export const getUserProducts = async ({ page, limit }) => {
+export const getUserProducts = async ({ page, limit }:any) => {
   try {
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_USER_PRODUCT_LIST}?page=${page}&limit=${limit}`,
@@ -222,7 +222,7 @@ export const getUserProducts = async ({ page, limit }) => {
   }
 };
 
-export const getOrderProducts = async ({ page, limit }) => {
+export const getOrderProducts = async ({ page, limit }:any) => {
   try {
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_GET_ORDERS}?page=${page}&limit=${limit}`,
@@ -243,7 +243,6 @@ export const getOrderProducts = async ({ page, limit }) => {
     throw error;
   }
 };
-
 export const getSingleProduct = async (productId: string) => {
   try {
     const response = await axios.get(
@@ -749,6 +748,50 @@ export const getEarnings = async () => {
     if (axios.isAxiosError(error)) {
       throw new Error(
         error.response?.data.message || "Failed to fetch Earnings"
+      );
+    }
+    throw error;
+  }
+};
+
+export const getCartRespond = async (productId: string) => {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_CHECK_PRODUCT_STATUS_APPROVAL}/${productId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to fetch Earnings"
+      );
+    }
+    throw error;
+  }
+};
+
+export const getSingleProductBookings = async (productId: string) => {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_USER_SINGLE_PRODUCT}/${productId}/bookings`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to fetch product details"
       );
     }
     throw error;

@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { addDays, format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { getSingleProductBookings } from "@/app/api/api";
+import { addDays, setHours, setMinutes, format } from "date-fns";
 
 const CalendarModal = ({
   isOpen,
@@ -13,6 +15,7 @@ const CalendarModal = ({
   rentFromDate,
   onDaySelect,
   onConfirm,
+  product
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -20,21 +23,49 @@ const CalendarModal = ({
   rentFromDate: Date | null;
   onDaySelect: (day: Date | undefined) => void;
   onConfirm: () => void;
+  product: any
 }) => {
-    const [selectedDay, setSelectedDay] = useState<Date>();
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-   const handleDayClick = (day: Date) => {
-    setSelectedDay(day);
-    // If the clicked day is from a different month, switch to that month
-    if (day.getMonth() !== currentMonth.getMonth()) {
-      setCurrentMonth(day);
+
+  const [bookingDateArray, setBookingDateArray] = useState<any>([])
+
+  useEffect(() => {
+    getBooking()
+  }, [])
+  const getBooking = () => {
+    getSingleProductBookings(product?.id).then((res: any) => {
+      if (res?.success == true) {
+        setBookingDateArray(res?.bookings)
+      }
+    })
+  }
+  let minSelectableDate: Date;
+  if (product?.category?.isEvent) {
+    const now = new Date();
+    // today at 12:00 PM
+    const todayNoon = setMinutes(setHours(new Date(), 12), 0);
+
+    if (now < todayNoon) {
+      // before 12:00 PM → allow today
+      minSelectableDate = new Date();
+    } else {
+      // after 12:00 PM → allow from tomorrow
+      minSelectableDate = addDays(new Date(), 1);
     }
-  };
-  const minSelectableDate = addDays(new Date(), 2);
+  } else {
+    // normal products → allow from 2 days later
+    minSelectableDate = addDays(new Date(), 2);
+  }
+
+
+
+  const bookingRanges = bookingDateArray?.map((range: any) => ({
+    from: new Date(range.from),
+    to: new Date(range.to),
+  }));
+
   const handleDaySelect = (day: Date) => {
-    if (day) {
-      onDaySelect(day);
-    }
+    if (!day) return;
+    onDaySelect(day);
   };
   if (!isOpen) return null;
   return (
@@ -84,7 +115,7 @@ const CalendarModal = ({
             )}
 
             <div className="border rounded-lg p-2 mb-3">
-              <DayPicker
+              {/* <DayPicker
                 mode="range"
                 showOutsideDays
                 selected={
@@ -111,7 +142,46 @@ const CalendarModal = ({
                 }}
                 className="w-full"
                 onDayClick={handleDaySelect}
+              /> */}
+
+              <DayPicker
+                mode="range"
+                showOutsideDays
+                selected={
+                  rentFromDate && selectedRentalDays
+                    ? {
+                      from: rentFromDate,
+                      to: addDays(rentFromDate, selectedRentalDays),
+                    }
+                    : undefined
+                }
+                onSelect={() => { }}
+                disabled={[
+                  { before: minSelectableDate },
+                  // your booking ranges:
+                  ...bookingDateArray.map((range: any) => ({
+                    from: new Date(range.from),
+                    to: new Date(range.to),
+                  })),
+                ]}
+                modifiers={{
+                  ...(rentFromDate && selectedRentalDays
+                    ? {
+                      selectedRange: {
+                        from: rentFromDate,
+                        to: addDays(rentFromDate, selectedRentalDays),
+                      },
+                    }
+                    : {}),
+                }}
+                modifiersClassNames={{
+                  selectedRange: "bg-emerald-200 text-emerald-900",
+                }}
+                className="w-full"
+                onDayClick={handleDaySelect}
               />
+
+
             </div>
 
             {rentFromDate && selectedRentalDays && (
