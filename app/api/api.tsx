@@ -200,7 +200,7 @@ export const createProduct = async (productData: any) => {
     throw error;
   }
 };
-export const getUserProducts = async ({ page, limit }) => {
+export const getUserProducts = async ({ page, limit }:any) => {
   try {
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_USER_PRODUCT_LIST}?page=${page}&limit=${limit}`,
@@ -222,7 +222,7 @@ export const getUserProducts = async ({ page, limit }) => {
   }
 };
 
-export const getOrderProducts = async ({ page, limit }) => {
+export const getOrderProducts = async ({ page, limit }:any) => {
   try {
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_GET_ORDERS}?page=${page}&limit=${limit}`,
@@ -757,13 +757,12 @@ export const getEarnings = async () => {
 export const getCartRespond = async (productId: string) => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PULBLIC_CHECK_PRODUCT_STATUS_APPROVAL}/${productId}` as string,
+      `${process.env.NEXT_PUBLIC_CHECK_PRODUCT_STATUS_APPROVAL}/${productId}`,
       {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      
       }
     );
     return response.data;
@@ -776,6 +775,7 @@ export const getCartRespond = async (productId: string) => {
     throw error;
   }
 };
+
 export const getSingleProductBookings = async (productId: string) => {
   try {
     const response = await axios.get(

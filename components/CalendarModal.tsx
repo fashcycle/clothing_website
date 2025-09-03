@@ -26,16 +26,7 @@ const CalendarModal = ({
   product: any
 }) => {
 
-  const [bookingDateArray, setBookingDateArray] = useState<any>([
-    {
-      "from": "2025-09-17T00:00:00.000Z",
-      "to": "2025-09-19T18:30:00.000Z"
-    },
-    {
-      "from": "2025-09-11T00:00:00.000Z",
-      "to": "2025-09-12T00:00:00.000Z"
-    }
-  ])
+  const [bookingDateArray, setBookingDateArray] = useState<any>([])
 
   useEffect(() => {
     getBooking()

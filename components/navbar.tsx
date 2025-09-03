@@ -52,7 +52,7 @@ export default function Navbar() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [notifications, setNotifications] = useState();
+  const [notifications, setNotifications] = useState<any>();
   const [cartItemsLength, setCartItemsLength] = useState(0);
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -147,7 +147,7 @@ export default function Navbar() {
   const [showResults, setShowResults] = useState(false);
 
   const handleSearch = useCallback(
-    debounce(async (term) => {
+    debounce(async (term:any) => {
       if (!term.trim()) {
         setSearchResults([]);
         setShowResults(false);
@@ -174,11 +174,11 @@ export default function Navbar() {
     return () => handleSearch.cancel();
   }, [searchTerm, handleSearch]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e:any) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleResultClick = (product) => {
+  const handleResultClick = (product:any) => {
     router.push(`/products/${product.id}`);
 
     setShowResults(false);
@@ -251,9 +251,9 @@ export default function Navbar() {
                             </div>
                           ) : (
                             <div className="py-2">
-                              {searchResults?.map((product) => (
+                              {searchResults?.map((product:any) => (
                                 <div
-                                  key={product.id}
+                                  key={product?.id}
                                   onClick={() => {
                                     handleResultClick(product),
                                       setIsSheetOpen(false);
@@ -265,12 +265,12 @@ export default function Navbar() {
                                   <div className="flex-shrink-0 w-16 h-16">
                                     <img
                                       src={
-                                        product.productImage?.frontLook ||
+                                        product?.productImage?.frontLook ||
                                         "/api/placeholder/80/80"
                                       }
-                                      alt={product.productName}
+                                      alt={product?.productName}
                                       className="w-full h-full object-cover rounded-lg border border-gray-200"
-                                      onError={(e) => {
+                                      onError={(e:any) => {
                                         e.target.src = "/api/placeholder/80/80";
                                       }}
                                     />
@@ -279,7 +279,7 @@ export default function Navbar() {
                                   {/* Product Details */}
                                   <div className="flex-1 ml-3 min-w-0">
                                     <h3 className="font-medium text-gray-900 truncate text-sm">
-                                      {product.productName}
+                                      {product?.productName}
                                     </h3>
 
                                     <div className="flex flex-wrap gap-2 mt-1">
@@ -289,17 +289,17 @@ export default function Navbar() {
                                           className="w-3 h-3 rounded-full mr-1 border border-gray-300"
                                           style={{
                                             backgroundColor:
-                                              product.color === "grey"
+                                              product?.color === "grey"
                                                 ? "#6B7280"
-                                                : product.color,
+                                                : product?.color,
                                           }}
                                         ></div>
-                                        {product.color}
+                                        {product?.color}
                                       </span>
 
                                       {/* Size */}
                                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                                        Size {product.size}
+                                        Size {product?.size}
                                       </span>
                                     </div>
                                   </div>
@@ -437,7 +437,7 @@ export default function Navbar() {
                       </div>
                     ) : (
                       <div className="py-2">
-                        {searchResults.map((product) => (
+                        {searchResults.map((product:any) => (
                           <div
                             key={product.id}
                             onClick={() => handleResultClick(product)}
@@ -564,7 +564,7 @@ export default function Navbar() {
                               No notifications
                             </DropdownMenuItem>
                           ) : (
-                            notifications?.map((notif) => (
+                            notifications?.map((notif:any) => (
                               <DropdownMenuItem
                                 key={notif.id}
                                 className="py-3 flex flex-col gap-1"

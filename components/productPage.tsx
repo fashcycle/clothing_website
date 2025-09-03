@@ -37,7 +37,6 @@ export default function ProductPage({ id }: ProductPageProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isBuyChecked, setIsBuyChecked] = useState(false);
-console.log(product,"safgyasifutoiypqof")
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(false);
   useEffect(() => {
@@ -186,7 +185,7 @@ console.log(product,"safgyasifutoiypqof")
 
         fetchCartItems();
       }
-    } catch (err) {
+    } catch (err:any) {
       setCartItems((prev) => prev.filter((id) => id !== productId));
       toast.error(err.message || "Failed to add to cart");
       console.error(err);
@@ -571,7 +570,6 @@ const renderEventRentalButton = () => {
                       !cartItems.includes(product.id) &&
                       setIsBuyChecked((prev) => !prev)
                     }
-
                     // onClick={() => setIsBuyChecked((prev) => !prev)}
                   >
                     Make It Yours
@@ -693,7 +691,7 @@ const renderEventRentalButton = () => {
         onClose={() => setIsCalendarOpen(false)}
         selectedRentalDays={selectedRentalDays}
         rentFromDate={rentFromDate}
-        rentToDate={rentToDate}
+        // rentToDate={rentToDate}
         onDaySelect={handleDaySelect}
         onConfirm={handleCalendarConfirm}
         product={product}
