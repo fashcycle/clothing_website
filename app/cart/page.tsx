@@ -158,7 +158,7 @@ const[isNotAvailable,setIsNotAvailable]=useState(false)
         return;
       }
 
-      if (res?.status === "WAITING_FOR_APPROVEL") {
+      if (res?.status === " NOT_AVAILABLE") {
         setIsNotAvailable(true)
             setCheckoutTimerActive(false);
 
@@ -355,7 +355,10 @@ const calculateItemPrice = (item: any) => {
     return item.product.rentPrice7Days;
   } else if (item.rentDurationInDays === 14) {
     return item.product.rentPrice14Days;
-  } else {
+  } 
+  else if (item.rentDurationInDays === 1) {
+    return item.product.rentPrice1Day;
+  }else {
     return item?.product?.sellingPrice;
   }
 };
@@ -511,10 +514,35 @@ const convenienceFee = cartItems.reduce((sum: any, item: any) => {
   const itemPrice = calculateConvenienceFee(item);
   return sum + itemPrice;
 }, 0);
-const subtotal = cartItems.reduce((sum: any, item: any) => {
+const subtotal = cartItems.reduce((sum: number, item: any) => {
   const itemPrice = calculateItemPrice(item);
   return sum + itemPrice;
 }, 0);
+// const calculateItemPrice = (item: any): number => {
+//   const { rentDurationInDays, product, quantity } = item;
+
+//   if (rentDurationInDays == null) {
+//     return product.sellingPrice * quantity;
+//   }
+
+//   switch (rentDurationInDays) {
+//     case 1:
+//       return product.rentPrice1Day * quantity;
+//     case 3:
+//       return product.rentPrice3Days * quantity;
+//     case 7:
+//       return product.rentPrice7Days * quantity;
+//     case 14:
+//       return product.rentPrice14Days * quantity;
+//     default:
+//       throw new Error(`Unsupported rent duration: ${rentDurationInDays}`);
+//   }
+// };
+
+
+
+console.log("Subtotal:", subtotal);
+
 // const shipping = subtotal > 999 ? 0 : 99;
 const shipping = 0;
 const taxAmount = Math.round(subtotal * 0.18);

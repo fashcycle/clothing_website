@@ -25,7 +25,7 @@ export default function FeaturedProducts() {
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(
     null
   );
-
+console.log(products,"products")
   const fetchWishlist = async () => {
     try {
       const response = await getWishlistedProducts();

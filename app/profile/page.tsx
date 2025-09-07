@@ -10,7 +10,7 @@ import {
   Edit,
   Camera,
   CheckCircle,
-  ChevronLeft,
+  ChevronLeft, BadgeCheck, ArrowRight, Scissors
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +57,7 @@ import {
 } from "@radix-ui/react-tooltip";
 import { toast } from "sonner";
 import ProductListingTab from "@/components/ProductListingTab";
+import FittingsDialog from "@/components/profile/fittings";
 interface UserAddress {
   address: string;
   landmark: string;
@@ -79,6 +80,8 @@ export default function ProfilePage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isFittingDialogOpen, setIsFittingDialogOpen] = useState(false);
+
   const [userLocation, setUserLocation] = useState(() => {
     if (typeof window !== "undefined") {
       const storedLocation = localStorage.getItem("userLocation");
@@ -132,7 +135,7 @@ export default function ProfilePage() {
   }
 
   // Inside ProfilePage component, add this state
-  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [savedAddresses, setSavedAddresses] = useState<any>([]);
   const fetchAddresses = async () => {
     try {
       const response = await getUserAddresses();
@@ -564,6 +567,19 @@ export default function ProfilePage() {
                   <Shield className="h-4 w-4 mr-3 text-primary" />
                   <span>ID Verified</span>
                 </motion.div>
+                <motion.div
+                  className="flex items-center justify-between cursor-pointer rounded-md text-foreground p-1 bg-blue-100 transition-colors shadow-sm"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  onClick={() => setIsFittingDialogOpen(true)}
+                >
+                  <div className="flex items-center">
+                    <Scissors className="h-4 w-4 mr-3 text-primary" />
+                    <span className="font-medium">Fittings</span>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </motion.div>
+
               </motion.div>
             </CardContent>
           </Card>
@@ -676,6 +692,7 @@ export default function ProfilePage() {
                 }}
               />
             </TabsContent>
+
           </Tabs>
         </div>
       </div>
@@ -722,6 +739,8 @@ export default function ProfilePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      {isFittingDialogOpen && (
+        <FittingsDialog onClose={() => setIsFittingDialogOpen(false)} />
+      )}    </div>
   );
 }

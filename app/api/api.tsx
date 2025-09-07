@@ -200,7 +200,7 @@ export const createProduct = async (productData: any) => {
     throw error;
   }
 };
-export const getUserProducts = async ({ page, limit }:any) => {
+export const getUserProducts = async ({ page, limit }: any) => {
   try {
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_USER_PRODUCT_LIST}?page=${page}&limit=${limit}`,
@@ -222,7 +222,7 @@ export const getUserProducts = async ({ page, limit }:any) => {
   }
 };
 
-export const getOrderProducts = async ({ page, limit }:any) => {
+export const getOrderProducts = async ({ page, limit }: any) => {
   try {
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_GET_ORDERS}?page=${page}&limit=${limit}`,
@@ -795,5 +795,63 @@ export const getSingleProductBookings = async (productId: string) => {
       );
     }
     throw error;
+  }
+};
+export const getAllFittings = async (page: any, limit: any) => {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_GET_ALL_FITTINGS}?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data.message || "Failed to fetch product details"
+      );
+    }
+    throw error;
+  }
+};
+export const createFittings = async (data: any) => {
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_CREATE_FITTING as string,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Failed to resend OTP");
+    }
+    throw error;
+  }
+};
+export const deleteFitting = async (id: string) => {
+  try {
+    const res = await axios.delete(
+      `${process.env.NEXT_PUBLIC_DELETE_SINGLE_FITTING}/${id}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`, 
+        },
+      }
+    );
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ Error deleting fitting:", error);
+    throw error.response?.data || error;
   }
 };
