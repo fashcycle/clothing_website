@@ -572,7 +572,7 @@ const renderEventRentalButton = () => {
                     }
                     // onClick={() => setIsBuyChecked((prev) => !prev)}
                   >
-                    Make It Yours
+                    Buy Now
                   </button>
                 )}
               </div>

@@ -85,6 +85,8 @@ export default function CartPage() {
   const [razorpayKey, setRazorpayKey] = useState<string>("");
   const [orderData, setOrderData] = useState<any>(null)
 const[isNotAvailable,setIsNotAvailable]=useState(false)
+const [showOrderPopup, setShowOrderPopup] = useState(false);
+
   useEffect(() => {
     const fetchKeys = async () => {
       try {
@@ -158,7 +160,7 @@ const[isNotAvailable,setIsNotAvailable]=useState(false)
         return;
       }
 
-      if (res?.status === "WAITING_FOR_APPROVEL") {
+      if (res?.status === " NOT_AVAILABLE") {
         setIsNotAvailable(true)
             setCheckoutTimerActive(false);
 
@@ -246,6 +248,7 @@ const proceedCheckout = async () => {
           if (verifyRes.data.success === true) {
             toast.success("Payment successful! 🎉");
             fetchCartItems();
+            setShowOrderPopup(true);
           }
         } catch (err) {
           toast.error("Verify API error");
@@ -355,7 +358,10 @@ const calculateItemPrice = (item: any) => {
     return item.product.rentPrice7Days;
   } else if (item.rentDurationInDays === 14) {
     return item.product.rentPrice14Days;
-  } else {
+  } 
+  else if (item.rentDurationInDays === 1) {
+    return item.product.rentPrice1Day;
+  }else {
     return item?.product?.sellingPrice;
   }
 };
@@ -511,10 +517,35 @@ const convenienceFee = cartItems.reduce((sum: any, item: any) => {
   const itemPrice = calculateConvenienceFee(item);
   return sum + itemPrice;
 }, 0);
-const subtotal = cartItems.reduce((sum: any, item: any) => {
+const subtotal = cartItems.reduce((sum: number, item: any) => {
   const itemPrice = calculateItemPrice(item);
   return sum + itemPrice;
 }, 0);
+// const calculateItemPrice = (item: any): number => {
+//   const { rentDurationInDays, product, quantity } = item;
+
+//   if (rentDurationInDays == null) {
+//     return product.sellingPrice * quantity;
+//   }
+
+//   switch (rentDurationInDays) {
+//     case 1:
+//       return product.rentPrice1Day * quantity;
+//     case 3:
+//       return product.rentPrice3Days * quantity;
+//     case 7:
+//       return product.rentPrice7Days * quantity;
+//     case 14:
+//       return product.rentPrice14Days * quantity;
+//     default:
+//       throw new Error(`Unsupported rent duration: ${rentDurationInDays}`);
+//   }
+// };
+
+
+
+console.log("Subtotal:", subtotal);
+
 // const shipping = subtotal > 999 ? 0 : 99;
 const shipping = 0;
 const taxAmount = Math.round(subtotal * 0.18);
@@ -1332,6 +1363,34 @@ onOpenChange={(open) => {
         });
       }}
     />
+    {showOrderPopup && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-center">
+      <h2 className="text-xl font-bold text-green-700 mb-2">Order Confirmed 🎉</h2>
+      <p className="text-gray-700 mb-4">
+        Your order has been placed successfully. If you haven't added your fitting details yet, please do so now.
+      </p>
+      <div className="flex justify-center gap-4">
+        <button
+          className="px-4 py-2 bg-[#1b3226] text-white rounded hover:bg-[#163a2b]"
+          onClick={() => {
+            setShowOrderPopup(false);
+            router.push("/profile"); // or "/dashboard/profile" based on your route
+          }}
+        >
+          Go to Profile
+        </button>
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+          onClick={() => setShowOrderPopup(false)}
+        >
+          Later
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
   </>
 );
 }
