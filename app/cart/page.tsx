@@ -142,8 +142,9 @@ const [showOrderPopup, setShowOrderPopup] = useState(false);
     if (!showCheckoutTimer || !checkoutTimerActive || !orderData?.productId) return;
 
     const cartCheckInterval = setInterval(() => {
+
       checkCartStatus(orderData?.productId);
-    }, 15000);
+    }, 5000);
 
     return () => clearInterval(cartCheckInterval);
   }, [showCheckoutTimer, checkoutTimerActive, orderData?.productId]);
