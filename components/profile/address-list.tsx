@@ -94,7 +94,7 @@ export function AddressList({
               </p>
             </motion.div>
           ) : (
-            addresses?.map((address) => (
+            addresses?.map((address:any) => (
               <div
                 key={address.id}
                 className="border rounded-lg p-4 space-y-1 hover:border-primary transition-colors"
@@ -146,6 +146,11 @@ export function AddressList({
                   {address.pincode.city}, {address.pincode.state},{" "}
                   {address.pincode.country}
                 </p>
+                 {address.mobileNumber && (
+      <p className="text-sm text-gray-700 font-medium">
+        Mobile: {address.mobileNumber}
+      </p>
+    )}
               </div>
             ))
           )}

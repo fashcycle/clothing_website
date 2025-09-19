@@ -45,6 +45,10 @@
       .string()
       .required("Pincode is required")
       .length(6, "Pincode must be 6 digits"),
+      mobileNumber: yup
+    .string()
+    .required("Mobile number is required")
+    .matches(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number"),
   });
 
   export function AddressFormDialog({
@@ -61,6 +65,7 @@
       landmark: "",
       addressLine1: "",
       addressLine2: "",
+      mobileNumber: "",
       pincode: "",
       city: "",
       state: "",
@@ -85,27 +90,6 @@
         }
       }
     }, [open, initialData, openFor]);
-    // const handlePincodeChange = async (pincode: string) => {
-    //   if (pincode.length === 6) {
-    //     try {
-    //       const response = await fetch(
-    //         `https://api.postalpincode.in/pincode/${pincode}`
-    //       );
-    //       const [data] = await response.json();
-    //       if (data.Status === "Success") {
-    //         const postOffice = data.PostOffice[0];
-    //         setFormData({
-    //           ...formData,
-    //           city: postOffice.District,
-    //           state: postOffice.State,
-    //           pincode,
-    //         });
-    //       }
-    //     } catch (error) {
-    //       console.error("Error fetching pincode data:", error);
-    //     }
-    //   }
-    // };
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -157,13 +141,14 @@
     }, [open]);
     return (
       <Dialog open={open} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-[500px]">
+  <DialogContent className="sm:max-w-[550px] max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>
               {openFor === "add" ? "Add New Address" : "Update Address"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+    <div className=" overflow-y-auto p-2 scrollbar">
+        <div className="space-y-4">
             <div className="space-y-2">
               <Label>Address Type *</Label>
               <Select
@@ -208,7 +193,6 @@
                 )}
               </div>
             )}
-
             <div className="space-y-2">
               <Label>Landmark *</Label>
               <Input
@@ -237,6 +221,7 @@
               )}
             </div>
 
+
             <div className="space-y-2">
               <Label>Address Line 2</Label>
               <Input
@@ -246,7 +231,21 @@
                 }
               />
             </div>
-
+         
+  <div className="space-y-2">
+            <Label>Mobile Number *</Label>
+            <Input
+              value={formData?.mobileNumber}
+              onChange={(e) => {
+                setFormData({ ...formData, mobileNumber: e.target.value });
+                setErrors({ ...errors, mobileNumber: "" });
+              }}
+              placeholder="Enter 10-digit mobile number"
+            />
+            {errors.mobileNumber && (
+              <p className="text-sm text-destructive">{errors.mobileNumber}</p>
+            )}
+          </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Pincode *</Label>
@@ -321,14 +320,17 @@
                 )}
               </div>
             </div>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full"
-              onClick={handleSubmit}
-            >
-              {isSubmitting ? <Loader text="Saving..." /> : "Save Address"}
-            </Button>
+            </div>
+            <div className="mt-4 sticky bottom-0 bg-white pt-2">
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full"
+        onClick={handleSubmit}
+      >
+        {isSubmitting ? <Loader text="Saving..." /> : "Save Address"}
+      </Button>
+    </div>
           </div>
         </DialogContent>
       </Dialog>

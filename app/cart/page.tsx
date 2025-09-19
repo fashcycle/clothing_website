@@ -80,7 +80,7 @@ export default function CartPage() {
   const [selectedAddress, setSelectedAddress] = useState<any>();
   const [isPaying, setIsPaying] = useState(false);
   const [showCheckoutTimer, setShowCheckoutTimer] = useState(false);
-  const [checkoutTimer, setCheckoutTimer] = useState(120);
+  const [checkoutTimer, setCheckoutTimer] = useState(20);
   const [checkoutTimerActive, setCheckoutTimerActive] = useState(false);
   const [razorpayKey, setRazorpayKey] = useState<string>("");
   const [orderData, setOrderData] = useState<any>(null)
@@ -112,7 +112,7 @@ const [showOrderPopup, setShowOrderPopup] = useState(false);
     if (cartItems.length === 0) return toast.error("Cart is empty!");
 
     setShowCheckoutTimer(true);
-    setCheckoutTimer(120); // countdown
+    setCheckoutTimer(20); // countdown
     setCheckoutTimerActive(true);
 
     const cartIDS = cartItems.map((item: any) => item.id);
@@ -144,7 +144,7 @@ const [showOrderPopup, setShowOrderPopup] = useState(false);
     const cartCheckInterval = setInterval(() => {
 
       checkCartStatus(orderData?.productId);
-    }, 15000);
+    }, 5000);
 
     return () => clearInterval(cartCheckInterval);
   }, [showCheckoutTimer, checkoutTimerActive, orderData?.productId]);
@@ -745,6 +745,11 @@ return (
                       .filter(Boolean)
                       .join(", ")}
                   </p>
+                   {selectedAddress?.mobileNumber && (
+        <p className="text-gray-700 mt-1 sm:ml-7 ml-6">
+        <span className="font-medium">Mobile: {selectedAddress.mobileNumber}</span>
+        </p>
+      )}
                 </div>
 
                 {/* Right Section (Button) */}
@@ -1239,10 +1244,12 @@ return (
                 setShowAddressModal(false);
               }}
             >
+              
               <div className="flex items-center justify-between relative">
                 <span className="text-sm text-gray-600">
                   {address.customAddressType || address.addressType}
                 </span>
+                 
                 {selectedAddressId === address.id && (
                   <Badge
                     className="absolute bg-green-100 text-green-700 rounded-full right-0 top-0"
@@ -1272,6 +1279,11 @@ return (
                     .filter(Boolean)
                     .join(", ")}
               </p>
+               {address.mobileNumber && (
+      <p className="text-sm text-gray-700 font-medium">
+        Mobile: {address.mobileNumber}
+      </p>
+    )}
             </div>
           ))}
 
