@@ -855,3 +855,23 @@ export const deleteFitting = async (id: string) => {
     throw error.response?.data || error;
   }
 };
+export const verifyCODOrder = async (orderId: any) => {
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_COD_ORDER_VERIFY as string,
+      {orderId:orderId},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Failed to add to cart");
+    }
+    throw error;
+  }
+};
