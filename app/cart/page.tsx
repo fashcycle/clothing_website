@@ -269,7 +269,7 @@ export default function CartPage() {
       // 🔹 CASE 2: CASH ON DELIVERY → Call verifyCODOrder API
       else if (data.order.paymentMethod === "COD") {
         try {
-          const codRes:any = verifyCODOrder(orderId);
+          const codRes:any = await verifyCODOrder(orderId);
 console.log(codRes,"adasfqwdiqwygdiasf")    
       if (codRes?.success==true) {
             toast.success("Order placed successfully with COD 🎉");
