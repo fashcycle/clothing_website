@@ -211,7 +211,6 @@ export default function CartPage() {
       );
       setIsPaying(true);
       let orderId=data?.order?.id
-      console.log({ selectedItems: cartIDS, shippingAddressId: selectedAddressId, paymentMethod: paymentMethod }, data, "asfduaydiqwdqwd")
       if (data.order.paymentMethod === "ONLINE") {
         const razorpay_order_id = data?.order?.razorpayOrderId;
         const options = {
@@ -271,13 +270,12 @@ export default function CartPage() {
       else if (data.order.paymentMethod === "COD") {
         try {
           const codRes:any = verifyCODOrder(orderId);
-console.log(codRes,"kfgewyfewifgw")
-          if (true) {
+          if (codRes?.success==true) {
             toast.success("Order placed successfully with COD 🎉");
             fetchCartItems();
             setShowOrderPopup(true);
           } else {
-            toast.error("COD verification failed");
+            toast.error(codRes?.message || "COD Order API error");
           }
         } catch (err) {
           toast.error("COD API error");
