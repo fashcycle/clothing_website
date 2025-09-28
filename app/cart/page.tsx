@@ -270,7 +270,8 @@ export default function CartPage() {
       else if (data.order.paymentMethod === "COD") {
         try {
           const codRes:any = verifyCODOrder(orderId);
-          if (codRes?.success==true) {
+console.log(codRes,"adasfqwdiqwygdiasf")    
+      if (codRes?.success==true) {
             toast.success("Order placed successfully with COD 🎉");
             fetchCartItems();
             setShowOrderPopup(true);
