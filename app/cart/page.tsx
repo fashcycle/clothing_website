@@ -270,7 +270,7 @@ export default function CartPage() {
       else if (data.order.paymentMethod === "COD") {
         try {
           const codRes:any = await verifyCODOrder(orderId);
-console.log(codRes,"adasfqwdiqwygdiasf")    
+console.log(JSON.stringify(codRes, null, 2),codRes,codRes.success,"adasfqwdiqwygdiasf")    
       if (codRes?.success==true) {
             toast.success("Order placed successfully with COD 🎉");
             fetchCartItems();
