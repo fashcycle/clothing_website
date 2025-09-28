@@ -129,6 +129,7 @@ export default function ProductListingTab({
     },
     validationSchema,
     onSubmit: async (values) => {
+      console.log("dsfdwgfqwda")
       setIsSubmitting(true);
       try {
         const formData = new FormData();
@@ -170,7 +171,7 @@ export default function ProductListingTab({
         } else {
           toast.error(response.message || "Failed to create product");
         }
-      } catch (err) {
+      } catch (err:any) {
         toast.error(err.message || "Something went wrong");
       } finally {
         setIsSubmitting(false);
@@ -246,7 +247,7 @@ export default function ProductListingTab({
         <CardContent className="space-y-6">
           <div className="space-y-2 static lg:absolute top-10 right-10">
             <Label htmlFor="referralCode" className="font-large font-bold">
-              Referral Code *
+              Referral Code
             </Label>
             <Input
               id="referralCode"
@@ -335,7 +336,7 @@ export default function ProductListingTab({
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />
-            {formik.touched.mobileNumber && formik.errors.mobileNumber && (
+            {formik?.touched?.mobileNumber && formik?.errors?.mobileNumber && (
               <p className="text-sm text-destructive">
                 {formik.errors.mobileNumber}
               </p>
